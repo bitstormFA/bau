@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub + Nimble Release"
+  short_description: "GitHub and Nimble release workflow."
+  default_prompt: "Help me prepare a GitHub and Nimble release for this Nim project."
