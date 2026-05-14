@@ -1,0 +1,6 @@
+nimTitle	packaging	bau/packaging.html	module bau/packaging		0
+nim	collectPackageFiles	bau/packaging.html#collectPackageFiles,string,BauConfig	proc collectPackageFiles(projectDir: string; cfg: BauConfig): seq[string]		38
+nim	packageManifest	bau/packaging.html#packageManifest,string,BauConfig	proc packageManifest(projectDir: string; cfg: BauConfig): string		64
+nim	verifyPackage	bau/packaging.html#verifyPackage,string,BauConfig	proc verifyPackage(projectDir: string; cfg: BauConfig)		73
+nim	nimbleContent	bau/packaging.html#nimbleContent,BauConfig	proc nimbleContent(cfg: BauConfig): string		83
+nim	hasLocalPublishOverrides	bau/packaging.html#hasLocalPublishOverrides,BauConfig	proc hasLocalPublishOverrides(cfg: BauConfig): bool		111

@@ -1,0 +1,5 @@
+nimTitle	affected	bau/affected.html	module bau/affected		0
+nim	AffectedReport	bau/affected.html#AffectedReport	object AffectedReport		7
+nim	gitChangedFiles	bau/affected.html#gitChangedFiles,string,string	proc gitChangedFiles(projectDir: string; since: string = "HEAD"): seq[string]		14
+nim	computeAffectedFromChanges	bau/affected.html#computeAffectedFromChanges,BauConfig,string,openArray[string]	proc computeAffectedFromChanges(cfg: BauConfig; projectDir: string;\n                           changedFiles: openArray[string]): AffectedReport		251
+nim	computeAffected	bau/affected.html#computeAffected,BauConfig,string,string	proc computeAffected(cfg: BauConfig; projectDir: string; since: string = "HEAD"): AffectedReport		305

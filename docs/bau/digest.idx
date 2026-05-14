@@ -1,0 +1,3 @@
+nimTitle	digest	bau/digest.html	module bau/digest		0
+nim	Sha256Prefix	bau/digest.html#Sha256Prefix	const Sha256Prefix		4
+nim	digestStr	bau/digest.html#digestStr,string	proc digestStr(data: string): string		109

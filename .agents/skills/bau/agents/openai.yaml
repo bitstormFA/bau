@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bau"
+  short_description: "Use Bau for Nim project workflows"
+  default_prompt: "Use $bau to set up, build, test, document, or release this Nim project with Bau."

@@ -1,0 +1,15 @@
+nimTitle	nimble	bau/nimble.html	module bau/nimble		0
+nim	csInfo	bau/nimble.html#csInfo	ConvertSeverity.csInfo		7
+nim	csWarning	bau/nimble.html#csWarning	ConvertSeverity.csWarning		7
+nim	ConvertSeverity	bau/nimble.html#ConvertSeverity	enum ConvertSeverity		7
+nim	ConvertDiagnostic	bau/nimble.html#ConvertDiagnostic	object ConvertDiagnostic		11
+nim	NimbleProject	bau/nimble.html#NimbleProject	object NimbleProject		21
+nim	NimbleConvertResult	bau/nimble.html#NimbleConvertResult	object NimbleConvertResult		47
+nim	parseNimbleProject	bau/nimble.html#parseNimbleProject,string	proc parseNimbleProject(path: string): NimbleProject		583
+nim	toBauConfig	bau/nimble.html#toBauConfig,NimbleProject	proc toBauConfig(project: var NimbleProject): BauConfig		701
+nim	bauTomlContent	bau/nimble.html#bauTomlContent,BauConfig	proc bauTomlContent(cfg: BauConfig): string		803
+nim	findNimbleFile	bau/nimble.html#findNimbleFile,string,string	proc findNimbleFile(projectDir: string; explicitPath = ""): string		907
+nim	convertNimbleProject	bau/nimble.html#convertNimbleProject,string,string	proc convertNimbleProject(projectDir: string = getCurrentDir();\n                     nimblePath: string = ""; write = true; force = false): NimbleConvertResult		932
+nim	convertResultJson	bau/nimble.html#convertResultJson,NimbleConvertResult	proc convertResultJson(conversion: NimbleConvertResult): JsonNode		956
+nim	parseNimbleFile	bau/nimble.html#parseNimbleFile,string	proc parseNimbleFile(path: string): Option[BauConfig]		972
+nim	findProjectConfig	bau/nimble.html#findProjectConfig,string	proc findProjectConfig(startDir: string = getCurrentDir()): BauConfig		982

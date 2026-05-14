@@ -1,0 +1,7 @@
+nimTitle	toolchain	bau/toolchain.html	module bau/toolchain		0
+nim	ToolchainCheck	bau/toolchain.html#ToolchainCheck	object ToolchainCheck		7
+nim	versionSatisfies	bau/toolchain.html#versionSatisfies,string,string	proc versionSatisfies(actual, requirement: string): bool		35
+nim	detectedNimVersion	bau/toolchain.html#detectedNimVersion	proc detectedNimVersion(): string		54
+nim	detectedAtlasVersion	bau/toolchain.html#detectedAtlasVersion	proc detectedAtlasVersion(): string		67
+nim	checkToolchain	bau/toolchain.html#checkToolchain,BauConfig	proc checkToolchain(cfg: BauConfig): ToolchainCheck		77
+nim	ensureToolchain	bau/toolchain.html#ensureToolchain,BauConfig	proc ensureToolchain(cfg: BauConfig)		107

@@ -1,0 +1,3 @@
+nimTitle	remote	bau/remote.html	module bau/remote		0
+nim	RemoteCacheDir	bau/remote.html#RemoteCacheDir	const RemoteCacheDir		6
+nim	fetchRemoteTask	bau/remote.html#fetchRemoteTask,string	proc fetchRemoteTask(url: string): string		8

@@ -1,0 +1,2 @@
+nimTitle	argv	bau/argv.html	module bau/argv		0
+nim	parseCommandLine	bau/argv.html#parseCommandLine,string	proc parseCommandLine(cmd: string): seq[string]		5

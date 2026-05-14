@@ -1,0 +1,10 @@
+nimTitle	workspace	bau/workspace.html	module bau/workspace		0
+nim	wsDefaultMembers	bau/workspace.html#wsDefaultMembers	WorkspaceScope.wsDefaultMembers		7
+nim	wsAllMembers	bau/workspace.html#wsAllMembers	WorkspaceScope.wsAllMembers		7
+nim	WorkspaceScope	bau/workspace.html#WorkspaceScope	enum WorkspaceScope		7
+nim	WorkspaceMember	bau/workspace.html#WorkspaceMember	object WorkspaceMember		11
+nim	WorkspaceProject	bau/workspace.html#WorkspaceProject	object WorkspaceProject		16
+nim	resolveWorkspaceMemberPaths	bau/workspace.html#resolveWorkspaceMemberPaths,string,WorkspaceConfig	proc resolveWorkspaceMemberPaths(root: string; ws: WorkspaceConfig;\n                            defaultOnly = true): seq[string]		63
+nim	resolveWorkspaceMembers	bau/workspace.html#resolveWorkspaceMembers,string,WorkspaceConfig	proc resolveWorkspaceMembers(root: string; ws: WorkspaceConfig; defaultOnly = true): seq[\n    WorkspaceMember]		80
+nim	isWorkspaceRoot	bau/workspace.html#isWorkspaceRoot,string	proc isWorkspaceRoot(projectDir: string): bool		94
+nim	loadWorkspaceProjects	bau/workspace.html#loadWorkspaceProjects,string,WorkspaceScope	proc loadWorkspaceProjects(root: string; scope: WorkspaceScope = wsDefaultMembers): seq[\n    WorkspaceProject]		98

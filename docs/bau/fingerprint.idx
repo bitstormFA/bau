@@ -1,0 +1,14 @@
+nimTitle	fingerprint	bau/fingerprint.html	module bau/fingerprint		0
+nim	FingerprintInputs	bau/fingerprint.html#FingerprintInputs	object FingerprintInputs		7
+nim	Fingerprint	bau/fingerprint.html#Fingerprint	object Fingerprint		16
+nim	initFingerprintInputs	bau/fingerprint.html#initFingerprintInputs,openArray[string],openArray[string],string,openArray[string],openArray[string]	proc initFingerprintInputs(sourcePaths: openArray[string];\n                      compilerFlags: openArray[string]; profile: string;\n                      configInputs: openArray[string] = [];\n                      envInputs: openArray[string] = []): FingerprintInputs		27
+nim	computeFingerprint	bau/fingerprint.html#computeFingerprint,FingerprintInputs	proc computeFingerprint(inputs: FingerprintInputs): Fingerprint		44
+nim	computeFingerprint	bau/fingerprint.html#computeFingerprint,openArray[string],openArray[string],string,openArray[string],openArray[string]	proc computeFingerprint(sourcePaths: openArray[string];\n                   compilerFlags: openArray[string]; profile: string;\n                   configInputs: openArray[string] = [];\n                   envInputs: openArray[string] = []): Fingerprint		90
+nim	`==`	bau/fingerprint.html#==,Fingerprint,Fingerprint	proc `==`(a, b: Fingerprint): bool		99
+nim	toJson	bau/fingerprint.html#toJson,Fingerprint	proc toJson(fp: Fingerprint): string		111
+nim	fromJson	bau/fingerprint.html#fromJson,string	proc fromJson(data: string): Fingerprint		126
+nim	saveFingerprint	bau/fingerprint.html#saveFingerprint,string,string,string,Fingerprint	proc saveFingerprint(fpDir: string; targetName: string; unitName: string;\n                fp: Fingerprint)		141
+nim	loadFingerprint	bau/fingerprint.html#loadFingerprint,string,string,string	proc loadFingerprint(fpDir: string; targetName: string; unitName: string): Option[\n    Fingerprint]		148
+nim	removeFingerprint	bau/fingerprint.html#removeFingerprint,string,string,string	proc removeFingerprint(fpDir: string; targetName: string; unitName: string)		159
+nim	cleanFingerprints	bau/fingerprint.html#cleanFingerprints,string	proc cleanFingerprints(fpDir: string)		165
+nimgrp	computefingerprint	bau/fingerprint.html#computeFingerprint-procs-all	proc		44

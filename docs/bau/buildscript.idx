@@ -1,0 +1,3 @@
+nimTitle	buildscript	bau/buildscript.html	module bau/buildscript		0
+nim	BuildScriptResult	bau/buildscript.html#BuildScriptResult	object BuildScriptResult		7
+nim	runBuildScripts	bau/buildscript.html#runBuildScripts,BauConfig,string,string,FeatureSelection	proc runBuildScripts(cfg: BauConfig; projectDir, profile: string;\n                selection: FeatureSelection; verbose = false): BuildScriptResult		250

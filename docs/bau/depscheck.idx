@@ -1,0 +1,8 @@
+nimTitle	depscheck	bau/depscheck.html	module bau/depscheck		0
+nim	DependencyCheck	bau/depscheck.html#DependencyCheck	object DependencyCheck		7
+nim	checkDependencyPolicy	bau/depscheck.html#checkDependencyPolicy,BauConfig,string,string,string	proc checkDependencyPolicy(cfg: BauConfig; projectDir: string; lockPath: string = "";\n                      workspaceRoot: string = ""): DependencyCheck		73
+nim	checkDependencyPolicy	bau/depscheck.html#checkDependencyPolicy,openArray[LockProject],string,string	proc checkDependencyPolicy(projects: openArray[LockProject]; workspaceRoot: string;\n                      lockPath: string): DependencyCheck		85
+nim	checkOfflineDependencies	bau/depscheck.html#checkOfflineDependencies,BauConfig,string,FeatureSelection,string,string	proc checkOfflineDependencies(cfg: BauConfig; projectDir: string;\n                         selection: FeatureSelection; lockPath: string = "";\n                         workspaceRoot: string = ""): DependencyCheck		105
+nim	checkOfflineDependencies	bau/depscheck.html#checkOfflineDependencies,openArray[LockProject],string,string,openArray[FeatureSelection]	proc checkOfflineDependencies(projects: openArray[LockProject];\n                         workspaceRoot: string; lockPath: string;\n                         selections: openArray[FeatureSelection]): DependencyCheck		139
+nimgrp	checkofflinedependencies	bau/depscheck.html#checkOfflineDependencies-procs-all	proc		105
+nimgrp	checkdependencypolicy	bau/depscheck.html#checkDependencyPolicy-procs-all	proc		73

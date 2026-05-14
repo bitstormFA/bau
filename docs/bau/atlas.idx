@@ -1,0 +1,10 @@
+nimTitle	atlas	bau/atlas.html	module bau/atlas		0
+nim	atlasDir	bau/atlas.html#atlasDir,string	proc atlasDir(projectDir: string): string		6
+nim	atlasDepsDir	bau/atlas.html#atlasDepsDir,string	proc atlasDepsDir(projectDir: string): string		10
+nim	runAtlas	bau/atlas.html#runAtlas,openArray[string],string,bool	proc runAtlas(args: openArray[string]; projectDir: string; verbose: bool = false): tuple[\n    exitCode: int, output: string]		14
+nim	runAtlasChecked	bau/atlas.html#runAtlasChecked,openArray[string],string,bool	proc runAtlasChecked(args: openArray[string]; projectDir: string;\n                verbose: bool = false): string		25
+nim	atlasInitialized	bau/atlas.html#atlasInitialized,string	proc atlasInitialized(projectDir: string): bool		34
+nim	initAtlas	bau/atlas.html#initAtlas,string,bool	proc initAtlas(projectDir: string; verbose: bool = false)		39
+nim	syncDeps	bau/atlas.html#syncDeps,BauConfig,string,bool,FeatureSelection	proc syncDeps(cfg: BauConfig; projectDir: string; verbose: bool = false;\n         featureSelection: FeatureSelection = FeatureSelection())		47
+nim	updateDeps	bau/atlas.html#updateDeps,string,string,bool	proc updateDeps(projectDir: string; filter: string = ""; verbose: bool = false)		80
+nim	installDeps	bau/atlas.html#installDeps,string,bool	proc installDeps(projectDir: string; verbose: bool = false)		90

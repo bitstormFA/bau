@@ -1,0 +1,9 @@
+nimTitle	features	bau/features.html	module bau/features		0
+nim	FeatureSelection	bau/features.html#FeatureSelection	object FeatureSelection		7
+nim	normalizeFeatureDefine	bau/features.html#normalizeFeatureDefine,string	proc normalizeFeatureDefine(name: string): string		12
+nim	parseFeatureList	bau/features.html#parseFeatureList,string	proc parseFeatureList(value: string): seq[string]		21
+nim	featureExists	bau/features.html#featureExists,BauConfig,string	proc featureExists(cfg: BauConfig; name: string): bool		28
+nim	resolveFeatures	bau/features.html#resolveFeatures,BauConfig,openArray[string]	proc resolveFeatures(cfg: BauConfig; requested: openArray[string];\n                allFeatures = false; noDefaultFeatures = false): FeatureSelection		56
+nim	dependencyEnabled	bau/features.html#dependencyEnabled,BauConfig,string,DepInfo,FeatureSelection	proc dependencyEnabled(cfg: BauConfig; depName: string; dep: DepInfo;\n                  features: FeatureSelection): bool		90
+nim	compilerFeatureFlags	bau/features.html#compilerFeatureFlags,FeatureSelection	proc compilerFeatureFlags(selection: FeatureSelection): seq[string]		95
+nim	enabledFeatureEnv	bau/features.html#enabledFeatureEnv,FeatureSelection	proc enabledFeatureEnv(selection: FeatureSelection): Table[string, string]		101

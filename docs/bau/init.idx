@@ -1,0 +1,12 @@
+nimTitle	init	bau/init.html	module bau/init		0
+nim	ProjectInitInfo	bau/init.html#ProjectInitInfo	object ProjectInitInfo		7
+nim	defaultProjectDescription	bau/init.html#defaultProjectDescription,string	proc defaultProjectDescription(kind: string): string		42
+nim	normalizeProjectKind	bau/init.html#normalizeProjectKind,string	proc normalizeProjectKind(kind: string): string		49
+nim	initProjectInfo	bau/init.html#initProjectInfo,string,string	proc initProjectInfo(name: string; kind: string = "bin"): ProjectInitInfo		60
+nim	completeProjectInitInfo	bau/init.html#completeProjectInitInfo,ProjectInitInfo,string	proc completeProjectInitInfo(partial: ProjectInitInfo; defaultName: string): ProjectInitInfo		87
+nim	initProject	bau/init.html#initProject,string,ProjectInitInfo,bool	proc initProject(dir: string; info: ProjectInitInfo; force: bool = false)		147
+nim	initProject	bau/init.html#initProject,string,string,string,bool	proc initProject(dir: string; name: string; kind: string = "bin"; force: bool = false)		184
+nim	initNew	bau/init.html#initNew,string,ProjectInitInfo,bool	proc initNew(path: string; info: ProjectInitInfo; force: bool = false)		189
+nim	initNew	bau/init.html#initNew,string,string,string,bool	proc initNew(path: string; name: string; kind: string = "bin"; force: bool = false)		195
+nimgrp	initproject	bau/init.html#initProject-procs-all	proc		147
+nimgrp	initnew	bau/init.html#initNew-procs-all	proc		189

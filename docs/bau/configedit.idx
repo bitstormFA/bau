@@ -1,0 +1,11 @@
+nimTitle	configedit	bau/configedit.html	module bau/configedit		0
+nim	DependencyEdit	bau/configedit.html#DependencyEdit	object DependencyEdit		7
+nim	DependencyEditResult	bau/configedit.html#DependencyEditResult	object DependencyEditResult		18
+nim	initDependencyEdit	bau/configedit.html#initDependencyEdit,string	proc initDependencyEdit(name: string): DependencyEdit		22
+nim	toDependencyEdit	bau/configedit.html#toDependencyEdit,string,DepInfo	proc toDependencyEdit(name: string; dep: DepInfo): DependencyEdit		26
+nim	dependencyLine	bau/configedit.html#dependencyLine,DependencyEdit	proc dependencyLine(edit: DependencyEdit): string		42
+nim	upsertDependencyInSection	bau/configedit.html#upsertDependencyInSection,string,string,DependencyEdit	proc upsertDependencyInSection(content, sectionName: string; edit: DependencyEdit): DependencyEditResult		93
+nim	removeDependencyFromSection	bau/configedit.html#removeDependencyFromSection,string,string,string	proc removeDependencyFromSection(content, sectionName, depName: string): DependencyEditResult		115
+nim	addDependency	bau/configedit.html#addDependency,string,DependencyEdit	proc addDependency(projectDir: string; edit: DependencyEdit)		138
+nim	removeDependency	bau/configedit.html#removeDependency,string,string	proc removeDependency(projectDir, depName: string)		147
+nim	writePatchEntry	bau/configedit.html#writePatchEntry,string,string,string	proc writePatchEntry(projectDir, depName, depPath: string)		160

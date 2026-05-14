@@ -1,0 +1,18 @@
+nimTitle	build	bau/build.html	module bau/build		0
+nim	BuildContext	bau/build.html#BuildContext	object BuildContext		7
+nim	TargetPlan	bau/build.html#TargetPlan	object TargetPlan		14
+nim	initBuildContext	bau/build.html#initBuildContext,BauConfig,string,string,bool,FeatureSelection	proc initBuildContext(cfg: BauConfig; profile, projectDir: string; verbose: bool;\n                 featureSelection: FeatureSelection = FeatureSelection()): BuildContext		28
+nim	resolveSourceFiles	bau/build.html#resolveSourceFiles,string,string	proc resolveSourceFiles(sourceDir: string; mainFile: string): seq[string]		35
+nim	collectCompilerFlags	bau/build.html#collectCompilerFlags,ProfileInfo,BuildKind,string,string,string,BauConfig,FeatureSelection	proc collectCompilerFlags(profile: ProfileInfo; kind: BuildKind; outDir: string;\n                     sourceDir: string; projectDir: string; cfg: BauConfig;\n                     featureSelection: FeatureSelection = FeatureSelection()): seq[\n    string]		46
+nim	collectDepFiles	bau/build.html#collectDepFiles,string	proc collectDepFiles(projectDir: string): seq[string]		104
+nim	collectFingerprintConfigInputs	bau/build.html#collectFingerprintConfigInputs,string	proc collectFingerprintConfigInputs(projectDir: string): seq[string]		105
+nim	collectFingerprintEnvInputs	bau/build.html#collectFingerprintEnvInputs	proc collectFingerprintEnvInputs(): seq[string]		106
+nim	resolveTargetPlan	bau/build.html#resolveTargetPlan,BuildContext,int	proc resolveTargetPlan(ctx: BuildContext; targetIdx: int): TargetPlan		115
+nim	buildTarget	bau/build.html#buildTarget,BauConfig,int,string,string,bool,FeatureSelection	proc buildTarget(cfg: BauConfig; targetIdx: int; profile: string; projectDir: string;\n            verbose: bool;\n            featureSelection: FeatureSelection = FeatureSelection()): string		245
+nim	findTargetIndex	bau/build.html#findTargetIndex,BauConfig,string	proc findTargetIndex(cfg: BauConfig; name: string): int		282
+nim	buildSingleTarget	bau/build.html#buildSingleTarget,BauConfig,string,string,bool,FeatureSelection	proc buildSingleTarget(cfg: BauConfig; profile: string; projectDir: string;\n                  verbose: bool;\n                  featureSelection: FeatureSelection = FeatureSelection()): string		289
+nim	buildAllTargets	bau/build.html#buildAllTargets,BauConfig,string,string,bool,FeatureSelection	proc buildAllTargets(cfg: BauConfig; profile: string; projectDir: string;\n                verbose: bool;\n                featureSelection: FeatureSelection = FeatureSelection())		294
+nim	buildTargetByName	bau/build.html#buildTargetByName,BauConfig,string,string,string,bool,FeatureSelection	proc buildTargetByName(cfg: BauConfig; name: string; profile: string;\n                  projectDir: string; verbose: bool;\n                  featureSelection: FeatureSelection = FeatureSelection()): string		305
+nim	runTarget	bau/build.html#runTarget,BauConfig,int,string,string,openArray[string],bool,FeatureSelection	proc runTarget(cfg: BauConfig; targetIdx: int; profile: string; projectDir: string;\n          runArgs: openArray[string]; verbose: bool;\n          featureSelection: FeatureSelection = FeatureSelection())		315
+nim	runTargetByName	bau/build.html#runTargetByName,BauConfig,string,string,string,openArray[string],bool,FeatureSelection	proc runTargetByName(cfg: BauConfig; name: string; profile: string;\n                projectDir: string; runArgs: openArray[string]; verbose: bool;\n                featureSelection: FeatureSelection = FeatureSelection())		323
+nim	cleanBuild	bau/build.html#cleanBuild	proc cleanBuild()		332

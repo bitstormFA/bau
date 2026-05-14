@@ -1,0 +1,29 @@
+# Bau
+build/
+bin/
+/bau
+.bau/
+compile_commands.json
+nim.cfg
+/tests/tester
+/tests/tci_templates
+/tests/tconfig
+/tests/tfingerprint
+/tests/tlock
+/tests/tutil
+
+# Nim
+nimcache/
+*.exe
+*.out
+nimbledirty
+nimblecache/
+htmldocs/
+
+# Dependencies
+deps/
+
+# VSCode
+.vscode/
+scripts/reset-git-history.sh
+.serena/

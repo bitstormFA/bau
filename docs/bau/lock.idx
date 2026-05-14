@@ -1,0 +1,56 @@
+nimTitle	lock	bau/lock.html	module bau/lock		0
+nim	skRegistry	bau/lock.html#skRegistry	SourceKind.skRegistry		8
+nim	skGit	bau/lock.html#skGit	SourceKind.skGit		8
+nim	skPath	bau/lock.html#skPath	SourceKind.skPath		8
+nim	skVendor	bau/lock.html#skVendor	SourceKind.skVendor		8
+nim	skMirror	bau/lock.html#skMirror	SourceKind.skMirror		8
+nim	SourceKind	bau/lock.html#SourceKind	enum SourceKind		8
+nim	SourceId	bau/lock.html#SourceId	object SourceId		15
+nim	PackageId	bau/lock.html#PackageId	object PackageId		18
+nim	DependencyReq	bau/lock.html#DependencyReq	object DependencyReq		23
+nim	DependencyEdge	bau/lock.html#DependencyEdge	object DependencyEdge		37
+nim	ResolvedPackage	bau/lock.html#ResolvedPackage	object ResolvedPackage		43
+nim	ResolveGraph	bau/lock.html#ResolveGraph	object ResolveGraph		55
+nim	LockFile	bau/lock.html#LockFile	object LockFile		62
+nim	ldkMissingLock	bau/lock.html#ldkMissingLock	LockDiagnosticKind.ldkMissingLock		70
+nim	ldkInvalidLock	bau/lock.html#ldkInvalidLock	LockDiagnosticKind.ldkInvalidLock		70
+nim	ldkStaleRequirements	bau/lock.html#ldkStaleRequirements	LockDiagnosticKind.ldkStaleRequirements		70
+nim	ldkMissingDependency	bau/lock.html#ldkMissingDependency	LockDiagnosticKind.ldkMissingDependency		70
+nim	ldkMissingMaterial	bau/lock.html#ldkMissingMaterial	LockDiagnosticKind.ldkMissingMaterial		70
+nim	ldkChecksumMismatch	bau/lock.html#ldkChecksumMismatch	LockDiagnosticKind.ldkChecksumMismatch		70
+nim	ldkRevisionMismatch	bau/lock.html#ldkRevisionMismatch	LockDiagnosticKind.ldkRevisionMismatch		70
+nim	ldkUnmaterialized	bau/lock.html#ldkUnmaterialized	LockDiagnosticKind.ldkUnmaterialized		70
+nim	LockDiagnosticKind	bau/lock.html#LockDiagnosticKind	enum LockDiagnosticKind		70
+nim	LockDiagnostic	bau/lock.html#LockDiagnostic	object LockDiagnostic		80
+nim	LockValidationReport	bau/lock.html#LockValidationReport	object LockValidationReport		86
+nim	SourceProvider	bau/lock.html#SourceProvider	object SourceProvider		91
+nim	LockProject	bau/lock.html#LockProject	object LockProject		97
+nim	LockFileName	bau/lock.html#LockFileName	const LockFileName		109
+nim	LockFileVersion	bau/lock.html#LockFileVersion	const LockFileVersion		110
+nim	DefaultResolver	bau/lock.html#DefaultResolver	const DefaultResolver		111
+nim	initLockFile	bau/lock.html#initLockFile	proc initLockFile(): LockFile		113
+nim	initResolveGraph	bau/lock.html#initResolveGraph	proc initResolveGraph(): ResolveGraph		120
+nim	toString	bau/lock.html#toString,PackageId	proc toString(id: PackageId): string		126
+nim	toString	bau/lock.html#toString,ResolvedPackage	proc toString(pkg: ResolvedPackage): string		130
+nim	checksumPath	bau/lock.html#checksumPath,string	proc checksumPath(path: string): string		135
+nim	gitRevision	bau/lock.html#gitRevision,string	proc gitRevision(path: string): string		136
+nim	lockIdentity	bau/lock.html#lockIdentity,SourceProvider,DepInfo	proc lockIdentity(provider: SourceProvider; dep: DepInfo): SourceId		138
+nim	sourceProvider	bau/lock.html#sourceProvider,string,SourceInfo	proc sourceProvider(name: string; info: SourceInfo): SourceProvider		218
+nim	readNimbleVersion	bau/lock.html#readNimbleVersion,string,string	proc readNimbleVersion(depPath, name: string): string		323
+nim	requirementsHash	bau/lock.html#requirementsHash,openArray[LockProject],string	proc requirementsHash(projects: openArray[LockProject]; workspaceRoot: string): string		417
+nim	parseLockFile	bau/lock.html#parseLockFile,string	proc parseLockFile(path: string): LockFile		492
+nim	writeLockFile	bau/lock.html#writeLockFile,LockFile,string	proc writeLockFile(lock: LockFile; path: string)		582
+nim	buildResolveGraph	bau/lock.html#buildResolveGraph,openArray[LockProject],string	proc buildResolveGraph(projects: openArray[LockProject]; workspaceRoot: string): ResolveGraph		765
+nim	toLockFile	bau/lock.html#toLockFile,ResolveGraph	proc toLockFile(graph: ResolveGraph): LockFile		808
+nim	generateLockFile	bau/lock.html#generateLockFile,openArray[LockProject],string	proc generateLockFile(projects: openArray[LockProject]; workspaceRoot: string): LockFile		817
+nim	generateLockFile	bau/lock.html#generateLockFile,BauConfig,string	proc generateLockFile(cfg: BauConfig; projectDir: string = ""): LockFile		822
+nim	packageMaterialPath	bau/lock.html#packageMaterialPath,string,ResolvedPackage	proc packageMaterialPath(workspaceRoot: string; pkg: ResolvedPackage): string		828
+nim	validateLockFile	bau/lock.html#validateLockFile,openArray[LockProject],string,string	proc validateLockFile(projects: openArray[LockProject];\n                 workspaceRoot, lockPath: string): LockValidationReport		846
+nim	validateLockFile	bau/lock.html#validateLockFile,BauConfig,string,string	proc validateLockFile(cfg: BauConfig; projectDir, lockPath: string): LockValidationReport		896
+nim	lockIsValid	bau/lock.html#lockIsValid,openArray[LockProject],string,string	proc lockIsValid(projects: openArray[LockProject]; workspaceRoot, lockPath: string): bool		903
+nim	lockIsValid	bau/lock.html#lockIsValid,BauConfig,string,string	proc lockIsValid(cfg: BauConfig; lockPath: string; projectDir: string = ""): bool		908
+nim	unresolvedLockEntries	bau/lock.html#unresolvedLockEntries,BauConfig,LockFile,string	proc unresolvedLockEntries(cfg: BauConfig; lock: LockFile; projectDir: string): seq[\n    string]		913
+nimgrp	lockisvalid	bau/lock.html#lockIsValid-procs-all	proc		903
+nimgrp	tostring	bau/lock.html#toString-procs-all	proc		126
+nimgrp	generatelockfile	bau/lock.html#generateLockFile-procs-all	proc		817
+nimgrp	validatelockfile	bau/lock.html#validateLockFile-procs-all	proc		846

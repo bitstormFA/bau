@@ -1,0 +1,49 @@
+[package]
+name = "bau"
+version = "0.3.1"
+description = "A modern build tool for Nim"
+authors = ["bitstorm <bitstorm@tutanota.com>"]
+license = "MIT"
+edition = "2026"
+repository = "https://github.com/bitstormFA/bau"
+homepage = "https://github.com/bitstormFA/bau"
+exclude = [
+  "bau",
+  "docs/.bau-docs-manifest",
+  "nim.cfg",
+  "scripts",
+  "tests/tester",
+  "tests/tci_templates",
+  "tests/tconfig",
+  "tests/tfingerprint",
+  "tests/tlock",
+  "tests/tutil",
+]
+
+[toolchain]
+nim = ">=2.2"
+atlas = ">=0.8"
+
+[docs]
+outDir = "docs"
+entrypoints = ["src/bau.nim"]
+runExamples = true
+
+[build]
+kind = "bin"
+source = "src"
+main = "src/bau.nim"
+output = "bau"
+
+[profile.dev]
+flags = ["--debugInfo:on"]
+gc = "orc"
+define = { threads = "on" }
+
+[profile.release]
+flags = ["--opt:speed", "--passC:-O3"]
+gc = "orc"
+define = { threads = "on" }
+
+[dependencies]
+parsetoml = ">=0.6.0"

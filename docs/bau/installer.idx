@@ -1,0 +1,9 @@
+nimTitle	installer	bau/installer.html	module bau/installer		0
+nim	iaInstall	bau/installer.html#iaInstall	InstallAction.iaInstall		7
+nim	iaUpdate	bau/installer.html#iaUpdate	InstallAction.iaUpdate		7
+nim	iaRemove	bau/installer.html#iaRemove	InstallAction.iaRemove		7
+nim	InstallAction	bau/installer.html#InstallAction	enum InstallAction		7
+nim	InstallResult	bau/installer.html#InstallResult	object InstallResult		12
+nim	defaultInstallDir	bau/installer.html#defaultInstallDir	proc defaultInstallDir(): string		22
+nim	resolveInstallDir	bau/installer.html#resolveInstallDir,BauConfig,string,string	proc resolveInstallDir(cfg: BauConfig; projectDir, overrideDir: string): string		31
+nim	installTargets	bau/installer.html#installTargets,BauConfig,string,string,string,string,InstallAction,bool,bool,bool,bool,FeatureSelection	proc installTargets(cfg: BauConfig;\n               projectDir, profile, targetName, overrideDir: string;\n               action: InstallAction; allTargets, force, dryRun, verbose: bool;\n               featureSelection: FeatureSelection): seq[InstallResult]		152

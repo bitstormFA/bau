@@ -1,0 +1,15 @@
+nimTitle	taskcache	bau/taskcache.html	module bau/taskcache		0
+nim	TaskCacheEntry	bau/taskcache.html#TaskCacheEntry	object TaskCacheEntry		8
+nim	TaskCacheExplain	bau/taskcache.html#TaskCacheExplain	object TaskCacheExplain		14
+nim	cacheRoot	bau/taskcache.html#cacheRoot,string,BauConfig	proc cacheRoot(projectDir: string; cfg: BauConfig): string		50
+nim	taskCacheKeyInputs	bau/taskcache.html#taskCacheKeyInputs,TaskInfo,string,string,BauConfig,FeatureSelection	proc taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;\n                   selection: FeatureSelection = FeatureSelection()): seq[string]		62
+nim	taskCacheKey	bau/taskcache.html#taskCacheKey,TaskInfo,string,string,BauConfig,FeatureSelection	proc taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;\n             selection: FeatureSelection = FeatureSelection()): string		101
+nim	taskCacheEntry	bau/taskcache.html#taskCacheEntry,TaskInfo,string,BauConfig,string,FeatureSelection	proc taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;\n               profile: string; selection: FeatureSelection = FeatureSelection()): TaskCacheEntry		112
+nim	cacheEntryExists	bau/taskcache.html#cacheEntryExists,TaskCacheEntry	proc cacheEntryExists(entry: TaskCacheEntry): bool		130
+nim	saveTaskOutputs	bau/taskcache.html#saveTaskOutputs,TaskCacheEntry,TaskInfo,string	proc saveTaskOutputs(entry: TaskCacheEntry; task: TaskInfo; projectDir: string)		255
+nim	restoreTaskOutputs	bau/taskcache.html#restoreTaskOutputs,TaskCacheEntry,string	proc restoreTaskOutputs(entry: TaskCacheEntry; projectDir: string): bool		285
+nim	saveRemoteTaskOutputs	bau/taskcache.html#saveRemoteTaskOutputs,TaskCacheEntry,TaskInfo,string,BauConfig	proc saveRemoteTaskOutputs(entry: TaskCacheEntry; task: TaskInfo; projectDir: string;\n                      cfg: BauConfig): bool		399
+nim	restoreRemoteTaskOutputs	bau/taskcache.html#restoreRemoteTaskOutputs,TaskCacheEntry,string,BauConfig,string	proc restoreRemoteTaskOutputs(entry: TaskCacheEntry; projectDir: string;\n                         cfg: BauConfig; remoteError: var string): bool		417
+nim	listTaskCacheEntries	bau/taskcache.html#listTaskCacheEntries,string,BauConfig	proc listTaskCacheEntries(projectDir: string; cfg: BauConfig): seq[string]		444
+nim	cleanTaskCache	bau/taskcache.html#cleanTaskCache,string,BauConfig	proc cleanTaskCache(projectDir: string; cfg: BauConfig)		456
+nim	explainTaskCache	bau/taskcache.html#explainTaskCache,TaskInfo,string,BauConfig,string,FeatureSelection	proc explainTaskCache(task: TaskInfo; projectDir: string; cfg: BauConfig;\n                 profile: string;\n                 selection: FeatureSelection = FeatureSelection()): TaskCacheExplain		462

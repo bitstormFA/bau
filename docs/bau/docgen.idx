@@ -1,0 +1,11 @@
+nimTitle	docgen	bau/docgen.html	module bau/docgen		0
+nim	DocManifestName	bau/docgen.html#DocManifestName	const DocManifestName		6
+nim	DocBuildOptions	bau/docgen.html#DocBuildOptions	object DocBuildOptions		9
+nim	DocModule	bau/docgen.html#DocModule	object DocModule		19
+nim	DocDiagnostic	bau/docgen.html#DocDiagnostic	object DocDiagnostic		27
+nim	DocCommandResult	bau/docgen.html#DocCommandResult	object DocCommandResult		32
+nim	DocBuildReport	bau/docgen.html#DocBuildReport	object DocBuildReport		40
+nim	discoverDocModules	bau/docgen.html#discoverDocModules,BauConfig,string,DocBuildOptions	proc discoverDocModules(cfg: BauConfig; projectDir: string;\n                   opts: DocBuildOptions = DocBuildOptions()): seq[DocModule]		229
+nim	buildApiDocs	bau/docgen.html#buildApiDocs,BauConfig,string,DocBuildOptions	proc buildApiDocs(cfg: BauConfig; projectDir: string;\n             opts: DocBuildOptions = DocBuildOptions()): DocBuildReport		449
+nim	primaryDocPath	bau/docgen.html#primaryDocPath,DocBuildReport	proc primaryDocPath(report: DocBuildReport): string		491
+nim	docReportJson	bau/docgen.html#docReportJson,DocBuildReport	proc docReportJson(report: DocBuildReport): JsonNode		500

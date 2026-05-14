@@ -1,0 +1,6 @@
+nimTitle	nimscan	bau/nimscan.html	module bau/nimscan		0
+nim	NimModuleInfo	bau/nimscan.html#NimModuleInfo	object NimModuleInfo		7
+nim	NimDependencyEdge	bau/nimscan.html#NimDependencyEdge	object NimDependencyEdge		14
+nim	scanNimModule	bau/nimscan.html#scanNimModule,string,string	proc scanNimModule(projectDir, path: string): NimModuleInfo		133
+nim	scanProjectModules	bau/nimscan.html#scanProjectModules,string,BauConfig	proc scanProjectModules(projectDir: string; cfg: BauConfig): seq[NimModuleInfo]		167
+nim	compilerDependencyEdges	bau/nimscan.html#compilerDependencyEdges,string,BauConfig	proc compilerDependencyEdges(projectDir: string; cfg: BauConfig): seq[\n    NimDependencyEdge]		247

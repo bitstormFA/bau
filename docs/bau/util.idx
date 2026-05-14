@@ -1,0 +1,30 @@
+nimTitle	util	bau/util.html	module bau/util		0
+nim	BauVersion	bau/util.html#BauVersion	const BauVersion		7
+nim	ConfigFileName	bau/util.html#ConfigFileName	const ConfigFileName		8
+nim	LocalConfigFileName	bau/util.html#LocalConfigFileName	const LocalConfigFileName		9
+nim	GlobalConfigDir	bau/util.html#GlobalConfigDir	const GlobalConfigDir		10
+nim	BuildDirName	bau/util.html#BuildDirName	const BuildDirName		11
+nim	FingerprintDirName	bau/util.html#FingerprintDirName	const FingerprintDirName		12
+nim	setOutputOptions	bau/util.html#setOutputOptions,bool,string	proc setOutputOptions(quiet: bool; color: string)		18
+nim	currentColorMode	bau/util.html#currentColorMode	proc currentColorMode(): string		30
+nim	homeDir	bau/util.html#homeDir	proc homeDir(): string		34
+nim	globalConfigPath	bau/util.html#globalConfigPath	proc globalConfigPath(): string		38
+nim	globalTasksPath	bau/util.html#globalTasksPath	proc globalTasksPath(): string		42
+nim	findProjectRoot	bau/util.html#findProjectRoot,string	proc findProjectRoot(startDir: string = getCurrentDir()): string		46
+nim	findConfig	bau/util.html#findConfig,string	proc findConfig(startDir: string = getCurrentDir()): string		60
+nim	readFileChecked	bau/util.html#readFileChecked,string	proc readFileChecked(path: string): string		68
+nim	saveFile	bau/util.html#saveFile,string,string	proc saveFile(path: string; content: string)		75
+nim	hashStr	bau/util.html#hashStr,string	proc hashStr(data: string): string		80
+nim	hashFile	bau/util.html#hashFile,string	proc hashFile(path: string): string		84
+nim	platformTriple	bau/util.html#platformTriple	proc platformTriple(): string		88
+nim	nimVersion	bau/util.html#nimVersion	proc nimVersion(): string		92
+nim	detectNimCompiler	bau/util.html#detectNimCompiler	proc detectNimCompiler(): string		99
+nim	detectAtlas	bau/util.html#detectAtlas	proc detectAtlas(): string		105
+nim	runCmd	bau/util.html#runCmd,string,openArray[string],string	proc runCmd(cmd: string; args: openArray[string] = []; cwd: string = ""): tuple[\n    exitCode: int, output: string]		111
+nim	runCmdChecked	bau/util.html#runCmdChecked,string,openArray[string],string	proc runCmdChecked(cmd: string; args: openArray[string] = []; cwd: string = ""): string		125
+nim	runCmdLive	bau/util.html#runCmdLive,string,openArray[string],string	proc runCmdLive(cmd: string; args: openArray[string] = []; cwd: string = "")		134
+nim	info	bau/util.html#info,string	proc info(msg: string)		143
+nim	warn	bau/util.html#warn,string	proc warn(msg: string)		152
+nim	error	bau/util.html#error,string	proc error(msg: string)		159
+nim	success	bau/util.html#success,string	proc success(msg: string)		166
+nim	toTomlString	bau/util.html#toTomlString,string	proc toTomlString(s: string): string		175

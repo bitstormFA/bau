@@ -1,0 +1,2 @@
+nimTitle	ci_templates	bau/ci_templates.html	module bau/ci_templates		0
+nim	generateCiTemplate	bau/ci_templates.html#generateCiTemplate,string,string	proc generateCiTemplate(kind: string; projectDir: string)		37
