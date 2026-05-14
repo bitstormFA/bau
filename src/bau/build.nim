@@ -4,26 +4,26 @@ import std/[algorithm, os, osproc, strutils, tables, options]
 import bau/[argv, util, config, fingerprint, features, buildscript]
 
 type
-  BuildContext* = object ## Shared state for resolving and compiling targets.
-    cfg*: BauConfig ## Effective project configuration.
-    profile*: string ## Requested profile name.
-    projectDir*: string ## Project root directory.
-    verbose*: bool ## Whether command details should be printed.
+  BuildContext* = object        ## Shared state for resolving and compiling targets.
+    cfg*: BauConfig             ## Effective project configuration.
+    profile*: string            ## Requested profile name.
+    projectDir*: string         ## Project root directory.
+    verbose*: bool              ## Whether command details should be printed.
     features*: FeatureSelection ## Resolved feature selection.
 
-  TargetPlan* = object ## Fully resolved build plan for one target.
-    target*: TargetInfo ## Target declaration being built.
-    profile*: string ## Effective profile name.
-    profileInfo*: ProfileInfo ## Merged profile configuration.
-    sourceDir*: string ## Source directory relative to the project root.
-    mainFile*: string ## Main Nim file relative to the project root.
-    outputName*: string ## Binary or library output name.
-    outputDir*: string ## Directory where compiled output is written.
-    binaryPath*: string ## Expected compiled artifact path.
-    compilerFlags*: seq[string] ## Nim compiler flags for this build.
+  TargetPlan* = object                    ## Fully resolved build plan for one target.
+    target*: TargetInfo                   ## Target declaration being built.
+    profile*: string                      ## Effective profile name.
+    profileInfo*: ProfileInfo             ## Merged profile configuration.
+    sourceDir*: string                    ## Source directory relative to the project root.
+    mainFile*: string                     ## Main Nim file relative to the project root.
+    outputName*: string                   ## Binary or library output name.
+    outputDir*: string                    ## Directory where compiled output is written.
+    binaryPath*: string                   ## Expected compiled artifact path.
+    compilerFlags*: seq[string]           ## Nim compiler flags for this build.
     sourceFiles*: seq[string] ## Source and dependency files tracked by fingerprints.
     fingerprintInputs*: FingerprintInputs ## Inputs used to compute freshness.
-    fingerprint*: Fingerprint ## Computed freshness fingerprint.
+    fingerprint*: Fingerprint             ## Computed freshness fingerprint.
 
 proc initBuildContext*(cfg: BauConfig; profile, projectDir: string;
     verbose: bool;
@@ -107,9 +107,11 @@ proc collectFingerprintEnvInputs*(): seq[string]
 
 proc defaultTarget(cfg: BauConfig; profile: string): TargetInfo =
   TargetInfo(
-    name: cfg.build.output,
+    name: defaultTargetName(cfg),
     kind: cfg.build.kind,
     main: cfg.build.main,
+    output: cfg.build.output,
+    source: cfg.build.source,
     profile: profile)
 
 proc resolveTargetPlan*(ctx: BuildContext; targetIdx: int): TargetPlan =
@@ -128,12 +130,15 @@ proc resolveTargetPlan*(ctx: BuildContext; targetIdx: int): TargetPlan =
   else:
     initProfileInfo()
 
-  result.sourceDir = if ctx.cfg.build.source.len > 0: ctx.cfg.build.source
+  result.sourceDir = if result.target.source.len > 0: result.target.source
+                     elif ctx.cfg.build.source.len > 0: ctx.cfg.build.source
                      else: "src"
   result.mainFile = if result.target.main.len > 0: result.target.main
                     else: (result.sourceDir / ctx.cfg.package.name & ".nim")
   result.outputName =
-    if targetIdx >= 0 and result.target.name.len > 0:
+    if result.target.output.len > 0:
+      result.target.output
+    elif targetIdx >= 0 and result.target.name.len > 0:
       result.target.name
     elif ctx.cfg.build.output.len > 0:
       ctx.cfg.build.output
@@ -144,6 +149,9 @@ proc resolveTargetPlan*(ctx: BuildContext; targetIdx: int): TargetPlan =
   result.compilerFlags = collectCompilerFlags(result.profileInfo,
     result.target.kind, result.outputDir, result.sourceDir, ctx.projectDir,
     ctx.cfg, ctx.features)
+  for path in result.target.paths:
+    let fullPath = if path.isAbsolute: path else: absolutePath(ctx.projectDir) / path
+    result.compilerFlags.add("--path:" & fullPath)
 
   result.sourceFiles = resolveSourceFiles(ctx.projectDir / result.sourceDir,
     ctx.projectDir / result.mainFile)
@@ -293,14 +301,26 @@ proc buildSingleTarget*(cfg: BauConfig; profile: string; projectDir: string;
 
 proc buildAllTargets*(cfg: BauConfig; profile: string; projectDir: string;
     verbose: bool; featureSelection: FeatureSelection = FeatureSelection()) =
-  ## Build every explicit target, or the default target when none are declared.
-  if cfg.targets.len == 0:
+  ## Build configured targets, including the default target when requested.
+  if cfg.targets.len == 0 or cfg.build.includeDefault:
     discard buildTarget(cfg, -1, profile, projectDir, verbose, featureSelection)
-    return
+    if cfg.targets.len == 0:
+      return
+  let defaultName = defaultTargetName(cfg)
+  let defaultOutput = if cfg.build.output.len >
+      0: cfg.build.output else: defaultName
   for i in 0..<cfg.targets.len:
     let name = cfg.targets[i].name
-    info("building target: " & name)
-    discard buildTarget(cfg, i, profile, projectDir, verbose, featureSelection)
+    let outputName = if cfg.targets[i].output.len > 0:
+                       cfg.targets[i].output
+                     else:
+                       name
+    if not cfg.build.includeDefault or
+        (name != defaultName and outputName != defaultName and
+        outputName != defaultOutput):
+      info("building target: " & name)
+      discard buildTarget(cfg, i, profile, projectDir, verbose,
+        featureSelection)
 
 proc buildTargetByName*(cfg: BauConfig; name: string; profile: string;
     projectDir: string; verbose: bool;
@@ -309,6 +329,9 @@ proc buildTargetByName*(cfg: BauConfig; name: string; profile: string;
   let idx = findTargetIndex(cfg, name)
   if idx >= 0:
     result = buildTarget(cfg, idx, profile, projectDir, verbose, featureSelection)
+  elif name == defaultTargetName(cfg):
+    result = buildTarget(cfg, -1, profile, projectDir, verbose,
+      featureSelection)
   else:
     raise newException(ValueError, "target not found: " & name)
 
@@ -325,7 +348,10 @@ proc runTargetByName*(cfg: BauConfig; name: string; profile: string;
     featureSelection: FeatureSelection = FeatureSelection()) =
   ## Build a target by name, then run the produced artifact.
   let idx = findTargetIndex(cfg, name)
-  let binPath = buildTarget(cfg, idx, profile, projectDir, verbose,
+  let targetIdx = if idx >= 0: idx else: -1
+  if idx < 0 and name != defaultTargetName(cfg):
+    raise newException(ValueError, "target not found: " & name)
+  let binPath = buildTarget(cfg, targetIdx, profile, projectDir, verbose,
     featureSelection)
   runCmdLive(binPath, runArgs, cwd = projectDir)
 

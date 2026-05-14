@@ -271,6 +271,7 @@ A `bau.toml` can contain these sections:
 | `[package]` | Name, version, description, license, edition |
 | `[build]` | Default build target configuration |
 | `[[targets]]` | Additional named build targets |
+| `[test]` | Test runner, discovery, matrix, and output settings |
 | `[profile.<name>]` | Named compiler profiles with inheritance |
 | `[dependencies]` | Direct dependencies |
 | `[features]` | Feature flag declarations |
@@ -280,6 +281,7 @@ A `bau.toml` can contain these sections:
 | `[governance]` | Dependency allow/block lists and age policy |
 | `[toolchain]` | Required tool versions |
 | `[[tasks]]` | Custom task definitions |
+| `[aliases]` | Project command aliases |
 | `[[buildScripts]]` | Pre-build scripts that emit directives |
 | `[patch]` | Dependency overrides (local paths, pins) |
 | `[source.<name>]` | Dependency source configuration |
@@ -316,10 +318,12 @@ The default target comes from `[build]`:
 
 ```toml
 [build]
+name = "myapp"        # optional CLI name for the default target
 kind = "bin"           # "bin" or "lib"
 source = "src"         # source directory
 main = "src/myapp.nim" # entry point
 output = "myapp"       # output binary name
+includeDefault = false # include [build] when explicit targets exist
 ```
 
 Additional targets are declared with `[[targets]]`:
@@ -329,6 +333,7 @@ Additional targets are declared with `[[targets]]`:
 name = "cli"
 kind = "bin"
 main = "src/cli.nim"
+output = "myapp-cli"
 profile = "release"
 requiredFeatures = ["cli"]
 
@@ -336,12 +341,15 @@ requiredFeatures = ["cli"]
 name = "bench"
 kind = "bin"
 main = "benchmarks/bench.nim"
+source = "benchmarks"
+paths = ["src"]
 profile = "release"
 requiredFeatures = ["bench"]
 ```
 
-Targets can override the profile and require specific feature flags. Targets
-with unmet required features are silently skipped during `bau build --all-targets`.
+Targets can override the output binary name, source root, extra import paths,
+profile, and required feature flags. Targets with unmet required features are
+silently skipped during `bau build --all-targets`.
 
 ### Build commands
 
@@ -392,12 +400,27 @@ bau test                  # build and run all tests
 bau test "config"         # filter test files by name
 bau test --changed        # only tests affected by current changes
 bau test --profile test   # use the test profile
+bau test --show-output=always
 ```
 
 Bau discovers tests by convention: if `tests/tester.nim` exists, it runs that
 file as the test runner. Otherwise it enumerates `tests/t*.nim` and runs each
 file separately. If a `test` profile is defined in `bau.toml`, it is used
 automatically.
+
+Projects can declare the canonical runner and matrix:
+
+```toml
+[test]
+runner = "tests/all.nim"
+profiles = ["dev", "release", "danger"]
+recursive = true
+exclude = ["thelper.nim"]
+showOutput = "auto"
+```
+
+`showOutput` accepts `auto`, `always`, or `never`. In `auto` mode Bau streams
+configured runners live and captures small individual test files.
 
 ### Checking
 
@@ -1160,7 +1183,8 @@ binary target.
 ### `bau test [filter]`
 
 Build and run tests. Optional filter string matches test file names.
-`--changed` runs only tests affected by current changes.
+`--changed` runs only tests affected by current changes. `--show-output` can
+be `auto`, `always`, or `never`.
 
 ### `bau check`
 
@@ -1337,10 +1361,14 @@ installed and meet minimum version constraints from `[toolchain]`.
 Print the resolved build environment (search paths, profile flags, feature
 defines). Use `--json` for machine-readable output.
 
-### `bau task <name>`
+### `bau task [--list|<name>]`
 
 Run a custom task defined in `[[tasks]]`. The task's dependencies are executed
 first (in topological order). Cache is checked before execution.
+
+Use `bau task --list` for discovery, `bau task <name> --help` for task
+metadata, and `bau task <name> -- args...` for tasks that opt in with
+`acceptArgs = true`.
 
 ### `bau init [name]`
 
@@ -1390,8 +1418,29 @@ cache = true
 cwd = "."
 shell = "bash"
 envInputs = ["ITERATIONS"]
+acceptArgs = true
 requiredFeatures = ["bench"]
 tags = ["performance"]
+```
+
+Task arguments are disabled by default. When `acceptArgs = true`, arguments
+after `--` are exposed through `{args}`, `BAU_TASK_ARGS`, and numbered
+environment variables:
+
+```toml
+[[tasks]]
+name = "fetch"
+cmd = "nim c -r tools/fetch.nim -- {args}"
+acceptArgs = true
+```
+
+Tasks can also delegate to built-in Bau commands with a profile:
+
+```toml
+[[tasks]]
+name = "asan"
+command = "test"
+profile = "asan"
 ```
 
 Tasks support:
@@ -1402,6 +1451,8 @@ Tasks support:
 - `cwd` — working directory override
 - `shell` — shell to use (defaults to system shell on POSIX, cmd on Windows)
 - `envInputs` — environment variables whose values become part of the cache key
+- `acceptArgs` — allow `bau task <name> -- args...`
+- `command` / `profile` — run a built-in Bau command such as `test`
 - `requiredFeatures` — feature flags needed for this task
 - `tags` — arbitrary labels for filtering
 
@@ -1616,10 +1667,12 @@ means there is no semantic difference between `bau build` and calling
 
 | Field | Type | Description |
 |---|---|---|
+| `name` | string | Optional CLI name for the default target |
 | `kind` | string | `"bin"` or `"lib"` |
 | `source` | string | Source directory (default: `"src"`) |
 | `main` | string | Entry point `.nim` file |
 | `output` | string | Output binary name (default: package name) |
+| `includeDefault` | bool | Include `[build]` when explicit targets exist |
 
 ### `[[targets]]`
 
@@ -1628,9 +1681,22 @@ means there is no semantic difference between `bau build` and calling
 | `name` | string | Target name (used in `bau build <name>`) |
 | `kind` | string | `"bin"` or `"lib"` |
 | `main` | string | Entry point file path |
+| `output` | string | Output binary name when different from `name` |
+| `source` | string | Source root override for this target |
+| `paths` | string[] | Extra Nim import paths for this target |
 | `profile` | string | Profile override (default: uses global profile) |
 | `requiredFeatures` | string[] | Features that must be enabled for this target |
 | `tags` | string[] | Arbitrary tags for filtering |
+
+### `[test]`
+
+| Field | Type | Description |
+|---|---|---|
+| `runner` | string | Explicit test runner file, e.g. `"tests/all.nim"` |
+| `profiles` | string[] | Profile matrix for `bau test` |
+| `recursive` | bool | Recursively discover `tests/t*.nim` files |
+| `exclude` | string[] | Test filenames or relative paths to skip |
+| `showOutput` | string | `auto`, `always`, or `never` |
 
 ### `[profile.<name>]`
 
@@ -1666,16 +1732,30 @@ Each key is a package name. Values can be:
 |---|---|---|
 | `name` | string | Task name (used in `bau task <name>`) |
 | `cmd` | string | Shell command or NimScript path |
+| `command` | string | Built-in Bau command to run instead of `cmd` |
 | `description` | string | Human-readable description |
 | `deps` | string[] | Prerequisite task names |
 | `inputs` | string[] | File glob patterns for caching and change detection |
 | `outputs` | string[] | File paths the task produces |
 | `cwd` | string | Working directory override |
 | `shell` | string | Shell override (e.g., `"bash"`, `"fish"`) |
+| `profile` | string | Profile used when `command` is set |
 | `envInputs` | string[] | Env vars whose values are part of the cache key |
 | `cache` | bool | Force-enable caching (default: auto-detected from inputs/outputs) |
+| `acceptArgs` | bool | Allow `bau task <name> -- args...` |
 | `requiredFeatures` | string[] | Features needed for this task |
 | `tags` | string[] | Arbitrary tags |
+
+### `[aliases]`
+
+Each key is a project command alias and each value is the command line Bau
+should expand before parsing the remaining CLI arguments:
+
+```toml
+[aliases]
+lint = "task lint"
+ci = "task ci"
+```
 
 ### `[[buildScripts]]`
 

@@ -2,97 +2,102 @@
 
 import std/[algorithm, os, osproc, strutils, options, sets, tables, times,
   monotimes, json]
-import bau/[util, config, init, build, atlas, nimble,
+import bau/[argv, util, config, init, build, atlas, nimble,
   ci_templates, lock, metadata, packaging, tailor, taskgraph, features,
-  affected, depscheck, taskcache, toolchain, workspace, ops, configedit,
-  installer]
+  affected, depscheck, taskcache, testexec, toolchain, workspace, ops,
+  configedit, installer]
 when defined(linux):
   import posix/inotify
   import std/posix except Time
 
 type
-  Command* = enum ## Parsed CLI command.
-    cmdNone ## No command was selected.
-    cmdBuild ## Build project targets.
-    cmdRun ## Build and run a target.
-    cmdTest ## Run tests.
-    cmdCheck ## Type-check configured targets.
-    cmdDoc ## Generate API documentation.
-    cmdInstall ## Install a built binary.
-    cmdUpdate ## Update an installed binary.
-    cmdUninstall ## Remove an installed binary.
-    cmdClean ## Remove build artifacts.
-    cmdDeps ## Manage dependencies.
-    cmdAdd ## Add a dependency.
-    cmdRemove ## Remove a dependency.
-    cmdInit ## Initialize the current directory.
-    cmdNew ## Create a new project directory.
-    cmdConvert ## Convert a Nimble project.
-    cmdVersion ## Print version information.
-    cmdHelp ## Print help text.
-    cmdTask ## Run a custom task.
-    cmdFmt ## Format source files.
-    cmdLint ## Run style checks.
-    cmdCi ## Run the local CI sequence.
-    cmdOutdated ## Report dependency status.
-    cmdTree ## Print dependency tree output.
-    cmdExplain ## Explain build cache state.
-    cmdPublish ## Publish package metadata.
-    cmdBump ## Increment the project package version.
-    cmdShell ## Open a shell with Bau environment.
-    cmdShellInit ## Add Bau's binary directory to the selected shell.
-    cmdPlugin ## Delegate to an external `bau-*` plugin.
+  Command* = enum      ## Parsed CLI command.
+    cmdNone            ## No command was selected.
+    cmdBuild           ## Build project targets.
+    cmdRun             ## Build and run a target.
+    cmdTest            ## Run tests.
+    cmdCheck           ## Type-check configured targets.
+    cmdDoc             ## Generate API documentation.
+    cmdInstall         ## Install a built binary.
+    cmdUpdate          ## Update an installed binary.
+    cmdUninstall       ## Remove an installed binary.
+    cmdClean           ## Remove build artifacts.
+    cmdDeps            ## Manage dependencies.
+    cmdAdd             ## Add a dependency.
+    cmdRemove          ## Remove a dependency.
+    cmdInit            ## Initialize the current directory.
+    cmdNew             ## Create a new project directory.
+    cmdConvert         ## Convert a Nimble project.
+    cmdVersion         ## Print version information.
+    cmdHelp            ## Print help text.
+    cmdTask            ## Run a custom task.
+    cmdFmt             ## Format source files.
+    cmdLint            ## Run style checks.
+    cmdCi              ## Run the local CI sequence.
+    cmdOutdated        ## Report dependency status.
+    cmdTree            ## Print dependency tree output.
+    cmdExplain         ## Explain build cache state.
+    cmdPublish         ## Publish package metadata.
+    cmdBump            ## Increment the project package version.
+    cmdShell           ## Open a shell with Bau environment.
+    cmdShellInit       ## Add Bau's binary directory to the selected shell.
+    cmdPlugin          ## Delegate to an external `bau-*` plugin.
     cmdCompileCommands ## Generate compile command databases.
-    cmdCiTemplate ## Generate CI templates.
-    cmdMetadata ## Print project metadata.
-    cmdGraph ## Print project graph output.
-    cmdQuery ## Query dependencies.
-    cmdTailor ## Discover target declarations.
-    cmdPackage ## Inspect package contents.
-    cmdEnv ## Print Bau environment details.
-    cmdAffected ## Run affected-work analysis.
-    cmdCache ## Inspect or clean task cache.
-    cmdDoctor ## Check toolchain health.
+    cmdCiTemplate      ## Generate CI templates.
+    cmdMetadata        ## Print project metadata.
+    cmdGraph           ## Print project graph output.
+    cmdQuery           ## Query dependencies.
+    cmdTailor          ## Discover target declarations.
+    cmdPackage         ## Inspect package contents.
+    cmdEnv             ## Print Bau environment details.
+    cmdAffected        ## Run affected-work analysis.
+    cmdCache           ## Inspect or clean task cache.
+    cmdDoctor          ## Check toolchain health.
 
-  CliOptions* = object ## Parsed command-line options.
-    command*: Command ## Selected command.
-    profile*: string ## Build profile.
-    jobs*: int ## Parallel build job count.
-    verbose*: bool ## Whether verbose output is enabled.
-    quiet*: bool ## Whether normal progress output is suppressed.
-    watch*: bool ## Whether to watch files and rerun work.
-    color*: string ## Color mode: `auto`, `always`, or `never`.
-    args*: seq[string] ## Positional command arguments.
-    taskName*: string ## Task or plugin name.
-    force*: bool ## Force overwrites or bypass cached state.
-    timings*: bool ## Print command timing information.
-    open*: bool ## Open generated docs when supported.
-    dryRun*: bool ## Plan without writing when supported.
-    keepGoing*: bool ## Continue independent task deps after failures.
-    allTargets*: bool ## Select all eligible targets.
-    changed*: bool ## Limit work to changed tests where supported.
-    json*: bool ## Request JSON output.
-    list*: bool ## Request list output for commands that support it.
-    offline*: bool ## Avoid network dependency operations.
-    locked*: bool ## Require an up-to-date lockfile.
-    update*: bool ## Request update mode for install/deps commands.
-    remove*: bool ## Request removal mode for install commands.
-    write*: bool ## Write discovered changes.
-    format*: string ## Output format such as `text`, `json`, or `dot`.
-    formatVersion*: int ## Stable JSON format version.
-    features*: seq[string] ## Requested feature names.
-    allFeatures*: bool ## Enable every feature.
-    noDefaultFeatures*: bool ## Disable the default feature.
-    since*: string ## Git revision or ref for affected analysis.
-    precise*: string ## Exact dependency revision for updates.
-    docOutDir*: string ## Documentation output directory override.
-    docEntrypoints*: seq[string] ## Extra documentation entrypoint files.
-    docSkipExamples*: bool ## Skip runnable examples during docs.
-    docIncludePrivate*: bool ## Include private symbols in docs.
-    docNoIndex*: bool ## Suppress docs index generation.
-    installDir*: string ## Installation directory override.
+  CliOptions* = object            ## Parsed command-line options.
+    command*: Command             ## Selected command.
+    profile*: string              ## Build profile.
+    jobs*: int                    ## Parallel build job count.
+    verbose*: bool                ## Whether verbose output is enabled.
+    quiet*: bool                  ## Whether normal progress output is suppressed.
+    help*: bool                   ## Whether command-specific help was requested.
+    watch*: bool                  ## Whether to watch files and rerun work.
+    color*: string                ## Color mode: `auto`, `always`, or `never`.
+    args*: seq[string]            ## Positional command arguments.
+    taskName*: string             ## Task or plugin name.
+    force*: bool                  ## Force overwrites or bypass cached state.
+    timings*: bool                ## Print command timing information.
+    open*: bool                   ## Open generated docs when supported.
+    dryRun*: bool                 ## Plan without writing when supported.
+    keepGoing*: bool              ## Continue independent task deps after failures.
+    allTargets*: bool             ## Select all eligible targets.
+    changed*: bool                ## Limit work to changed tests where supported.
+    json*: bool                   ## Request JSON output.
+    list*: bool                   ## Request list output for commands that support it.
+    rawCommand*: string           ## Original first CLI token before alias resolution.
+    rawArgs*: seq[string]         ## Original command-line arguments.
+    aliasResolved*: bool          ## True when this parse came from an alias expansion.
+    offline*: bool                ## Avoid network dependency operations.
+    locked*: bool                 ## Require an up-to-date lockfile.
+    update*: bool                 ## Request update mode for install/deps commands.
+    remove*: bool                 ## Request removal mode for install commands.
+    write*: bool                  ## Write discovered changes.
+    format*: string               ## Output format such as `text`, `json`, or `dot`.
+    formatVersion*: int           ## Stable JSON format version.
+    features*: seq[string]        ## Requested feature names.
+    allFeatures*: bool            ## Enable every feature.
+    noDefaultFeatures*: bool      ## Disable the default feature.
+    since*: string                ## Git revision or ref for affected analysis.
+    precise*: string              ## Exact dependency revision for updates.
+    docOutDir*: string            ## Documentation output directory override.
+    docEntrypoints*: seq[string]  ## Extra documentation entrypoint files.
+    docSkipExamples*: bool        ## Skip runnable examples during docs.
+    docIncludePrivate*: bool      ## Include private symbols in docs.
+    docNoIndex*: bool             ## Suppress docs index generation.
+    testShowOutput*: string       ## Test output mode override.
+    installDir*: string           ## Installation directory override.
     passthroughArgs*: seq[string] ## Arguments passed after `--`.
-    initInfo*: ProjectInitInfo ## Project initialization metadata.
+    initInfo*: ProjectInitInfo    ## Project initialization metadata.
 
 proc defaultOptions*(): CliOptions =
   ## Return default CLI options before parsing user arguments.
@@ -114,9 +119,11 @@ proc defaultOptions*(): CliOptions =
 proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
   ## Parse command-line parameters into `CliOptions`.
   result = defaultOptions()
+  result.rawArgs = @params
   if params.len == 0:
     return
 
+  result.rawCommand = params[0]
   result.command = cmdBuild
 
   var i = 1
@@ -188,6 +195,11 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
       result.verbose = true
     of "--quiet", "-q":
       result.quiet = true
+    of "--help", "-h":
+      if result.command == cmdTask:
+        result.help = true
+      else:
+        result.command = cmdHelp
     of "--watch", "-w":
       result.watch = true
     of "--timings":
@@ -229,6 +241,12 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
       result.allTargets = true
     of "--changed":
       result.changed = true
+    of "--show-output":
+      if result.command == cmdTest and i + 1 < params.len:
+        result.testShowOutput = params[i + 1]
+        inc i
+      else:
+        result.args.add(p)
     of "--json":
       result.json = true
       result.format = "json"
@@ -347,11 +365,15 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
         result.passthroughArgs = tail
       elif result.command == cmdRun:
         result.passthroughArgs = tail
+      elif result.command == cmdTask:
+        result.passthroughArgs = tail
       else:
         result.args.add(tail)
       break
     else:
-      if result.command == cmdAdd:
+      if result.command == cmdTest and p.startsWith("--show-output="):
+        result.testShowOutput = p["--show-output=".len..^1]
+      elif result.command == cmdAdd:
         result.args.add(p)
       elif result.command == cmdRemove:
         result.args.add(p)
@@ -422,7 +444,7 @@ Commands:
   bau init [name] [options]   Initialize in current directory
   bau new <path> [--lib]      Create a new project
   bau convert [path|file]     Convert an existing .nimble project to bau.toml
-  bau task <name>             Run a custom task
+  bau task [--list|<name>]    List or run custom tasks
   bau shell                   Open a shell with build environment
   bau shell-init [shell]      Add ~/.bau/bin to shell startup files
   bau env --json              Print build environment
@@ -443,6 +465,7 @@ Options:
   --keep-going           Continue independent task deps after failures
   --all-targets          Operate on all configured targets where supported
   --changed              Run only changed test files
+  --show-output <mode>   Test output: auto | always | never
   --json                 Print JSON where supported
   --format <mode>        Output format, e.g. dot | json
   --format-version <n>   Stable JSON schema version where supported
@@ -554,6 +577,94 @@ proc applyDependencyArgs*(opOpts: var OperationOptions;
       opOpts.depBranch.len > 0 or opOpts.depRev.len > 0):
     raise newException(ValueError, "--tag, --branch, and --rev require --git")
 
+proc printTaskCommandHelp*() =
+  ## Print help for the task command.
+  echo """Usage:
+  bau task --list
+  bau task <name> [-- args...]
+  bau task <name> --help
+
+Options:
+  --list          List configured tasks
+  --dry-run, -n   Show planned task work
+  --keep-going    Continue independent task deps after failures
+  --force, -f     Bypass task freshness and cache hits
+
+Task args:
+  Tasks only accept args when acceptArgs = true is set in bau.toml.
+  Args are available as {args}, BAU_TASK_ARGS, and BAU_TASK_ARG_0, ...
+"""
+
+proc findTask(cfg: BauConfig; name: string): Option[TaskInfo] =
+  for task in cfg.tasks:
+    if task.name == name:
+      return some(task)
+  result = none(TaskInfo)
+
+proc taskCacheable(task: TaskInfo): bool =
+  task.cache or (task.inputs.len > 0 and task.outputs.len > 0)
+
+proc printTaskList*(cfg: BauConfig) =
+  ## Print configured tasks with descriptions and useful flags.
+  if cfg.tasks.len == 0:
+    echo "no tasks configured"
+    return
+  echo "tasks:"
+  for task in cfg.tasks:
+    var line = "  " & task.name
+    if task.description.len > 0:
+      line.add(" - " & task.description)
+    var details: seq[string]
+    if task.deps.len > 0:
+      details.add("deps: " & task.deps.join(", "))
+    if taskCacheable(task):
+      details.add("cacheable")
+    if task.acceptArgs:
+      details.add("args")
+    if task.command.len > 0:
+      details.add("command: " & task.command)
+    if details.len > 0:
+      line.add(" [" & details.join("; ") & "]")
+    echo line
+
+proc printTaskDetails*(cfg: BauConfig; projectDir: string; opts: CliOptions) =
+  ## Print metadata for one configured task.
+  let taskOpt = findTask(cfg, opts.taskName)
+  if taskOpt.isNone:
+    error("task not found: " & opts.taskName)
+    quit(1)
+  let task = taskOpt.get()
+  echo "task: " & task.name
+  if task.description.len > 0:
+    echo "description: " & task.description
+  if task.cmd.len > 0:
+    echo "cmd: " & task.cmd
+  if task.command.len > 0:
+    echo "command: " & task.command
+  if task.profile.len > 0:
+    echo "profile: " & task.profile
+  if task.deps.len > 0:
+    echo "deps: " & task.deps.join(", ")
+  if task.inputs.len > 0:
+    echo "inputs: " & task.inputs.join(", ")
+  if task.outputs.len > 0:
+    echo "outputs: " & task.outputs.join(", ")
+  if task.cwd.isSome:
+    echo "cwd: " & task.cwd.get()
+  if task.shell.len > 0:
+    echo "shell: " & task.shell
+  if task.requiredFeatures.len > 0:
+    echo "requiredFeatures: " & task.requiredFeatures.join(", ")
+  if task.tags.len > 0:
+    echo "tags: " & task.tags.join(", ")
+  echo "acceptArgs: " & $task.acceptArgs
+  echo "cacheable: " & $taskCacheable(task)
+  if taskCacheable(task):
+    let entry = taskCacheEntry(task, projectDir, cfg, opts.profile,
+      selectedFeatures(opts, cfg))
+    echo "cacheKey: " & entry.key
+    echo "localCache: " & (if cacheEntryExists(entry): "hit" else: "miss")
+
 proc fmtSources*(projectDir: string; verbose: bool = false) =
   ## Format Nim files under a project's `src` directory with `nimpretty`.
   let nimpretty = findExe("nimpretty")
@@ -620,44 +731,20 @@ proc ciCommand*(opts: CliOptions) =
   lintCommand(opts)
   info("===> CI: test")
   let projectDir = findProjectRoot()
-  let cfg = parseBauConfigFile(projectDir / ConfigFileName)
-  if cfg.profiles.hasKey("test"):
-    discard resolveProfile(cfg.profiles, "test")
-  let testDir = projectDir / "tests"
-  if not dirExists(testDir):
+  let cfg = loadEffectiveConfig(projectDir)
+  if not dirExists(projectDir / "tests") and cfg.test.runner.len == 0:
     warn("no tests directory found")
     return
-  var testFiles: seq[string]
-  let runner = testDir / "tester.nim"
-  if fileExists(runner):
-    testFiles.add(runner)
-  else:
-    for f in walkFiles(testDir / "t*.nim"):
-      let name = f.extractFilename
-      if "thelper" in name:
-        continue
-      testFiles.add(f)
-  if testFiles.len == 0:
-    error("no test files found")
-    quit(1)
-  info("running " & $testFiles.len & " test file(s)...")
-  var passed = 0
-  var failed = 0
-  for f in testFiles:
-    let name = f.extractFilename
-    let (exitCode, output) = runCmd(detectNimCompiler(), ["c", "-r",
-        "--hints:off", f])
-    if exitCode == 0:
-      passed += 1
-      success(name & " passed")
-    else:
-      failed += 1
-      error(name & " failed")
-      if opts.verbose and output.len > 0:
-        echo output
+  let testResult = runTests(cfg, projectDir, TestRunOptions(
+    profile: opts.profile,
+    since: opts.since,
+    showOutput: effectiveTestOutputMode(cfg, opts.testShowOutput),
+    verbose: opts.verbose,
+    featureSelection: selectedFeatures(opts, cfg)))
   echo ""
-  info("test results: " & $passed & " passed, " & $failed & " failed")
-  if failed > 0:
+  info("test results: " & $testResult.passed & " passed, " &
+    $testResult.failed & " failed")
+  if testResult.failed > 0:
     quit(1)
   success("CI passed")
 
@@ -1657,8 +1744,33 @@ proc generateCompileCommands*(projectDir: string; profile: string;
   saveFile(projectDir / "compile_commands.json", pretty(%*entries))
   success("compile_commands.json generated")
 
+proc aliasOptions(opts: CliOptions): Option[CliOptions] =
+  if opts.aliasResolved or opts.rawCommand.len == 0:
+    return none(CliOptions)
+  try:
+    let projectDir = findProjectRoot()
+    let cfg = loadEffectiveConfig(projectDir)
+    if not cfg.aliases.hasKey(opts.rawCommand):
+      return none(CliOptions)
+    var params = parseCommandLine(cfg.aliases[opts.rawCommand])
+    if params.len == 0:
+      raise newException(ValueError, "alias is empty: " & opts.rawCommand)
+    if opts.rawArgs.len > 1:
+      params.add(opts.rawArgs[1..^1])
+    var expanded = parseCliOptions(params)
+    expanded.aliasResolved = true
+    result = some(expanded)
+  except IOError:
+    result = none(CliOptions)
+
 proc dispatchCommand*(opts: CliOptions) =
   ## Dispatch parsed CLI options to the selected command implementation.
+  if opts.command notin {cmdHelp, cmdVersion}:
+    let aliased = aliasOptions(opts)
+    if aliased.isSome:
+      dispatchCommand(aliased.get())
+      return
+
   setOutputOptions(opts.quiet, opts.color)
   putEnv("BAU_JOBS", $max(1, opts.jobs))
   putEnv("BAU_COLOR", opts.color)
@@ -1754,61 +1866,23 @@ proc dispatchCommand*(opts: CliOptions) =
   of cmdTest:
     let projectDir = findProjectRoot()
     let cfg = loadEffectiveConfig(projectDir)
-    let featureSelection = selectedFeatures(opts, cfg)
-    let profName = if cfg.profiles.hasKey("test"): "test" else: opts.profile
-    let prof = if cfg.profiles.hasKey(profName):
-                 resolveProfile(cfg.profiles, profName)
-               else:
-                 initProfileInfo()
-    let testDir = projectDir / "tests"
-    if not dirExists(testDir):
+    if not dirExists(projectDir / "tests") and cfg.test.runner.len == 0:
       warn("no tests directory found")
       return
-    var filter = ""
-    if opts.args.len > 0:
-      filter = opts.args[0]
-    var testFiles: seq[string]
-    let runner = testDir / "tester.nim"
-    if fileExists(runner) and not opts.changed and filter.len == 0:
-      testFiles.add(runner)
-    else:
-      var changedTests = initHashSet[string]()
-      if opts.changed:
-        let report = computeAffected(cfg, projectDir, opts.since)
-        for testFile in report.tests:
-          changedTests.incl(absolutePath(projectDir / testFile))
-      for f in walkFiles(testDir / "t*.nim"):
-        let name = f.extractFilename
-        if "thelper" notin name and (filter.len == 0 or filter in name) and
-            (not opts.changed or changedTests.contains(absolutePath(f))):
-          testFiles.add(f)
-    if testFiles.len == 0:
-      error("no test files found" & (if filter.len > 0: " matching '" & filter & "'" else: ""))
-      quit(1)
-    info("running " & $testFiles.len & " test file(s)...")
-    var passed = 0
-    var failed = 0
-    let outDir = absolutePath(projectDir) / BuildDirName / profName
-    let flags = collectCompilerFlags(prof, bkTest, outDir, cfg.build.source,
-      projectDir, cfg, featureSelection)
-    for f in testFiles:
-      let name = f.extractFilename
-      var args = @["c", "-r"]
-      args.add(flags)
-      args.add(f)
-      args.add(opts.passthroughArgs)
-      let (exitCode, output) = runCmd(detectNimCompiler(), args, projectDir)
-      if exitCode == 0:
-        passed += 1
-        success(name & " passed")
-      else:
-        failed += 1
-        error(name & " failed")
-        if opts.verbose and output.len > 0:
-          echo output
+    let filter = if opts.args.len > 0: opts.args[0] else: ""
+    let testResult = runTests(cfg, projectDir, TestRunOptions(
+      profile: opts.profile,
+      filter: filter,
+      changed: opts.changed,
+      since: opts.since,
+      passthroughArgs: opts.passthroughArgs,
+      showOutput: effectiveTestOutputMode(cfg, opts.testShowOutput),
+      verbose: opts.verbose,
+      featureSelection: selectedFeatures(opts, cfg)))
     echo ""
-    info("test results: " & $passed & " passed, " & $failed & " failed")
-    if failed > 0:
+    info("test results: " & $testResult.passed & " passed, " &
+      $testResult.failed & " failed")
+    if testResult.failed > 0:
       quit(1)
 
   of cmdCheck:
@@ -1899,11 +1973,24 @@ proc dispatchCommand*(opts: CliOptions) =
 
   of cmdTask:
     let taskName = opts.taskName
+    let projectDir = try: findProjectRoot() except: getCurrentDir()
+    let cfg = try: loadEffectiveConfig(projectDir) except: initBauConfig()
+    if opts.help and taskName.len == 0:
+      printTaskCommandHelp()
+      return
+    if opts.list:
+      printTaskList(cfg)
+      return
     if taskName.len == 0:
       error("bau task requires a task name")
       quit(1)
-    let projectDir = try: findProjectRoot() except: getCurrentDir()
-    let cfg = try: loadEffectiveConfig(projectDir) except: initBauConfig()
+    if opts.help:
+      printTaskDetails(cfg, projectDir, opts)
+      return
+    if opts.args.len > 0:
+      error("unexpected task argument(s): " & opts.args.join(" ") &
+        " (use -- before task args)")
+      quit(1)
     let featureSelection = selectedFeatures(opts, cfg)
     let ok = runTaskByName(cfg, taskName, projectDir, TaskRunOptions(
       profile: opts.profile,
@@ -1911,7 +1998,8 @@ proc dispatchCommand*(opts: CliOptions) =
       dryRun: opts.dryRun,
       force: opts.force,
       keepGoing: opts.keepGoing,
-      features: featureSelection))
+      features: featureSelection,
+      taskArgs: opts.passthroughArgs))
     if not ok:
       quit(1)
 

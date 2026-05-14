@@ -6,153 +6,172 @@ import bau/util
 
 type
   BuildKind* = enum ## Build artifact category requested for a target.
-    bkBin = "bin" ## Build an executable binary.
-    bkLib = "lib" ## Build a library module.
+    bkBin = "bin"   ## Build an executable binary.
+    bkLib = "lib"   ## Build a library module.
     bkTest = "test" ## Build a test target.
 
-  PackageInfo* = object ## Package metadata read from the `[package]` table.
-    name*: string ## Package name used for defaults and generated metadata.
-    version*: string ## Package version string.
-    description*: string ## Human-readable package summary.
-    authors*: seq[string] ## Package author names or contact strings.
-    license*: string ## SPDX-style or free-form license identifier.
-    edition*: string ## Bau configuration edition used by this project.
-    repository*: string ## Public source repository URL.
-    homepage*: string ## Project homepage URL.
+  PackageInfo* = object        ## Package metadata read from the `[package]` table.
+    name*: string              ## Package name used for defaults and generated metadata.
+    version*: string           ## Package version string.
+    description*: string       ## Human-readable package summary.
+    authors*: seq[string]      ## Package author names or contact strings.
+    license*: string           ## SPDX-style or free-form license identifier.
+    edition*: string           ## Bau configuration edition used by this project.
+    repository*: string        ## Public source repository URL.
+    homepage*: string          ## Project homepage URL.
     includeFiles*: seq[string] ## Extra package file patterns to include.
     excludeFiles*: seq[string] ## Package file patterns to exclude.
 
   BuildInfo* = object ## Default build target settings from `[build]`.
-    kind*: BuildKind ## Default artifact category.
-    source*: string ## Source directory relative to the project root.
-    main*: string ## Main Nim source file relative to the project root.
-    output*: string ## Default output binary or library name.
-    nim*: string ## Explicit Nim compiler command, if configured.
-    backend*: string ## Compiler backend such as `c`, `cpp`, or `js`.
+    name*: string     ## Optional CLI name for the default target.
+    kind*: BuildKind  ## Default artifact category.
+    source*: string   ## Source directory relative to the project root.
+    main*: string     ## Main Nim source file relative to the project root.
+    output*: string   ## Default output binary or library name.
+    nim*: string      ## Explicit Nim compiler command, if configured.
+    backend*: string  ## Compiler backend such as `c`, `cpp`, or `js`.
+    includeDefault*: bool ## Whether `bau build` includes the default target when explicit targets exist.
 
-  ProfileInfo* = object ## Compiler settings attached to a named profile.
-    flags*: seq[string] ## Raw Nim compiler flags.
-    gc*: string ## Nim memory-management strategy.
+  ProfileInfo* = object            ## Compiler settings attached to a named profile.
+    flags*: seq[string]            ## Raw Nim compiler flags.
+    gc*: string                    ## Nim memory-management strategy.
     define*: Table[string, string] ## `--define` values keyed by symbol name.
-    extends*: string ## Parent profile name to inherit before merging.
-    backend*: string ## Profile-specific compiler backend override.
+    extends*: string               ## Parent profile name to inherit before merging.
+    backend*: string               ## Profile-specific compiler backend override.
 
-  DepInfo* = object ## Dependency requirement or source override.
-    url*: Option[string] ## Git URL for Git-sourced dependencies.
-    tag*: Option[string] ## Git tag to check out.
-    branch*: Option[string] ## Git branch to track.
-    rev*: Option[string] ## Exact Git revision to use.
-    path*: Option[string] ## Local path dependency location.
-    version*: Option[string] ## Registry version requirement.
+  DepInfo* = object           ## Dependency requirement or source override.
+    url*: Option[string]      ## Git URL for Git-sourced dependencies.
+    tag*: Option[string]      ## Git tag to check out.
+    branch*: Option[string]   ## Git branch to track.
+    rev*: Option[string]      ## Exact Git revision to use.
+    path*: Option[string]     ## Local path dependency location.
+    version*: Option[string]  ## Registry version requirement.
     registry*: Option[string] ## Named registry source to resolve through.
-    optional*: bool ## Whether the dependency is enabled only by features.
+    optional*: bool           ## Whether the dependency is enabled only by features.
 
-  SourceInfo* = object ## Named package source used for dependency resolution.
-    registry*: string ## Remote Atlas registry URL.
-    directory*: string ## Local directory containing package sources.
+  SourceInfo* = object     ## Named package source used for dependency resolution.
+    registry*: string      ## Remote Atlas registry URL.
+    directory*: string     ## Local directory containing package sources.
     localRegistry*: string ## Local Atlas registry path.
-    git*: string ## Git repository backing this source.
-    replaceWith*: string ## Alternate source name that supersedes this one.
+    git*: string           ## Git repository backing this source.
+    replaceWith*: string   ## Alternate source name that supersedes this one.
 
   ToolchainInfo* = object ## Minimum external tool versions required by a project.
-    nim*: string ## Nim compiler version requirement.
+    nim*: string   ## Nim compiler version requirement.
     atlas*: string ## Atlas version requirement.
 
   FeatureInfo* = object ## Feature declaration and what it enables.
     enables*: seq[string] ## Feature names or `dep:name` entries enabled together.
 
-  GovernanceInfo* = object ## Dependency policy configured for a project or workspace.
-    blocked*: seq[string] ## Dependency names that must not be used.
-    trusted*: seq[string] ## Dependency names approved by policy.
+  GovernanceInfo* = object       ## Dependency policy configured for a project or workspace.
+    blocked*: seq[string]        ## Dependency names that must not be used.
+    trusted*: seq[string]        ## Dependency names approved by policy.
     minimumReleaseAgeHours*: int ## Minimum age for resolved package releases.
 
   CacheInfo* = object ## Task-cache location and remote cache behavior.
-    dir*: string ## Local cache directory relative to the project root.
-    remote*: string ## Remote cache URL or file path.
-    read*: bool ## Whether local or remote cache reads are allowed.
-    write*: bool ## Whether local or remote cache writes are allowed.
+    dir*: string      ## Local cache directory relative to the project root.
+    remote*: string   ## Remote cache URL or file path.
+    read*: bool       ## Whether local or remote cache reads are allowed.
+    write*: bool      ## Whether local or remote cache writes are allowed.
 
   InstallInfo* = object ## Defaults for installing built targets.
-    dir*: string ## Installation directory override.
+    dir*: string        ## Installation directory override.
 
-  DocsInfo* = object ## API documentation generation settings.
-    outDir*: string ## Documentation output directory.
-    docRoot*: string ## Nim doc source-root mode or URL root.
-    entrypoints*: seq[string] ## Explicit documentation entrypoint files.
+  DocsInfo* = object           ## API documentation generation settings.
+    outDir*: string            ## Documentation output directory.
+    docRoot*: string           ## Nim doc source-root mode or URL root.
+    entrypoints*: seq[string]  ## Explicit documentation entrypoint files.
     includeFiles*: seq[string] ## Additional documentation source patterns.
     excludeFiles*: seq[string] ## Documentation source patterns to skip.
-    flags*: seq[string] ## Additional Nim doc compiler flags.
-    project*: bool ## Whether to discover project modules automatically.
-    index*: bool ## Whether to generate Bau's documentation index page.
-    runExamples*: bool ## Whether Nim doc should compile runnable examples.
-    includePrivate*: bool ## Whether private symbols are included in API docs.
-    sourceUrl*: string ## Template URL for generated source links.
-    configured*: bool ## True when `[docs]` was present in config input.
+    flags*: seq[string]        ## Additional Nim doc compiler flags.
+    project*: bool             ## Whether to discover project modules automatically.
+    index*: bool               ## Whether to generate Bau's documentation index page.
+    runExamples*: bool         ## Whether Nim doc should compile runnable examples.
+    includePrivate*: bool      ## Whether private symbols are included in API docs.
+    sourceUrl*: string         ## Template URL for generated source links.
+    configured*: bool          ## True when `[docs]` was present in config input.
 
-  TargetInfo* = object ## Explicit build target declaration.
-    name*: string ## Target name used by CLI commands.
-    kind*: BuildKind ## Artifact category for this target.
-    main*: string ## Target main source file.
-    profile*: string ## Default profile for this target.
+  TestInfo* = object       ## Test discovery and runner settings from `[test]`.
+    runner*: string        ## Explicit test runner file relative to the project root.
+    profiles*: seq[string] ## Profiles used as the test matrix.
+    recursive*: bool       ## Whether test file discovery descends into subdirectories.
+    exclude*: seq[string]  ## Test filenames or relative paths to skip.
+    showOutput*: string    ## Default test output mode: auto, always, or never.
+    configured*: bool      ## True when `[test]` was present in config input.
+
+  TargetInfo* = object             ## Explicit build target declaration.
+    name*: string                  ## Target name used by CLI commands.
+    kind*: BuildKind               ## Artifact category for this target.
+    main*: string                  ## Target main source file.
+    output*: string                ## Artifact output name, when it differs from `name`.
+    source*: string                ## Source directory override for this target.
+    paths*: seq[string]            ## Extra Nim import paths for this target.
+    profile*: string               ## Default profile for this target.
     requiredFeatures*: seq[string] ## Features that must be enabled to build it.
-    tags*: seq[string] ## Free-form labels used by commands such as `affected`.
+    tags*: seq[string]             ## Free-form labels used by commands such as `affected`.
 
-  ScriptInfo* = object ## Legacy lifecycle hook commands.
-    preBuild*: Option[string] ## Command run before compiling.
-    postBuild*: Option[string] ## Command run after compiling.
+  ScriptInfo* = object           ## Legacy lifecycle hook commands.
+    preBuild*: Option[string]    ## Command run before compiling.
+    postBuild*: Option[string]   ## Command run after compiling.
     postInstall*: Option[string] ## Command run after installing.
 
-  TaskInfo* = object ## Declarative task or build-script command.
-    name*: string ## Task name used for lookup and diagnostics.
-    cmd*: string ## Command line to execute.
-    description*: string ## Human-readable task summary.
-    deps*: seq[string] ## Task dependencies that must run first.
-    inputs*: seq[string] ## Input file patterns for freshness and cache keys.
-    outputs*: seq[string] ## Output file patterns produced by the task.
-    cwd*: Option[string] ## Working directory relative to the project root.
-    env*: Table[string, string] ## Environment variables set for the task.
-    envInputs*: seq[string] ## Environment variable names included in cache keys.
-    watch*: seq[string] ## Paths watched by long-running workflows.
-    shell*: string ## Explicit shell command used to run `cmd`.
-    cache*: bool ## Whether task outputs can be cached.
+  TaskInfo* = object               ## Declarative task or build-script command.
+    name*: string                  ## Task name used for lookup and diagnostics.
+    cmd*: string                   ## Command line to execute.
+    command*: string               ## Built-in Bau command to execute instead of `cmd`.
+    description*: string           ## Human-readable task summary.
+    deps*: seq[string]             ## Task dependencies that must run first.
+    inputs*: seq[string]           ## Input file patterns for freshness and cache keys.
+    outputs*: seq[string]          ## Output file patterns produced by the task.
+    cwd*: Option[string]           ## Working directory relative to the project root.
+    env*: Table[string, string]    ## Environment variables set for the task.
+    envInputs*: seq[string]        ## Environment variable names included in cache keys.
+    watch*: seq[string]            ## Paths watched by long-running workflows.
+    shell*: string                 ## Explicit shell command used to run `cmd`.
+    profile*: string               ## Profile used when the task invokes a built-in command.
+    cache*: bool                   ## Whether task outputs can be cached.
+    acceptArgs*: bool              ## Whether `bau task <name> -- ...` is allowed.
     requiredFeatures*: seq[string] ## Features required before running this task.
-    tags*: seq[string] ## Free-form labels used by task selection.
+    tags*: seq[string]             ## Free-form labels used by task selection.
 
-  BauConfig* = object ## Fully parsed Bau project configuration.
-    package*: PackageInfo ## Package metadata.
-    build*: BuildInfo ## Default build settings.
-    toolchain*: ToolchainInfo ## Toolchain constraints.
-    governance*: GovernanceInfo ## Dependency policy.
-    cache*: CacheInfo ## Task-cache configuration.
-    install*: InstallInfo ## Install defaults.
-    docs*: DocsInfo ## Documentation settings.
+  BauConfig* = object                     ## Fully parsed Bau project configuration.
+    package*: PackageInfo                 ## Package metadata.
+    build*: BuildInfo                     ## Default build settings.
+    toolchain*: ToolchainInfo             ## Toolchain constraints.
+    governance*: GovernanceInfo           ## Dependency policy.
+    cache*: CacheInfo                     ## Task-cache configuration.
+    install*: InstallInfo                 ## Install defaults.
+    docs*: DocsInfo                       ## Documentation settings.
+    test*: TestInfo                       ## Test runner and matrix settings.
     profiles*: Table[string, ProfileInfo] ## Profiles keyed by name.
-    targets*: seq[TargetInfo] ## Explicit build targets.
-    deps*: Table[string, DepInfo] ## Dependency requirements keyed by name.
-    patches*: Table[string, DepInfo] ## Root-level dependency replacements.
-    sources*: Table[string, SourceInfo] ## Named dependency sources.
+    targets*: seq[TargetInfo]             ## Explicit build targets.
+    deps*: Table[string, DepInfo]         ## Dependency requirements keyed by name.
+    patches*: Table[string, DepInfo]      ## Root-level dependency replacements.
+    sources*: Table[string, SourceInfo]   ## Named dependency sources.
     features*: Table[string, FeatureInfo] ## Feature declarations keyed by name.
-    catalogs*: Table[string, Table[string, string]] ## Version catalogs keyed by catalog and dependency.
-    scripts*: ScriptInfo ## Lifecycle hook commands.
-    buildScripts*: seq[TaskInfo] ## Build scripts that can emit compiler directives.
-    tasks*: seq[TaskInfo] ## User-defined tasks.
+    aliases*: Table[string, string]       ## Project command aliases keyed by command name.
+    catalogs*: Table[string, Table[string,
+        string]]                          ## Version catalogs keyed by catalog and dependency.
+    scripts*: ScriptInfo                  ## Lifecycle hook commands.
+    buildScripts*: seq[TaskInfo]          ## Build scripts that can emit compiler directives.
+    tasks*: seq[TaskInfo]                 ## User-defined tasks.
 
-  WorkspaceConfig* = object ## Workspace-level defaults from `[workspace]`.
-    members*: seq[string] ## Workspace member path patterns.
-    defaultMembers*: seq[string] ## Members selected when no explicit subset is given.
-    exclude*: seq[string] ## Member path patterns to ignore.
-    package*: PackageInfo ## Package defaults inherited by members.
-    deps*: Table[string, DepInfo] ## Shared dependency defaults.
+  WorkspaceConfig* = object             ## Workspace-level defaults from `[workspace]`.
+    members*: seq[string]               ## Workspace member path patterns.
+    defaultMembers*: seq[string]        ## Members selected when no explicit subset is given.
+    exclude*: seq[string]               ## Member path patterns to ignore.
+    package*: PackageInfo               ## Package defaults inherited by members.
+    deps*: Table[string, DepInfo]       ## Shared dependency defaults.
     sources*: Table[string, SourceInfo] ## Shared dependency sources.
     profiles*: Table[string, ProfileInfo] ## Shared profiles inherited by members.
     catalogs*: Table[string, Table[string, string]] ## Shared version catalogs.
-    governance*: GovernanceInfo ## Shared dependency policy.
+    governance*: GovernanceInfo         ## Shared dependency policy.
 
   FullConfig* = object ## Optional global, workspace, and project config bundle.
-    bau*: Option[BauConfig] ## Project configuration, when present.
+    bau*: Option[BauConfig]             ## Project configuration, when present.
     workspace*: Option[WorkspaceConfig] ## Workspace configuration, when present.
     globalProfile*: Option[ProfileInfo] ## User-level profile defaults.
-    globalTasks*: seq[TaskInfo] ## User-level tasks appended to projects.
+    globalTasks*: seq[TaskInfo]         ## User-level tasks appended to projects.
 
 proc initPackageInfo*(): PackageInfo =
   ## Return package defaults used when `[package]` omits values.
@@ -183,6 +202,10 @@ proc initDocsInfo*(): DocsInfo =
   DocsInfo(outDir: "docs", docRoot: "@path", project: true, index: true,
     runExamples: true)
 
+proc initTestInfo*(): TestInfo =
+  ## Return default test discovery and output settings.
+  TestInfo(showOutput: "auto")
+
 proc initProfileInfo*(): ProfileInfo =
   ## Return an empty compiler profile.
   ProfileInfo()
@@ -196,7 +219,17 @@ proc initBauConfig*(): BauConfig =
     governance: initGovernanceInfo(),
     cache: initCacheInfo(),
     install: initInstallInfo(),
-    docs: initDocsInfo())
+    docs: initDocsInfo(),
+    test: initTestInfo())
+
+proc defaultTargetName*(cfg: BauConfig): string =
+  ## Return the CLI identity for the default `[build]` target.
+  if cfg.build.name.len > 0:
+    cfg.build.name
+  elif cfg.build.output.len > 0:
+    cfg.build.output
+  else:
+    cfg.package.name
 
 # ---- TOML → Nim type converters ----
 
@@ -244,12 +277,14 @@ proc parseBuildKind(str: string): BuildKind =
 
 proc parseBuildInfo(table: TomlValueRef): BuildInfo =
   result = initBuildInfo()
+  if table.hasKey("name"): result.name = table["name"].getStr()
   if table.hasKey("kind"): result.kind = parseBuildKind(table["kind"].getStr())
   if table.hasKey("source"): result.source = table["source"].getStr()
   if table.hasKey("main"): result.main = table["main"].getStr()
   if table.hasKey("output"): result.output = table["output"].getStr()
   if table.hasKey("nim"): result.nim = table["nim"].getStr()
   if table.hasKey("backend"): result.backend = table["backend"].getStr()
+  result.includeDefault = getBool(table, "includeDefault", false)
 
 proc parseProfileInfo(table: TomlValueRef): ProfileInfo =
   result.flags = getSeq(table, "flags")
@@ -323,17 +358,33 @@ proc parseDocsInfo(table: TomlValueRef): DocsInfo =
     result.includePrivate)
   if table.hasKey("sourceUrl"): result.sourceUrl = table["sourceUrl"].getStr()
 
+proc parseTestInfo(table: TomlValueRef): TestInfo =
+  result = initTestInfo()
+  result.configured = true
+  if table.hasKey("runner"): result.runner = table["runner"].getStr()
+  result.profiles = getSeq(table, "profiles")
+  result.recursive = getBool(table, "recursive", result.recursive)
+  result.exclude = getSeq(table, "exclude")
+  if table.hasKey("showOutput"):
+    result.showOutput = table["showOutput"].getStr()
+
 proc parseTargetInfo(table: TomlValueRef): TargetInfo =
   result.name = table["name"].getStr()
   if table.hasKey("kind"): result.kind = parseBuildKind(table["kind"].getStr())
   if table.hasKey("main"): result.main = table["main"].getStr()
+  if table.hasKey("output"): result.output = table["output"].getStr()
+  if table.hasKey("source"): result.source = table["source"].getStr()
+  result.paths = getSeq(table, "paths")
   if table.hasKey("profile"): result.profile = table["profile"].getStr()
   result.requiredFeatures = getSeq(table, "requiredFeatures")
   result.tags = getSeq(table, "tags")
 
 proc parseTaskInfo(table: TomlValueRef): TaskInfo =
   result.name = table["name"].getStr()
-  result.cmd = table["cmd"].getStr()
+  if table.hasKey("cmd"):
+    result.cmd = table["cmd"].getStr()
+  if table.hasKey("command"):
+    result.command = table["command"].getStr()
   if table.hasKey("description"):
     result.description = table["description"].getStr()
   result.deps = getSeq(table, "deps")
@@ -342,10 +393,13 @@ proc parseTaskInfo(table: TomlValueRef): TaskInfo =
   result.cwd = getStrOpt(table, "cwd")
   if table.hasKey("shell"):
     result.shell = table["shell"].getStr()
+  if table.hasKey("profile"):
+    result.profile = table["profile"].getStr()
   if table.hasKey("watch"):
     result.watch = getSeq(table, "watch")
   result.envInputs = getSeq(table, "envInputs")
   result.cache = getBool(table, "cache", false)
+  result.acceptArgs = getBool(table, "acceptArgs", false)
   result.requiredFeatures = getSeq(table, "requiredFeatures")
   result.tags = getSeq(table, "tags")
   if table.hasKey("env"):
@@ -433,6 +487,9 @@ proc parseBauConfig*(data: string; fileName: string = ""): BauConfig =
   if root.hasKey("docs") and root["docs"].kind == TomlValueKind.Table:
     result.docs = parseDocsInfo(root["docs"])
 
+  if root.hasKey("test") and root["test"].kind == TomlValueKind.Table:
+    result.test = parseTestInfo(root["test"])
+
   for key, val in root.getTable().pairs:
     case key
     of "profile":
@@ -464,7 +521,13 @@ proc parseBauConfig*(data: string; fileName: string = ""): BauConfig =
       if val.kind == TomlValueKind.Table:
         for fkey, fval in val.getTable().pairs:
           result.features[fkey] = parseFeatureInfo(fval)
-    of "catalog", "catalogs", "governance", "cache", "install", "docs":
+    of "aliases":
+      if val.kind == TomlValueKind.Table:
+        for alias, target in val.getTable().pairs:
+          if target.kind == TomlValueKind.String:
+            result.aliases[alias] = target.getStr()
+    of "catalog", "catalogs", "governance", "cache", "install", "docs",
+        "test":
       discard
     of "scripts":
       if val.kind == TomlValueKind.Table:
@@ -691,7 +754,12 @@ proc mergeBauConfig*(base: var BauConfig; override: BauConfig) =
       base.package.includeFiles = override.package.includeFiles
     if override.package.excludeFiles.len > 0:
       base.package.excludeFiles = override.package.excludeFiles
-  if override.build.kind != base.build.kind or override.build.source.len > 0:
+  if override.build.kind != base.build.kind or override.build.name.len > 0 or
+      override.build.source.len > 0 or override.build.main.len > 0 or
+      override.build.output.len > 0 or override.build.nim.len > 0 or
+      override.build.backend.len > 0 or override.build.includeDefault:
+    if override.build.name.len > 0:
+      base.build.name = override.build.name
     if override.build.source.len > 0:
       base.build.source = override.build.source
     if override.build.main.len > 0:
@@ -700,6 +768,10 @@ proc mergeBauConfig*(base: var BauConfig; override: BauConfig) =
       base.build.output = override.build.output
     if override.build.nim.len > 0:
       base.build.nim = override.build.nim
+    if override.build.backend.len > 0:
+      base.build.backend = override.build.backend
+    if override.build.includeDefault:
+      base.build.includeDefault = true
     base.build.kind = override.build.kind
   if override.toolchain.nim.len > 0:
     base.toolchain.nim = override.toolchain.nim
@@ -722,6 +794,8 @@ proc mergeBauConfig*(base: var BauConfig; override: BauConfig) =
     base.install.dir = override.install.dir
   if override.docs.configured:
     base.docs = override.docs
+  if override.test.configured:
+    base.test = override.test
   for key, pval in override.profiles.pairs:
     if base.profiles.hasKey(key):
       mergeProfile(base.profiles[key], pval)
@@ -744,6 +818,8 @@ proc mergeBauConfig*(base: var BauConfig; override: BauConfig) =
     base.sources[key] = source
   for key, fval in override.features.pairs:
     base.features[key] = fval
+  for key, alias in override.aliases.pairs:
+    base.aliases[key] = alias
   for key, catalog in override.catalogs.pairs:
     base.catalogs[key] = catalog
   for t in override.buildScripts:

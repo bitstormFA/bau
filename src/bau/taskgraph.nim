@@ -1,18 +1,20 @@
 ## Runs named tasks with dependencies and cache integration.
 
 import std/[os, options, sets, strutils, tables, times]
-import bau/[argv, build, config, features, remote, taskcache, util]
+import bau/[argv, build, config, features, remote, taskcache, testexec, util]
 
 type
-  TaskRunOptions* = object ## Options controlling task execution.
-    profile*: string ## Profile used by built-in task dependencies.
-    verbose*: bool ## Whether nested commands should print details.
-    dryRun*: bool ## Print planned work without running commands.
-    force*: bool ## Ignore freshness and cache hits.
-    keepGoing*: bool ## Continue independent tasks after failures.
+  TaskRunOptions* = object      ## Options controlling task execution.
+    profile*: string            ## Profile used by built-in task dependencies.
+    verbose*: bool              ## Whether nested commands should print details.
+    dryRun*: bool               ## Print planned work without running commands.
+    force*: bool                ## Ignore freshness and cache hits.
+    keepGoing*: bool            ## Continue independent tasks after failures.
     features*: FeatureSelection ## Feature selection exposed to tasks.
+    taskArgs*: seq[string]      ## Arguments passed after `bau task <name> --`.
 
   TaskRunState = object
+    root: string
     visiting: HashSet[string]
     completed: HashSet[string]
     failed: seq[string]
@@ -85,9 +87,20 @@ proc withTemporaryEnv(env: Table[string, string]; body: proc()) =
       else:
         delEnv(key)
 
+proc joinedTaskArgs(args: openArray[string]): string =
+  for i, arg in args:
+    if i > 0:
+      result.add(" ")
+    result.add(quoteShell(arg))
+
+proc withTaskArgs(cmd: string; args: openArray[string]): string =
+  cmd.replace("{args}", joinedTaskArgs(args))
+
 proc runShellCommand(task: TaskInfo; projectDir: string;
-    featureSelection: FeatureSelection) =
+    featureSelection: FeatureSelection; profile: string;
+    taskArgs: openArray[string]) =
   let cwd = task.cwd.get(projectDir)
+  let argsForTask = @taskArgs
   proc invoke() =
     if task.cmd.endsWith(".nims"):
       let scriptPath = projectDir / task.cmd
@@ -105,29 +118,50 @@ proc runShellCommand(task: TaskInfo; projectDir: string;
         if fileExists(tmpFile):
           removeFile(tmpFile)
     elif task.shell.len > 0:
-      runCmdLive(task.shell, ["-c", task.cmd], cwd)
+      runCmdLive(task.shell, ["-c", withTaskArgs(task.cmd, argsForTask)], cwd)
     else:
-      let parts = parseCommandLine(task.cmd)
+      let parts = parseCommandLine(withTaskArgs(task.cmd, argsForTask))
       if parts.len == 0:
         raise newException(ValueError, "task has an empty command: " & task.name)
       let args = if parts.len > 1: parts[1..^1] else: @[]
       runCmdLive(parts[0], args, cwd)
   var env = enabledFeatureEnv(featureSelection)
+  env["BAU_PROFILE"] = profile
+  env["BAU_TASK_ARGS"] = joinedTaskArgs(argsForTask)
+  for i, arg in argsForTask:
+    env["BAU_TASK_ARG_" & $i] = arg
   for key, val in task.env.pairs:
     env[key] = val
   withTemporaryEnv(env, invoke)
 
-proc runBuiltinDependency(name: string; cfg: BauConfig; projectDir: string;
-    opts: TaskRunOptions): bool =
-  case name
+proc runBuiltinCommand(command: string; cfg: BauConfig; projectDir: string;
+    opts: TaskRunOptions; profile: string): bool =
+  case command
   of "build":
     if opts.dryRun:
       echo "build"
     else:
-      buildAllTargets(cfg, opts.profile, projectDir, opts.verbose, opts.features)
+      buildAllTargets(cfg, profile, projectDir, opts.verbose, opts.features)
+    result = true
+  of "test":
+    if opts.dryRun:
+      echo "test --profile " & profile
+    else:
+      let testResult = runTests(cfg, projectDir, TestRunOptions(
+        profile: profile,
+        since: "HEAD",
+        showOutput: tomAuto,
+        verbose: opts.verbose,
+        featureSelection: opts.features), useConfiguredProfiles = false)
+      if testResult.failed > 0:
+        raise newException(ValueError, "test command failed")
     result = true
   else:
     result = false
+
+proc runBuiltinDependency(name: string; cfg: BauConfig; projectDir: string;
+    opts: TaskRunOptions): bool =
+  runBuiltinCommand(name, cfg, projectDir, opts, opts.profile)
 
 proc taskCanUseCache(task: TaskInfo): bool =
   task.cache or (task.inputs.len > 0 and task.outputs.len > 0)
@@ -165,8 +199,13 @@ proc runTask(state: var TaskRunState; cfg: BauConfig; name, projectDir: string;
       if required notin opts.features.enabled:
         raise newException(ValueError, "task '" & name &
           "' requires feature '" & required & "'")
-    let cacheEntry = taskCacheEntry(task, projectDir, cfg, opts.profile,
-      opts.features)
+    let taskArgs = if name == state.root: opts.taskArgs else: @[]
+    if taskArgs.len > 0 and not task.acceptArgs:
+      raise newException(ValueError, "task '" & name &
+        "' does not accept arguments; set acceptArgs = true")
+    let taskProfile = if task.profile.len > 0: task.profile else: opts.profile
+    let cacheEntry = taskCacheEntry(task, projectDir, cfg, taskProfile,
+      opts.features, taskArgs)
     var remoteError = ""
     if not opts.force and cfg.cache.read and taskCanUseCache(task) and
         restoreTaskOutputs(cacheEntry, projectDir):
@@ -177,11 +216,22 @@ proc runTask(state: var TaskRunState; cfg: BauConfig; name, projectDir: string;
     elif not opts.force and taskIsFresh(task, projectDir):
       success("task cached: " & name)
     elif opts.dryRun:
-      echo "task " & name & ": " & task.cmd
+      let summary = if task.command.len > 0:
+                      "bau " & task.command & " --profile " & taskProfile
+                    else:
+                      withTaskArgs(task.cmd, taskArgs)
+      echo "task " & name & ": " & summary
     else:
       info("running task: " & name)
       try:
-        runShellCommand(task, projectDir, opts.features)
+        if task.command.len > 0:
+          if not runBuiltinCommand(task.command, cfg, projectDir, opts,
+              taskProfile):
+            raise newException(ValueError, "unknown task command: " &
+              task.command)
+        else:
+          runShellCommand(task, projectDir, opts.features, taskProfile,
+            taskArgs)
         if cfg.cache.write and taskCanUseCache(task):
           saveTaskOutputs(cacheEntry, task, projectDir)
           discard saveRemoteTaskOutputs(cacheEntry, task, projectDir, cfg)
@@ -202,7 +252,7 @@ proc runTaskByName*(cfg: BauConfig; name, projectDir: string;
   ## Run a named task and its dependencies.
   ##
   ## Returns false when one or more tasks failed under `keepGoing`.
-  var state = TaskRunState()
+  var state = TaskRunState(root: name)
   result = runTask(state, cfg, name, projectDir, opts)
   if state.failed.len > 0:
     error("failed task(s): " & state.failed.join(", "))

@@ -4,12 +4,12 @@ import std/[algorithm, os, sets, strutils, tables]
 import bau/[config, lock, nimscan, util]
 
 type
-  AffectedReport* = object ## Files and Bau work items affected by a change set.
+  AffectedReport* = object     ## Files and Bau work items affected by a change set.
     changedFiles*: seq[string] ## Changed paths relative to the project root.
-    sourceFiles*: seq[string] ## Source modules affected directly or transitively.
-    targets*: seq[string] ## Build target names affected by changed sources.
-    tests*: seq[string] ## Test files affected by changed sources or test config.
-    tasks*: seq[string] ## Task names affected by changed inputs.
+    sourceFiles*: seq[string]  ## Source modules affected directly or transitively.
+    targets*: seq[string]      ## Build target names affected by changed sources.
+    tests*: seq[string]        ## Test files affected by changed sources or test config.
+    tasks*: seq[string]        ## Task names affected by changed inputs.
 
 proc gitChangedFiles*(projectDir: string; since: string = "HEAD"): seq[string] =
   ## Return files changed since a Git revision or ref.
@@ -155,8 +155,7 @@ proc allTestFiles(projectDir: string): seq[string] =
 
 proc allTargetNames(cfg: BauConfig): seq[string] =
   if cfg.build.main.len > 0:
-    let defaultName = if cfg.build.output.len > 0: cfg.build.output else:
-                        cfg.package.name
+    let defaultName = defaultTargetName(cfg)
     if defaultName.len > 0:
       result.add(defaultName)
   for target in cfg.targets:
@@ -275,8 +274,7 @@ proc computeAffectedFromChanges*(cfg: BauConfig; projectDir: string;
   if buildInputChanged:
     result.targets = allTargetNames(cfg)
   else:
-    let defaultName = if cfg.build.output.len > 0: cfg.build.output else:
-                        cfg.package.name
+    let defaultName = defaultTargetName(cfg)
     if cfg.build.main.len > 0 and affectedSet.contains(cfg.build.main):
       result.targets.add(defaultName)
     for target in cfg.targets:

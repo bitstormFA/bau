@@ -385,6 +385,9 @@ proc targetToJson(target: TargetInfo): JsonNode =
     "name": target.name,
     "kind": $target.kind,
     "main": target.main,
+    "output": target.output,
+    "source": target.source,
+    "paths": target.paths,
     "profile": target.profile,
     "requiredFeatures": target.requiredFeatures,
     "tags": target.tags
@@ -394,13 +397,16 @@ proc taskToJson(task: TaskInfo): JsonNode =
   %*{
     "name": task.name,
     "cmd": task.cmd,
+    "command": task.command,
     "description": task.description,
     "deps": task.deps,
     "inputs": task.inputs,
     "outputs": task.outputs,
     "shell": task.shell,
+    "profile": task.profile,
     "envInputs": task.envInputs,
     "cache": task.cache,
+    "acceptArgs": task.acceptArgs,
     "requiredFeatures": task.requiredFeatures,
     "tags": task.tags
   }
@@ -418,6 +424,15 @@ proc docsToJson(docs: DocsInfo): JsonNode =
     "runExamples": docs.runExamples,
     "includePrivate": docs.includePrivate,
     "sourceUrl": docs.sourceUrl
+  }
+
+proc testToJson(test: TestInfo): JsonNode =
+  %*{
+    "runner": test.runner,
+    "profiles": test.profiles,
+    "recursive": test.recursive,
+    "exclude": test.exclude,
+    "showOutput": test.showOutput
   }
 
 proc configMetadataJson*(cfg: BauConfig; projectDir: string;
@@ -439,12 +454,14 @@ proc configMetadataJson*(cfg: BauConfig; projectDir: string;
     "exclude": cfg.package.excludeFiles
   }
   result["build"] = %*{
+    "name": cfg.build.name,
     "kind": $cfg.build.kind,
     "source": cfg.build.source,
     "main": cfg.build.main,
     "output": cfg.build.output,
     "nim": cfg.build.nim,
-    "backend": cfg.build.backend
+    "backend": cfg.build.backend,
+    "includeDefault": cfg.build.includeDefault
   }
   result["toolchain"] = %*{
     "nim": cfg.toolchain.nim,
@@ -463,6 +480,7 @@ proc configMetadataJson*(cfg: BauConfig; projectDir: string;
     "write": cfg.cache.write
   }
   result["docs"] = docsToJson(cfg.docs)
+  result["test"] = testToJson(cfg.test)
 
   var profiles = newJObject()
   for name, profile in cfg.profiles.pairs:
@@ -473,6 +491,11 @@ proc configMetadataJson*(cfg: BauConfig; projectDir: string;
   for name, feature in cfg.features.pairs:
     features[name] = %*{"enables": feature.enables}
   result["features"] = features
+
+  var aliases = newJObject()
+  for name, command in cfg.aliases.pairs:
+    aliases[name] = %command
+  result["aliases"] = aliases
 
   var catalogs = newJObject()
   for name, catalog in cfg.catalogs.pairs:
@@ -551,6 +574,26 @@ proc addResolvedGraph(graph: var JsonNode; projectDir: string) =
   except CatchableError as e:
     graph["lock"] = %*{"error": e.msg}
 
+proc dedupeGraph(graph: var JsonNode) =
+  var seenNodes = initHashSet[string]()
+  var nodes = newJArray()
+  for node in graph["nodes"].getElems():
+    let id = node["id"].getStr()
+    if not seenNodes.contains(id):
+      nodes.add(node)
+      seenNodes.incl(id)
+  graph["nodes"] = nodes
+
+  var seenEdges = initHashSet[string]()
+  var edges = newJArray()
+  for edge in graph["edges"].getElems():
+    let key = edge["from"].getStr() & "\t" & edge["to"].getStr() & "\t" &
+      edge["kind"].getStr()
+    if not seenEdges.contains(key):
+      edges.add(edge)
+      seenEdges.incl(key)
+  graph["edges"] = edges
+
 proc graphJson*(cfg: BauConfig; projectDir: string = ""): JsonNode =
   ## Build a graph of targets, tasks, build scripts, features, and dependencies.
   ##
@@ -559,35 +602,50 @@ proc graphJson*(cfg: BauConfig; projectDir: string = ""): JsonNode =
   result = newJObject()
   var nodes = newJArray()
   var edges = newJArray()
+  var seenNodes = initHashSet[string]()
+  var seenEdges = initHashSet[string]()
 
-  let buildName = if cfg.build.output.len >
-      0: cfg.build.output else: cfg.package.name
-  nodes.add(%*{"id": "target:" & buildName, "kind": "target",
-    "name": buildName, "main": cfg.build.main})
+  proc addNode(node: JsonNode) =
+    let id = node["id"].getStr()
+    if not seenNodes.contains(id):
+      nodes.add(node)
+      seenNodes.incl(id)
+
+  proc addEdge(edge: JsonNode) =
+    let key = edge["from"].getStr() & "\t" & edge["to"].getStr() & "\t" &
+      edge["kind"].getStr()
+    if not seenEdges.contains(key):
+      edges.add(edge)
+      seenEdges.incl(key)
+
+  let buildName = defaultTargetName(cfg)
+  addNode(%*{"id": "target:" & buildName, "kind": "target",
+    "name": buildName, "main": cfg.build.main, "output": cfg.build.output})
   for target in cfg.targets:
-    nodes.add(%*{"id": "target:" & target.name, "kind": "target",
-      "name": target.name, "main": target.main, "profile": target.profile})
+    addNode(%*{"id": "target:" & target.name, "kind": "target",
+      "name": target.name, "main": target.main, "output": target.output,
+      "profile": target.profile})
   for task in cfg.tasks:
-    nodes.add(%*{"id": "task:" & task.name, "kind": "task",
-      "name": task.name, "cmd": task.cmd})
+    addNode(%*{"id": "task:" & task.name, "kind": "task",
+      "name": task.name, "cmd": task.cmd, "command": task.command})
     for dep in task.deps:
       let targetId = if dep == "build": "target:" & buildName else: "task:" & dep
-      edges.add(%*{"from": "task:" & task.name, "to": targetId,
+      addEdge(%*{"from": "task:" & task.name, "to": targetId,
         "kind": "task-dep"})
   for script in cfg.buildScripts:
-    nodes.add(%*{"id": "build-script:" & script.name, "kind": "build-script",
+    addNode(%*{"id": "build-script:" & script.name, "kind": "build-script",
       "name": script.name, "cmd": script.cmd})
-    edges.add(%*{"from": "target:" & buildName,
+    addEdge(%*{"from": "target:" & buildName,
       "to": "build-script:" & script.name, "kind": "build-script"})
   for name in sortedKeys(cfg.deps):
-    nodes.add(%*{"id": "dep:" & name, "kind": "dependency"})
-    edges.add(%*{"from": "target:" & buildName, "to": "dep:" & name,
+    addNode(%*{"id": "dep:" & name, "kind": "dependency"})
+    addEdge(%*{"from": "target:" & buildName, "to": "dep:" & name,
       "kind": "target-dep"})
     for target in cfg.targets:
-      edges.add(%*{"from": "target:" & target.name, "to": "dep:" & name,
+      addEdge(%*{"from": "target:" & target.name, "to": "dep:" & name,
         "kind": "target-dep"})
   for name in sortedKeys(cfg.features):
-    nodes.add(%*{"id": "feature:" & name, "kind": "feature"})
+    addNode(%*{"id": "feature:" & name, "kind": "feature"})
     for item in cfg.features[name].enables:
       let dest = if item.startsWith("dep:"):
                    "dep:" & item["dep:".len..^1]
@@ -595,13 +653,14 @@ proc graphJson*(cfg: BauConfig; projectDir: string = ""): JsonNode =
                    "feature:" & item
                  else:
                    "dep:" & item
-      edges.add(%*{"from": "feature:" & name, "to": dest,
+      addEdge(%*{"from": "feature:" & name, "to": dest,
         "kind": "feature-enables"})
 
   result["nodes"] = nodes
   result["edges"] = edges
   if projectDir.len > 0:
     result.addResolvedGraph(projectDir)
+    result.dedupeGraph()
 
 proc graphDot*(cfg: BauConfig; projectDir: string = ""): string =
   ## Render Bau's project graph as Graphviz DOT.
@@ -623,7 +682,8 @@ proc queryDeps*(cfg: BauConfig; name: string): seq[string] =
   for script in cfg.buildScripts:
     if script.name == name:
       return script.deps
-  if name.len == 0 or name == cfg.package.name or name == cfg.build.output:
+  if name.len == 0 or name == cfg.package.name or name == cfg.build.output or
+      name == defaultTargetName(cfg):
     for dep in sortedKeys(cfg.deps):
       result.add(dep)
   else:

@@ -1,6 +1,6 @@
 import std/[json, os, options, strutils, tables]
 import bau/[config, configedit, features, metadata, packaging, taskcache,
-  taskgraph, toolchain]
+  taskgraph, testexec, toolchain]
 
 proc write(path, content: string) =
   createDir(parentDir(path))
@@ -141,6 +141,12 @@ cli = ["dep:sqlite"]
   doAssert dependencyEnabled(cfg, "sqlite", cfg.deps["sqlite"], selection)
   doAssert "-d:cli" in compilerFeatureFlags(selection)
 
+block test_matrix_uses_configured_profiles:
+  var cfg = initBauConfig()
+  cfg.test.profiles = @["dev", "release", "danger"]
+  doAssert effectiveTestProfiles(cfg, "dev") == @["dev", "release", "danger"]
+  doAssert parseTestOutputMode("always") == tomAlways
+
 block package_collects_include_exclude:
   let tmp = getTempDir() / "bau-test-package-files"
   if dirExists(tmp):
@@ -169,6 +175,41 @@ block task_graph_dry_run_with_deps:
 
   let opts = TaskRunOptions(profile: "dev", dryRun: true)
   doAssert runTaskByName(cfg, "docs", getTempDir(), opts)
+
+block task_args_are_opt_in_and_exposed:
+  let tmp = getTempDir() / "bau-test-task-args"
+  if dirExists(tmp):
+    removeDir(tmp)
+  defer:
+    if dirExists(tmp):
+      removeDir(tmp)
+  createDir(tmp)
+
+  var cfg = initBauConfig()
+  cfg.package.name = "demo"
+  cfg.tasks.add(TaskInfo(
+    name: "fetch",
+    cmd: "printf %s \"$BAU_TASK_ARG_0\" > out.txt",
+    shell: "sh",
+    acceptArgs: true))
+
+  let opts = TaskRunOptions(profile: "dev", taskArgs: @["cpu"])
+  doAssert runTaskByName(cfg, "fetch", tmp, opts)
+  doAssert readFile(tmp / "out.txt") == "cpu"
+
+block task_args_rejected_by_default:
+  var cfg = initBauConfig()
+  cfg.package.name = "demo"
+  cfg.tasks.add(TaskInfo(name: "plain", cmd: "echo plain"))
+
+  var raised = false
+  try:
+    discard runTaskByName(cfg, "plain", getTempDir(), TaskRunOptions(
+      profile: "dev",
+      taskArgs: @["extra"]))
+  except ValueError:
+    raised = true
+  doAssert raised
 
 block task_cache_roundtrip:
   let tmp = getTempDir() / "bau-test-task-cache"
@@ -269,7 +310,9 @@ block metadata_and_query:
   var cfg = initBauConfig()
   cfg.package.name = "demo"
   cfg.package.version = "0.1.0"
+  cfg.build.output = "demo"
   cfg.deps["shared"] = DepInfo(version: some(">=1.0"))
+  cfg.targets.add(TargetInfo(name: "demo", kind: bkBin, main: "src/demo.nim"))
   cfg.tasks.add(TaskInfo(name: "docs", cmd: "nim doc", deps: @["build"]))
 
   let meta = configMetadataJson(cfg, getTempDir())
@@ -277,3 +320,9 @@ block metadata_and_query:
   doAssert meta["package"]["name"].getStr() == "demo"
   doAssert queryDeps(cfg, "demo") == @["shared"]
   doAssert queryWhy(cfg, "shared").contains("direct package dependency")
+  let graph = graphJson(cfg)
+  var ids = initTable[string, bool]()
+  for node in graph["nodes"].getElems():
+    let id = node["id"].getStr()
+    doAssert not ids.hasKey(id)
+    ids[id] = true

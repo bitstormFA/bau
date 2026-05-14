@@ -46,10 +46,27 @@ block parse_new_workflow_commands:
   doAssert task.dryRun
   doAssert task.keepGoing
 
-  let test = parseCliOptions(@["test", "config", "--changed", "--", "--seed", "1"])
+  let taskArgs = parseCliOptions(@["task", "fetch", "--", "cpu", "--force"])
+  doAssert taskArgs.command == cmdTask
+  doAssert taskArgs.taskName == "fetch"
+  doAssert taskArgs.passthroughArgs == @["cpu", "--force"]
+
+  let taskHelp = parseCliOptions(@["task", "docs", "--help"])
+  doAssert taskHelp.command == cmdTask
+  doAssert taskHelp.taskName == "docs"
+  doAssert taskHelp.help
+
+  let taskList = parseCliOptions(@["task", "--list"])
+  doAssert taskList.command == cmdTask
+  doAssert taskList.list
+
+  let test = parseCliOptions(@[
+    "test", "config", "--changed", "--show-output=always", "--", "--seed", "1"
+  ])
   doAssert test.command == cmdTest
   doAssert test.args == @["config"]
   doAssert test.changed
+  doAssert test.testShowOutput == "always"
   doAssert test.passthroughArgs == @["--seed", "1"]
 
   let shorthand = parseCliOptions(@["server", "--profile", "release"])

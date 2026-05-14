@@ -6,20 +6,20 @@ import bau/[config, features, util]
 
 type
   TaskCacheEntry* = object ## Address of cached outputs for one task key.
-    key*: string ## Deterministic cache key for the task invocation.
-    taskName*: string ## Task name associated with the cache entry.
-    path*: string ## Local filesystem path for the cache entry.
-    outputs*: seq[string] ## Output patterns allowed to be restored.
+    key*: string           ## Deterministic cache key for the task invocation.
+    taskName*: string      ## Task name associated with the cache entry.
+    path*: string          ## Local filesystem path for the cache entry.
+    outputs*: seq[string]  ## Output patterns allowed to be restored.
 
   TaskCacheExplain* = object ## Diagnostic data for a task cache lookup.
-    task*: string ## Task name being explained.
-    key*: string ## Computed cache key.
-    path*: string ## Local cache entry path.
-    localHit*: bool ## True when a matching local entry exists.
-    remoteHit*: bool ## True when a matching remote entry exists.
-    remoteError*: string ## Remote lookup error, if any.
-    keyInputs*: seq[string] ## Inputs that contributed to the cache key.
-    outputs*: seq[string] ## Output patterns declared by the task.
+    task*: string            ## Task name being explained.
+    key*: string             ## Computed cache key.
+    path*: string            ## Local cache entry path.
+    localHit*: bool          ## True when a matching local entry exists.
+    remoteHit*: bool         ## True when a matching remote entry exists.
+    remoteError*: string     ## Remote lookup error, if any.
+    keyInputs*: seq[string]  ## Inputs that contributed to the cache key.
+    outputs*: seq[string]    ## Output patterns declared by the task.
 
 const RemotePayloadVersion = 1
 const CacheLockTimeoutMs = 5000
@@ -60,10 +60,12 @@ proc sortedEnvKeys(env: Table[string, string]): seq[string] =
   result.sort()
 
 proc taskCacheKeyInputs*(task: TaskInfo; projectDir, profile: string;
-    cfg: BauConfig; selection: FeatureSelection = FeatureSelection()): seq[string] =
+    cfg: BauConfig; selection: FeatureSelection = FeatureSelection();
+    taskArgs: openArray[string] = []): seq[string] =
   ## Return the textual inputs used to derive a task cache key.
   result.add("task:" & task.name)
   result.add("cmd:" & task.cmd)
+  result.add("command:" & task.command)
   result.add("profile:" & profile)
   result.add("platform:" & platformTriple())
   result.add("nim:" & nimVersion())
@@ -77,6 +79,9 @@ proc taskCacheKeyInputs*(task: TaskInfo; projectDir, profile: string;
     result.add("env:" & key & "=" & task.env[key])
   for key in task.envInputs:
     result.add("env-input:" & key & "=" & getEnv(key, ""))
+  if taskArgs.len > 0:
+    for i, arg in taskArgs:
+      result.add("arg:" & $i & "=" & arg)
   for path in task.inputs:
     result.add("input-pattern:" & path)
   let inputs = expandPaths(projectDir, task.inputs)
@@ -99,10 +104,12 @@ proc taskCacheKeyInputs*(task: TaskInfo; projectDir, profile: string;
   result.add("cache-write:" & $cfg.cache.write)
 
 proc taskCacheKey*(task: TaskInfo; projectDir, profile: string;
-    cfg: BauConfig; selection: FeatureSelection = FeatureSelection()): string =
+    cfg: BauConfig; selection: FeatureSelection = FeatureSelection();
+    taskArgs: openArray[string] = []): string =
   ## Return the deterministic cache key for a task invocation.
   var content = "task:" & task.name & "\n"
-  for input in taskCacheKeyInputs(task, projectDir, profile, cfg, selection):
+  for input in taskCacheKeyInputs(task, projectDir, profile, cfg, selection,
+      taskArgs):
     content.add(input & "\n")
   result = hashStr(content)
 
@@ -111,9 +118,10 @@ proc entryPath(root, taskName, key: string): string =
 
 proc taskCacheEntry*(task: TaskInfo; projectDir: string; cfg: BauConfig;
     profile: string;
-    selection: FeatureSelection = FeatureSelection()): TaskCacheEntry =
+    selection: FeatureSelection = FeatureSelection();
+    taskArgs: openArray[string] = []): TaskCacheEntry =
   ## Build the local cache entry descriptor for a task invocation.
-  result.key = taskCacheKey(task, projectDir, profile, cfg, selection)
+  result.key = taskCacheKey(task, projectDir, profile, cfg, selection, taskArgs)
   result.taskName = task.name
   result.path = entryPath(cacheRoot(projectDir, cfg), task.name, result.key)
   result.outputs = task.outputs

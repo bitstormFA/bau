@@ -5,52 +5,52 @@ import bau/[config, util]
 
 type
   ConvertSeverity* = enum ## Severity for Nimble conversion diagnostics.
-    csInfo = "info" ## Informational conversion note.
+    csInfo = "info"       ## Informational conversion note.
     csWarning = "warning" ## Conversion warning that may need review.
 
-  ConvertDiagnostic* = object ## Diagnostic produced while converting Nimble data.
+  ConvertDiagnostic* = object  ## Diagnostic produced while converting Nimble data.
     severity*: ConvertSeverity ## Diagnostic severity.
-    line*: int ## Source line number, or zero when not tied to a line.
-    message*: string ## Human-readable diagnostic message.
+    line*: int                 ## Source line number, or zero when not tied to a line.
+    message*: string           ## Human-readable diagnostic message.
 
   NimbleLine = object
     line: int
     indent: int
     text: string
 
-  NimbleProject* = object ## Static facts extracted from a `.nimble` file.
-    nimblePath*: string ## Absolute path to the parsed `.nimble` file.
-    projectDir*: string ## Project directory containing the `.nimble` file.
-    packageName*: string ## Inferred or declared package name.
-    version*: string ## Package version.
-    authors*: seq[string] ## Package authors.
-    description*: string ## Package description.
-    license*: string ## Package license.
-    nimRequirement*: string ## Nim version requirement.
-    srcDir*: string ## Nimble `srcDir` value.
-    binDir*: string ## Nimble `binDir` value.
-    backend*: string ## Compiler backend requested by Nimble metadata.
-    bins*: seq[string] ## Binary names declared by `bin`.
-    namedBins*: Table[string, string] ## Binary names mapped to explicit source paths.
-    skipDirs*: seq[string] ## Nimble package directories to exclude.
-    skipFiles*: seq[string] ## Nimble package files to exclude.
-    skipExt*: seq[string] ## Nimble package extensions to exclude.
-    installDirs*: seq[string] ## Nimble package directories to include.
-    installFiles*: seq[string] ## Nimble package files to include.
-    installExt*: seq[string] ## Nimble package extensions to include.
-    deps*: Table[string, DepInfo] ## Dependencies parsed from `requires`.
+  NimbleProject* = object                ## Static facts extracted from a `.nimble` file.
+    nimblePath*: string                  ## Absolute path to the parsed `.nimble` file.
+    projectDir*: string                  ## Project directory containing the `.nimble` file.
+    packageName*: string                 ## Inferred or declared package name.
+    version*: string                     ## Package version.
+    authors*: seq[string]                ## Package authors.
+    description*: string                 ## Package description.
+    license*: string                     ## Package license.
+    nimRequirement*: string              ## Nim version requirement.
+    srcDir*: string                      ## Nimble `srcDir` value.
+    binDir*: string                      ## Nimble `binDir` value.
+    backend*: string                     ## Compiler backend requested by Nimble metadata.
+    bins*: seq[string]                   ## Binary names declared by `bin`.
+    namedBins*: Table[string, string]    ## Binary names mapped to explicit source paths.
+    skipDirs*: seq[string]               ## Nimble package directories to exclude.
+    skipFiles*: seq[string]              ## Nimble package files to exclude.
+    skipExt*: seq[string]                ## Nimble package extensions to exclude.
+    installDirs*: seq[string]            ## Nimble package directories to include.
+    installFiles*: seq[string]           ## Nimble package files to include.
+    installExt*: seq[string]             ## Nimble package extensions to include.
+    deps*: Table[string, DepInfo]        ## Dependencies parsed from `requires`.
     features*: Table[string, FeatureInfo] ## Features parsed from Nimble feature blocks.
-    tasks*: seq[TaskInfo] ## Tasks converted from Nimble task blocks.
-    scripts*: ScriptInfo ## Lifecycle hooks converted from Nimble hooks.
+    tasks*: seq[TaskInfo]                ## Tasks converted from Nimble task blocks.
+    scripts*: ScriptInfo                 ## Lifecycle hooks converted from Nimble hooks.
     diagnostics*: seq[ConvertDiagnostic] ## Conversion diagnostics.
 
   NimbleConvertResult* = object ## Result of converting a Nimble project.
-    nimblePath*: string ## Converted `.nimble` file path.
-    configPath*: string ## Target `bau.toml` path.
-    cfg*: BauConfig ## Converted Bau configuration.
-    content*: string ## Generated `bau.toml` content.
+    nimblePath*: string         ## Converted `.nimble` file path.
+    configPath*: string         ## Target `bau.toml` path.
+    cfg*: BauConfig             ## Converted Bau configuration.
+    content*: string            ## Generated `bau.toml` content.
     diagnostics*: seq[ConvertDiagnostic] ## Diagnostics emitted during conversion.
-    wrote*: bool ## True when `content` was written to disk.
+    wrote*: bool                ## True when `content` was written to disk.
 
 proc addDiag(project: var NimbleProject; severity: ConvertSeverity; line: int;
     message: string) =
@@ -446,6 +446,11 @@ proc joinCommands(commands: openArray[string]): string =
       result.add(" && ")
     result.add(command)
 
+proc taskBodyContains(body: openArray[NimbleLine]; needle: string): bool =
+  for line in body:
+    if needle in line.text:
+      return true
+
 proc parseTask(project: var NimbleProject; header: NimbleLine;
     body: openArray[NimbleLine]) =
   let parsed = parseTaskHeader(header.text)
@@ -453,12 +458,19 @@ proc parseTask(project: var NimbleProject; header: NimbleLine;
     project.addDiag(csWarning, header.line, "ignored task without a name")
     return
   let commands = project.literalCommands(body, "task '" & parsed.name & "'")
+  let forwardsArgs = taskBodyContains(body, "commandLineParams")
+  if forwardsArgs:
+    project.addDiag(csWarning, header.line, "task '" & parsed.name &
+      "' appears to forward CLI args; review acceptArgs = true and {args}")
   if commands.len == 0:
     project.addDiag(csWarning, header.line, "ignored task '" & parsed.name &
       "' because no literal command could be converted")
     return
+  if commands.len > 1:
+    project.addDiag(csWarning, header.line, "task '" & parsed.name &
+      "' has multiple exec commands; consider splitting them into task deps")
   project.tasks.add(TaskInfo(name: parsed.name, description: parsed.description,
-    cmd: joinCommands(commands)))
+    cmd: joinCommands(commands), acceptArgs: forwardsArgs))
 
 proc parseHook(project: var NimbleProject; header: NimbleLine;
     body: openArray[NimbleLine]) =
@@ -815,11 +827,14 @@ proc bauTomlContent*(cfg: BauConfig): string =
   result.add("\n")
 
   result.add("[build]\n")
+  result.addTomlField("name", cfg.build.name)
   result.add("kind = " & toTomlString($cfg.build.kind) & "\n")
   result.addTomlField("source", cfg.build.source)
   result.addTomlField("main", cfg.build.main)
   result.addTomlField("output", cfg.build.output)
   result.addTomlField("backend", cfg.build.backend)
+  if cfg.build.includeDefault:
+    result.add("includeDefault = true\n")
   result.add("\n")
 
   if cfg.toolchain.nim.len > 0 or cfg.toolchain.atlas.len > 0:
@@ -875,6 +890,9 @@ proc bauTomlContent*(cfg: BauConfig): string =
     result.addTomlField("name", target.name)
     result.add("kind = " & toTomlString($target.kind) & "\n")
     result.addTomlField("main", target.main)
+    result.addTomlField("output", target.output)
+    result.addTomlField("source", target.source)
+    result.addTomlArrayField("paths", target.paths)
     result.addTomlField("profile", target.profile)
     result.addTomlArrayField("requiredFeatures", target.requiredFeatures)
     result.addTomlArrayField("tags", target.tags)
@@ -884,6 +902,7 @@ proc bauTomlContent*(cfg: BauConfig): string =
     result.add("[[tasks]]\n")
     result.addTomlField("name", task.name)
     result.addTomlField("cmd", task.cmd)
+    result.addTomlField("command", task.command)
     result.addTomlField("description", task.description)
     result.addTomlArrayField("deps", task.deps)
     result.addTomlArrayField("inputs", task.inputs)
@@ -892,9 +911,12 @@ proc bauTomlContent*(cfg: BauConfig): string =
       result.addTomlField("cwd", task.cwd.get())
     if task.shell.len > 0:
       result.addTomlField("shell", task.shell)
+    result.addTomlField("profile", task.profile)
     result.addTomlArrayField("envInputs", task.envInputs)
     if task.cache:
       result.add("cache = true\n")
+    if task.acceptArgs:
+      result.add("acceptArgs = true\n")
     result.addTomlArrayField("requiredFeatures", task.requiredFeatures)
     result.addTomlArrayField("tags", task.tags)
     if task.env.len > 0:

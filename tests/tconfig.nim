@@ -8,10 +8,19 @@ version = "1.0.0"
 description = "A test project"
 
 [build]
+name = "default"
 kind = "bin"
 source = "src"
 main = "src/main.nim"
 output = "testproj"
+includeDefault = true
+
+[test]
+runner = "tests/all.nim"
+profiles = ["dev", "release", "danger"]
+recursive = true
+exclude = ["thelper.nim"]
+showOutput = "always"
 
 [profile.dev]
 flags = ["--debugInfo:on"]
@@ -25,6 +34,9 @@ gc = "orc"
 name = "cli"
 kind = "bin"
 main = "src/cli.nim"
+output = "test-cli"
+source = "tools"
+paths = ["src", "vendor/src"]
 profile = "release"
 
 [dependencies]
@@ -33,8 +45,13 @@ regex = ">=2.0.0"
 
 [[tasks]]
 name = "docs"
-cmd = "nim doc --project src/main.nim"
+command = "test"
+profile = "asan"
 deps = ["build"]
+acceptArgs = true
+
+[aliases]
+lint = "task lint"
 """
 
 block parse_package_info:
@@ -49,6 +66,8 @@ block parse_build_info:
   doAssert cfg.build.source == "src"
   doAssert cfg.build.main == "src/main.nim"
   doAssert cfg.build.output == "testproj"
+  doAssert cfg.build.name == "default"
+  doAssert cfg.build.includeDefault
 
 block parse_profiles:
   let cfg = parseBauConfig(testConfig())
@@ -61,6 +80,9 @@ block parse_targets:
   doAssert cfg.targets.len == 1
   doAssert cfg.targets[0].name == "cli"
   doAssert cfg.targets[0].kind == bkBin
+  doAssert cfg.targets[0].output == "test-cli"
+  doAssert cfg.targets[0].source == "tools"
+  doAssert cfg.targets[0].paths == @["src", "vendor/src"]
 
 block parse_dependencies:
   let cfg = parseBauConfig(testConfig())
@@ -96,7 +118,19 @@ block parse_tasks:
   let cfg = parseBauConfig(testConfig())
   doAssert cfg.tasks.len == 1
   doAssert cfg.tasks[0].name == "docs"
+  doAssert cfg.tasks[0].command == "test"
+  doAssert cfg.tasks[0].profile == "asan"
   doAssert cfg.tasks[0].deps == @["build"]
+  doAssert cfg.tasks[0].acceptArgs
+
+block parse_test_and_aliases:
+  let cfg = parseBauConfig(testConfig())
+  doAssert cfg.test.runner == "tests/all.nim"
+  doAssert cfg.test.profiles == @["dev", "release", "danger"]
+  doAssert cfg.test.recursive
+  doAssert cfg.test.exclude == @["thelper.nim"]
+  doAssert cfg.test.showOutput == "always"
+  doAssert cfg.aliases["lint"] == "task lint"
 
 block parse_docs:
   let cfg = parseBauConfig("""

@@ -58,6 +58,24 @@ output = "demo"
   doAssert files.anyIt(it.endsWith("src/nested/extra.nim"))
   doAssert files.anyIt(it.endsWith("tests/tdemo.nim"))
 
+block target_plan_uses_target_output_and_paths:
+  var cfg = initBauConfig()
+  cfg.package.name = "demo"
+  cfg.build.source = "src"
+  cfg.targets.add(TargetInfo(
+    name: "fetch",
+    kind: bkBin,
+    main: "tools/fetch.nim",
+    output: "demo_fetch",
+    source: "tools",
+    paths: @["src"]))
+
+  let ctx = initBuildContext(cfg, "dev", getTempDir(), false)
+  let plan = resolveTargetPlan(ctx, 0)
+  doAssert plan.outputName == "demo_fetch"
+  doAssert plan.sourceDir == "tools"
+  doAssert plan.compilerFlags.anyIt(it.endsWith("/src") or it.endsWith("\\src"))
+
 block api_docs_are_discovered_and_indexed:
   let tmp = getTempDir() / "bau-test-api-docs"
   if dirExists(tmp):

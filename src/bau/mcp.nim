@@ -340,12 +340,12 @@ proc resourcesList(projectDir: string): JsonNode =
 
 proc targetResources(cfg: BauConfig): JsonNode =
   var targets = newJArray()
-  let buildName = if cfg.build.output.len > 0: cfg.build.output else:
-                    cfg.package.name
+  let buildName = defaultTargetName(cfg)
   targets.add(%*{
     "name": buildName,
     "kind": $cfg.build.kind,
     "main": cfg.build.main,
+    "output": cfg.build.output,
     "profile": "",
     "requiredFeatures": [],
     "tags": []
@@ -355,6 +355,7 @@ proc targetResources(cfg: BauConfig): JsonNode =
       "name": target.name,
       "kind": $target.kind,
       "main": target.main,
+      "output": target.output,
       "profile": target.profile,
       "requiredFeatures": target.requiredFeatures,
       "tags": target.tags
@@ -381,14 +382,17 @@ proc taskResources(cfg: BauConfig): JsonNode =
     tasks.add(%*{
       "name": task.name,
       "cmd": task.cmd,
+      "command": task.command,
       "description": task.description,
       "deps": task.deps,
       "inputs": task.inputs,
       "outputs": task.outputs,
       "cwd": if task.cwd.isSome: task.cwd.get() else: "",
       "shell": task.shell,
+      "profile": task.profile,
       "envInputs": task.envInputs,
       "cache": task.cache,
+      "acceptArgs": task.acceptArgs,
       "requiredFeatures": task.requiredFeatures,
       "tags": task.tags
     })

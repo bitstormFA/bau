@@ -4,11 +4,11 @@ import std/[os, strutils, osproc, streams, terminal]
 import bau/digest
 
 const
-  BauVersion* = "0.3.2" ## Version reported by the Bau CLI.
-  ConfigFileName* = "bau.toml" ## Primary project configuration filename.
+  BauVersion* = "0.3.2"                   ## Version reported by the Bau CLI.
+  ConfigFileName* = "bau.toml"            ## Primary project configuration filename.
   LocalConfigFileName* = "bau.local.toml" ## Optional local override filename.
   GlobalConfigDir* = "bau" ## User config directory name below the platform config root.
-  BuildDirName* = "build" ## Default build artifact directory.
+  BuildDirName* = "build"                 ## Default build artifact directory.
   FingerprintDirName* = ".bau/fingerprints" ## Directory for incremental build fingerprints.
 
 var
@@ -131,12 +131,17 @@ proc runCmdChecked*(cmd: string; args: openArray[string] = [];
         ":\n" & output)
   result = output
 
-proc runCmdLive*(cmd: string; args: openArray[string] = []; cwd: string = "") =
-  ## Run a command attached to the parent terminal, raising on nonzero exit.
+proc runCmdLiveStatus*(cmd: string; args: openArray[string] = [];
+    cwd: string = ""): int =
+  ## Run a command attached to the parent terminal and return its exit code.
   let process = startProcess(cmd, args = @args, options = {poParentStreams,
       poUsePath}, workingDir = cwd)
-  let exitCode = process.waitForExit()
+  result = process.waitForExit()
   close(process)
+
+proc runCmdLive*(cmd: string; args: openArray[string] = []; cwd: string = "") =
+  ## Run a command attached to the parent terminal, raising on nonzero exit.
+  let exitCode = runCmdLiveStatus(cmd, args, cwd)
   if exitCode != 0:
     raise newException(IOError, cmd & " failed with exit code " & $exitCode)
 

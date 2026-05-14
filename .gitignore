@@ -27,3 +27,6 @@ deps/
 .vscode/
 scripts/reset-git-history.sh
 .serena/
+nimble.develop
+nimble.paths
+nimbledeps

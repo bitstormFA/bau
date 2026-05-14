@@ -185,6 +185,18 @@ tasks, and literal build/install hooks. It does not execute NimScript. If your
 missing behavior for you to model explicitly with profiles, features, tasks, or
 build scripts.
 
+Common Nimble automation patterns map cleanly once they are made explicit:
+
+- A Nimble task that compiles a tool and forwards `commandLineParams()` can
+  become a Bau task with `acceptArgs = true` and `{args}`, or a runnable target
+  invoked with `bau run <target> -- ...`.
+- A project-level test runner can be declared with `[test].runner`, and a
+  debug/release/danger matrix can be declared with `[test].profiles`.
+- Multi-step Nimble tasks are usually clearer as several `[[tasks]]` entries
+  connected with `deps`.
+- A project command that conflicts with a Bau built-in can be restored with an
+  alias such as `lint = "task lint"` in `[aliases]`.
+
 A good migration review looks like this:
 
 ```sh
@@ -216,6 +228,20 @@ bau check
 bau test
 bau run -- --help
 ```
+
+For larger suites with a canonical runner or several build modes:
+
+```toml
+[test]
+runner = "tests/all.nim"
+profiles = ["dev", "release", "danger"]
+recursive = true
+exclude = ["thelper.nim"]
+showOutput = "auto"
+```
+
+Use `bau test --show-output=always` when you want every compiler and runner
+line streamed live.
 
 For release-like local builds:
 
@@ -559,14 +585,35 @@ Run and inspect it:
 
 ```sh
 bau task site
+bau task --list
+bau task site --help
 bau cache explain site
 bau cache explain site --json
 ```
 
+Tasks that behave like small CLIs must opt in to arguments:
+
+```toml
+[[tasks]]
+name = "fetch"
+description = "Fetch a model shard"
+cmd = "nim c -r tools/fetch.nim -- {args}"
+acceptArgs = true
+```
+
+Run it with:
+
+```sh
+bau task fetch -- cpu
+```
+
+The same arguments are also exposed as `BAU_TASK_ARGS`,
+`BAU_TASK_ARG_0`, `BAU_TASK_ARG_1`, and so on for shell commands.
+
 A cacheable task is skipped when its command, inputs, outputs, selected
-features, relevant environment, platform, and Nim version match an existing
-entry. If `[cache].remote` is configured, Bau can restore task outputs from a
-shared filesystem cache or HTTP cache after a local miss.
+features, arguments, relevant environment, platform, and Nim version match an
+existing entry. If `[cache].remote` is configured, Bau can restore task outputs
+from a shared filesystem cache or HTTP cache after a local miss.
 
 Use build scripts when a pre-build step must influence the Nim compiler:
 

@@ -15,10 +15,11 @@ proc targetExists(cfg: BauConfig; mainFile: string): bool =
       return true
 
 proc targetNameExists(cfg: BauConfig; name: string): bool =
-  if cfg.build.output == name or cfg.package.name == name:
+  if defaultTargetName(cfg) == name or cfg.build.output == name or
+      cfg.package.name == name:
     return true
   for target in cfg.targets:
-    if target.name == name:
+    if target.name == name or target.output == name:
       return true
 
 proc discoverTargets*(cfg: BauConfig; projectDir: string): TailorResult =

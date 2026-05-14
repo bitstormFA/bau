@@ -9,27 +9,27 @@ else:
   const EnvPathSep = ':'
 
 type
-  InstallAction* = enum ## Binary installation operation to perform.
+  InstallAction* = enum   ## Binary installation operation to perform.
     iaInstall = "install" ## Install a binary that is not already present.
-    iaUpdate = "update" ## Replace an existing installed binary.
-    iaRemove = "remove" ## Remove an installed binary.
+    iaUpdate = "update"   ## Replace an existing installed binary.
+    iaRemove = "remove"   ## Remove an installed binary.
 
-  InstallResult* = object ## Outcome for one target handled by install commands.
+  InstallResult* = object  ## Outcome for one target handled by install commands.
     action*: InstallAction ## Operation that was requested.
-    target*: string ## Target output name.
-    profile*: string ## Profile used to build the target.
-    source*: string ## Built binary path.
-    destination*: string ## Final installed binary path.
-    installDir*: string ## Directory selected for installation.
-    changed*: bool ## True when the filesystem was modified.
-    dryRun*: bool ## True when the command only planned the operation.
+    target*: string        ## Target output name.
+    profile*: string       ## Profile used to build the target.
+    source*: string        ## Built binary path.
+    destination*: string   ## Final installed binary path.
+    installDir*: string    ## Directory selected for installation.
+    changed*: bool         ## True when the filesystem was modified.
+    dryRun*: bool          ## True when the command only planned the operation.
 
   ShellInitResult* = object ## Outcome from configuring a shell startup file.
-    shell*: string ## Shell that was configured.
-    configPath*: string ## Startup file selected for the shell.
-    binDir*: string ## Bau binary directory checked or configured.
-    changed*: bool ## True when the startup file was modified.
-    alreadyInPath*: bool ## True when the current PATH already contains binDir.
+    shell*: string          ## Shell that was configured.
+    configPath*: string     ## Startup file selected for the shell.
+    binDir*: string         ## Bau binary directory checked or configured.
+    changed*: bool          ## True when the startup file was modified.
+    alreadyInPath*: bool    ## True when the current PATH already contains binDir.
     alreadyConfigured*: bool ## True when the startup file already mentions binDir.
 
 proc defaultInstallDir*(): string =
@@ -60,7 +60,9 @@ proc resolveInstallDir*(cfg: BauConfig; projectDir,
     absolutePath(projectDir / expanded)
 
 proc defaultTargetName(cfg: BauConfig): string =
-  if cfg.build.output.len > 0:
+  if cfg.build.name.len > 0:
+    cfg.build.name
+  elif cfg.build.output.len > 0:
     cfg.build.output
   else:
     cfg.package.name
