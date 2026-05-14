@@ -342,7 +342,7 @@ registry.
 
 ## Status
 
-Bau is currently version `0.3.1`. The existing implementation compiles, runs its
+Bau is currently version `0.3.2`. The existing implementation compiles, runs its
 test suite, builds itself, and provides the main CLI surface for modern Nim
 project automation.
 

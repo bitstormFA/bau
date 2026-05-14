@@ -4,7 +4,7 @@ import std/[os, strutils, osproc, streams, terminal]
 import bau/digest
 
 const
-  BauVersion* = "0.3.1" ## Version reported by the Bau CLI.
+  BauVersion* = "0.3.2" ## Version reported by the Bau CLI.
   ConfigFileName* = "bau.toml" ## Primary project configuration filename.
   LocalConfigFileName* = "bau.local.toml" ## Optional local override filename.
   GlobalConfigDir* = "bau" ## User config directory name below the platform config root.
