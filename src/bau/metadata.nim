@@ -430,6 +430,8 @@ proc testToJson(test: TestInfo): JsonNode =
   %*{
     "runner": test.runner,
     "profiles": test.profiles,
+    "defaultProfile": test.defaultProfile,
+    "fullProfiles": test.fullProfiles,
     "recursive": test.recursive,
     "exclude": test.exclude,
     "showOutput": test.showOutput

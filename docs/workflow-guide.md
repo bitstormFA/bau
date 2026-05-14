@@ -235,13 +235,18 @@ For larger suites with a canonical runner or several build modes:
 [test]
 runner = "tests/all.nim"
 profiles = ["dev", "release", "danger"]
+defaultProfile = "dev"
+fullProfiles = ["dev", "release", "danger"]
 recursive = true
 exclude = ["thelper.nim"]
 showOutput = "auto"
 ```
 
 Use `bau test --show-output=always` when you want every compiler and runner
-line streamed live.
+line streamed live. Use `bau test --fast` for the tight edit loop, `bau test
+--dry-run` to inspect the planned profile/test invocations, and `bau test
+--full` before handing work to CI. `bau ci` uses the full configured matrix when
+`fullProfiles` or `profiles` is present.
 
 For release-like local builds:
 
@@ -597,7 +602,7 @@ Tasks that behave like small CLIs must opt in to arguments:
 [[tasks]]
 name = "fetch"
 description = "Fetch a model shard"
-cmd = "nim c -r tools/fetch.nim -- {args}"
+cmd = "nim c -r tools/fetch.nim {argsWithSep}"
 acceptArgs = true
 ```
 

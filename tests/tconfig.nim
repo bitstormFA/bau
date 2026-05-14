@@ -18,6 +18,8 @@ includeDefault = true
 [test]
 runner = "tests/all.nim"
 profiles = ["dev", "release", "danger"]
+defaultProfile = "dev"
+fullProfiles = ["dev", "release", "danger", "asan"]
 recursive = true
 exclude = ["thelper.nim"]
 showOutput = "always"
@@ -127,6 +129,8 @@ block parse_test_and_aliases:
   let cfg = parseBauConfig(testConfig())
   doAssert cfg.test.runner == "tests/all.nim"
   doAssert cfg.test.profiles == @["dev", "release", "danger"]
+  doAssert cfg.test.defaultProfile == "dev"
+  doAssert cfg.test.fullProfiles == @["dev", "release", "danger", "asan"]
   doAssert cfg.test.recursive
   doAssert cfg.test.exclude == @["thelper.nim"]
   doAssert cfg.test.showOutput == "always"

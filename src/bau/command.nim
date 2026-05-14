@@ -57,7 +57,9 @@ type
   CliOptions* = object            ## Parsed command-line options.
     command*: Command             ## Selected command.
     profile*: string              ## Build profile.
+    profileExplicit*: bool        ## True when `--profile` was provided.
     jobs*: int                    ## Parallel build job count.
+    jobsExplicit*: bool           ## True when `--jobs` was provided.
     verbose*: bool                ## Whether verbose output is enabled.
     quiet*: bool                  ## Whether normal progress output is suppressed.
     help*: bool                   ## Whether command-specific help was requested.
@@ -95,6 +97,10 @@ type
     docIncludePrivate*: bool      ## Include private symbols in docs.
     docNoIndex*: bool             ## Suppress docs index generation.
     testShowOutput*: string       ## Test output mode override.
+    testNoMatrix*: bool           ## Run a single test profile instead of the matrix.
+    testFull*: bool               ## Run the full configured test matrix.
+    testFast*: bool               ## Run the fast local test mode.
+    testNoRunner*: bool           ## Discover test files instead of using a runner.
     installDir*: string           ## Installation directory override.
     passthroughArgs*: seq[string] ## Arguments passed after `--`.
     initInfo*: ProjectInitInfo    ## Project initialization metadata.
@@ -186,10 +192,20 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
     of "--profile", "-p":
       if i + 1 < params.len:
         result.profile = params[i + 1]
+        result.profileExplicit = true
         inc i
+    of "--test-profile", "--only-profile":
+      if result.command == cmdTest and i + 1 < params.len:
+        result.profile = params[i + 1]
+        result.profileExplicit = true
+        result.testNoMatrix = true
+        inc i
+      else:
+        result.args.add(p)
     of "--jobs", "-j":
       if i + 1 < params.len:
         result.jobs = parseInt(params[i + 1])
+        result.jobsExplicit = true
         inc i
     of "--verbose", "-v":
       result.verbose = true
@@ -241,6 +257,28 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
       result.allTargets = true
     of "--changed":
       result.changed = true
+    of "--fast":
+      if result.command == cmdTest:
+        result.testFast = true
+        result.testNoMatrix = true
+        result.changed = true
+      else:
+        result.args.add(p)
+    of "--no-matrix":
+      if result.command == cmdTest:
+        result.testNoMatrix = true
+      else:
+        result.args.add(p)
+    of "--full":
+      if result.command == cmdTest:
+        result.testFull = true
+      else:
+        result.args.add(p)
+    of "--no-runner":
+      if result.command == cmdTest:
+        result.testNoRunner = true
+      else:
+        result.args.add(p)
     of "--show-output":
       if result.command == cmdTest and i + 1 < params.len:
         result.testShowOutput = params[i + 1]
@@ -465,6 +503,11 @@ Options:
   --keep-going           Continue independent task deps after failures
   --all-targets          Operate on all configured targets where supported
   --changed              Run only changed test files
+  --fast                 Test changed files with one local profile
+  --no-matrix            Test one profile instead of [test].profiles
+  --full                 Test the full configured profile matrix
+  --test-profile <name>  Test one profile; alias for --profile + --no-matrix
+  --no-runner            Discover test files instead of using a test runner
   --show-output <mode>   Test output: auto | always | never
   --json                 Print JSON where supported
   --format <mode>        Output format, e.g. dot | json
@@ -593,6 +636,7 @@ Options:
 Task args:
   Tasks only accept args when acceptArgs = true is set in bau.toml.
   Args are available as {args}, BAU_TASK_ARGS, and BAU_TASK_ARG_0, ...
+  Use {argsWithSep} to expand to "-- <args>" only when args are present.
 """
 
 proc findTask(cfg: BauConfig; name: string): Option[TaskInfo] =
@@ -737,10 +781,18 @@ proc ciCommand*(opts: CliOptions) =
     return
   let testResult = runTests(cfg, projectDir, TestRunOptions(
     profile: opts.profile,
+    profileExplicit: opts.profileExplicit,
     since: opts.since,
     showOutput: effectiveTestOutputMode(cfg, opts.testShowOutput),
     verbose: opts.verbose,
+    dryRun: opts.dryRun,
+    jobs: opts.jobs,
+    jobsExplicit: opts.jobsExplicit,
+    timings: opts.timings,
+    full: true,
     featureSelection: selectedFeatures(opts, cfg)))
+  if opts.dryRun:
+    return
   echo ""
   info("test results: " & $testResult.passed & " passed, " &
     $testResult.failed & " failed")
@@ -1872,13 +1924,24 @@ proc dispatchCommand*(opts: CliOptions) =
     let filter = if opts.args.len > 0: opts.args[0] else: ""
     let testResult = runTests(cfg, projectDir, TestRunOptions(
       profile: opts.profile,
+      profileExplicit: opts.profileExplicit,
       filter: filter,
       changed: opts.changed,
       since: opts.since,
       passthroughArgs: opts.passthroughArgs,
       showOutput: effectiveTestOutputMode(cfg, opts.testShowOutput),
       verbose: opts.verbose,
+      dryRun: opts.dryRun,
+      jobs: opts.jobs,
+      jobsExplicit: opts.jobsExplicit,
+      timings: opts.timings,
+      noMatrix: opts.testNoMatrix,
+      full: opts.testFull,
+      fast: opts.testFast,
+      noRunner: opts.testNoRunner,
       featureSelection: selectedFeatures(opts, cfg)))
+    if opts.dryRun:
+      return
     echo ""
     info("test results: " & $testResult.passed & " passed, " &
       $testResult.failed & " failed")

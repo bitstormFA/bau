@@ -94,6 +94,8 @@ type
   TestInfo* = object       ## Test discovery and runner settings from `[test]`.
     runner*: string        ## Explicit test runner file relative to the project root.
     profiles*: seq[string] ## Profiles used as the test matrix.
+    defaultProfile*: string ## Single profile used for fast local test runs.
+    fullProfiles*: seq[string] ## Full profile matrix used by `bau test --full` and CI.
     recursive*: bool       ## Whether test file discovery descends into subdirectories.
     exclude*: seq[string]  ## Test filenames or relative paths to skip.
     showOutput*: string    ## Default test output mode: auto, always, or never.
@@ -363,6 +365,9 @@ proc parseTestInfo(table: TomlValueRef): TestInfo =
   result.configured = true
   if table.hasKey("runner"): result.runner = table["runner"].getStr()
   result.profiles = getSeq(table, "profiles")
+  if table.hasKey("defaultProfile"):
+    result.defaultProfile = table["defaultProfile"].getStr()
+  result.fullProfiles = getSeq(table, "fullProfiles")
   result.recursive = getBool(table, "recursive", result.recursive)
   result.exclude = getSeq(table, "exclude")
   if table.hasKey("showOutput"):

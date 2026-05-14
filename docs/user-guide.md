@@ -399,7 +399,12 @@ are resolved from the project root.
 bau test                  # build and run all tests
 bau test "config"         # filter test files by name
 bau test --changed        # only tests affected by current changes
-bau test --profile test   # use the test profile
+bau test --profile test   # run only the test profile
+bau test --fast           # changed tests, one local profile, no matrix
+bau test --no-matrix      # run one profile instead of the configured matrix
+bau test --full           # run the full configured test matrix
+bau test --dry-run        # print planned profile/test invocations only
+bau test --jobs 8         # parallelize direct test file invocations
 bau test --show-output=always
 ```
 
@@ -408,16 +413,28 @@ file as the test runner. Otherwise it enumerates `tests/t*.nim` and runs each
 file separately. If a `test` profile is defined in `bau.toml`, it is used
 automatically.
 
+`--profile` overrides the configured test matrix for that invocation. Use
+`--full` to force the configured full matrix, or `--no-matrix` to keep local
+iteration to one profile. `--fast` is shorthand for changed tests with one local
+profile. When Bau runs individual test files, `--jobs` bounds how many test
+files compile and run at once. Explicit `--jobs N` and `--no-runner` both make
+Bau discover `tests/t*.nim` files directly instead of using a configured runner.
+
 Projects can declare the canonical runner and matrix:
 
 ```toml
 [test]
 runner = "tests/all.nim"
 profiles = ["dev", "release", "danger"]
+defaultProfile = "dev"
+fullProfiles = ["dev", "release", "danger"]
 recursive = true
 exclude = ["thelper.nim"]
 showOutput = "auto"
 ```
+
+When `defaultProfile` is set, plain `bau test` uses that single profile for the
+local edit loop and `bau ci` uses `fullProfiles` or `profiles`.
 
 `showOutput` accepts `auto`, `always`, or `never`. In `auto` mode Bau streams
 configured runners live and captures small individual test files.
@@ -1126,7 +1143,7 @@ These work with every command:
 | Flag | Description |
 |---|---|
 | `--profile`, `-p <name>` | Build profile (default: `dev`) |
-| `--jobs`, `-j <n>` | Parallel jobs forwarded as `--parallelBuild:<n>` to Nim |
+| `--jobs`, `-j <n>` | Parallel jobs; `bau test` uses this for direct test files |
 | `--verbose`, `-v` | Verbose output (prints full Nim command lines) |
 | `--quiet`, `-q` | Minimal output (warnings and errors only) |
 | `--color <mode>` | `auto`, `always`, or `never` |
@@ -1184,7 +1201,14 @@ binary target.
 
 Build and run tests. Optional filter string matches test file names.
 `--changed` runs only tests affected by current changes. `--show-output` can
-be `auto`, `always`, or `never`.
+be `auto`, `always`, or `never`. `--dry-run` prints the planned profile/test
+invocations without compiling or running. `--timings` reports compile, run, and
+total time for each profile/test invocation plus the slowest entries.
+
+`--profile <name>` and `--test-profile <name>` run only that profile, even when
+`[test].profiles` is configured. `--no-matrix` uses `[test].defaultProfile`, a
+`test` profile, or the CLI/default profile. `--full` uses
+`[test].fullProfiles` when present, then `[test].profiles`.
 
 ### `bau check`
 
@@ -1425,12 +1449,14 @@ tags = ["performance"]
 
 Task arguments are disabled by default. When `acceptArgs = true`, arguments
 after `--` are exposed through `{args}`, `BAU_TASK_ARGS`, and numbered
-environment variables:
+environment variables. `{argsWithSep}` expands to `-- <args>` only when args
+are present; the common `-- {args}` form also drops the separator when no args
+were passed:
 
 ```toml
 [[tasks]]
 name = "fetch"
-cmd = "nim c -r tools/fetch.nim -- {args}"
+cmd = "nim c -r tools/fetch.nim {argsWithSep}"
 acceptArgs = true
 ```
 
@@ -1694,6 +1720,8 @@ means there is no semantic difference between `bau build` and calling
 |---|---|---|
 | `runner` | string | Explicit test runner file, e.g. `"tests/all.nim"` |
 | `profiles` | string[] | Profile matrix for `bau test` |
+| `defaultProfile` | string | Single profile for local `bau test` and `--no-matrix` |
+| `fullProfiles` | string[] | Full matrix for `bau test --full` and `bau ci` |
 | `recursive` | bool | Recursively discover `tests/t*.nim` files |
 | `exclude` | string[] | Test filenames or relative paths to skip |
 | `showOutput` | string | `auto`, `always`, or `never` |

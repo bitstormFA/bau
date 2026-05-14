@@ -94,7 +94,13 @@ proc joinedTaskArgs(args: openArray[string]): string =
     result.add(quoteShell(arg))
 
 proc withTaskArgs(cmd: string; args: openArray[string]): string =
-  cmd.replace("{args}", joinedTaskArgs(args))
+  let joined = joinedTaskArgs(args)
+  let joinedWithSep = if args.len > 0: "-- " & joined else: ""
+  result = cmd.replace("{argsWithSep}", joinedWithSep)
+  if args.len == 0:
+    result = result.replace(" -- {args}", "")
+    result = result.replace("-- {args}", "")
+  result = result.replace("{args}", joined)
 
 proc runShellCommand(task: TaskInfo; projectDir: string;
     featureSelection: FeatureSelection; profile: string;

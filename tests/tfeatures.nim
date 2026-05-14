@@ -145,7 +145,67 @@ block test_matrix_uses_configured_profiles:
   var cfg = initBauConfig()
   cfg.test.profiles = @["dev", "release", "danger"]
   doAssert effectiveTestProfiles(cfg, "dev") == @["dev", "release", "danger"]
+  doAssert effectiveTestProfiles(cfg, "dev", profileExplicit = true) == @["dev"]
+  doAssert effectiveTestProfiles(cfg, "dev", noMatrix = true) == @["dev"]
+  cfg.test.defaultProfile = "dev"
+  cfg.test.fullProfiles = @["dev", "release", "danger", "asan"]
+  doAssert effectiveTestProfiles(cfg, "release") == @["dev"]
+  doAssert effectiveTestProfiles(cfg, "dev", full = true) ==
+    @["dev", "release", "danger", "asan"]
+  var single = initBauConfig()
+  doAssert effectiveTestProfiles(single, "release", profileExplicit = true,
+    full = true) == @["release"]
   doAssert parseTestOutputMode("always") == tomAlways
+
+block test_dry_run_does_not_execute_tests:
+  let tmp = getTempDir() / "bau-test-dry-run-plan"
+  if dirExists(tmp):
+    removeDir(tmp)
+  defer:
+    if dirExists(tmp):
+      removeDir(tmp)
+
+  write(tmp / "tests" / "tdry.nim", """
+import std/os
+writeFile("executed.txt", "ran")
+""")
+
+  var cfg = initBauConfig()
+  cfg.package.name = "demo"
+  cfg.build.source = "src"
+  cfg.profiles["dev"] = initProfileInfo()
+
+  let result = runTests(cfg, tmp, TestRunOptions(
+    profile: "dev",
+    dryRun: true,
+    jobs: 1,
+    noRunner: true,
+    showOutput: tomNever))
+  doAssert result.planned == 1
+  doAssert not fileExists(tmp / "executed.txt")
+
+block explicit_test_jobs_bypass_runner:
+  let tmp = getTempDir() / "bau-test-jobs-bypass-runner"
+  if dirExists(tmp):
+    removeDir(tmp)
+  defer:
+    if dirExists(tmp):
+      removeDir(tmp)
+
+  write(tmp / "tests" / "all.nim", "discard\n")
+  write(tmp / "tests" / "tone.nim", "discard\n")
+  write(tmp / "tests" / "ttwo.nim", "discard\n")
+
+  var cfg = initBauConfig()
+  cfg.test.runner = "tests/all.nim"
+
+  let cases = collectTestCases(cfg, tmp, TestRunOptions(
+    jobs: 2,
+    jobsExplicit: true,
+    showOutput: tomNever))
+  doAssert cases.len == 2
+  doAssert not cases[0].runner
+  doAssert not cases[1].runner
 
 block package_collects_include_exclude:
   let tmp = getTempDir() / "bau-test-package-files"
@@ -196,6 +256,27 @@ block task_args_are_opt_in_and_exposed:
   let opts = TaskRunOptions(profile: "dev", taskArgs: @["cpu"])
   doAssert runTaskByName(cfg, "fetch", tmp, opts)
   doAssert readFile(tmp / "out.txt") == "cpu"
+
+block task_args_omit_separator_when_empty:
+  let tmp = getTempDir() / "bau-test-task-empty-args"
+  if dirExists(tmp):
+    removeDir(tmp)
+  defer:
+    if dirExists(tmp):
+      removeDir(tmp)
+  createDir(tmp)
+
+  var cfg = initBauConfig()
+  cfg.package.name = "demo"
+  cfg.tasks.add(TaskInfo(
+    name: "fetch",
+    cmd: "printf '%s' -- {args} > args.txt",
+    shell: "sh",
+    acceptArgs: true))
+
+  let opts = TaskRunOptions(profile: "dev")
+  doAssert runTaskByName(cfg, "fetch", tmp, opts)
+  doAssert readFile(tmp / "args.txt") == ""
 
 block task_args_rejected_by_default:
   var cfg = initBauConfig()

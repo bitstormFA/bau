@@ -69,6 +69,30 @@ block parse_new_workflow_commands:
   doAssert test.testShowOutput == "always"
   doAssert test.passthroughArgs == @["--seed", "1"]
 
+  let fastTest = parseCliOptions(@["test", "--fast", "--jobs", "4"])
+  doAssert fastTest.command == cmdTest
+  doAssert fastTest.testFast
+  doAssert fastTest.testNoMatrix
+  doAssert fastTest.changed
+  doAssert fastTest.jobs == 4
+  doAssert fastTest.jobsExplicit
+
+  let oneProfile = parseCliOptions(@["test", "--profile", "release"])
+  doAssert oneProfile.command == cmdTest
+  doAssert oneProfile.profile == "release"
+  doAssert oneProfile.profileExplicit
+
+  let testProfile = parseCliOptions(@["test", "--test-profile", "dev"])
+  doAssert testProfile.command == cmdTest
+  doAssert testProfile.profile == "dev"
+  doAssert testProfile.profileExplicit
+  doAssert testProfile.testNoMatrix
+
+  let fullTest = parseCliOptions(@["test", "--full", "--no-runner"])
+  doAssert fullTest.command == cmdTest
+  doAssert fullTest.testFull
+  doAssert fullTest.testNoRunner
+
   let shorthand = parseCliOptions(@["server", "--profile", "release"])
   doAssert shorthand.command == cmdBuild
   doAssert shorthand.args == @["server"]
