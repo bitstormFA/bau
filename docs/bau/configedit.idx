@@ -1,11 +1,21 @@
 nimTitle	configedit	bau/configedit.html	module bau/configedit		0
 nim	DependencyEdit	bau/configedit.html#DependencyEdit	object DependencyEdit		7
 nim	DependencyEditResult	bau/configedit.html#DependencyEditResult	object DependencyEditResult		18
-nim	initDependencyEdit	bau/configedit.html#initDependencyEdit,string	proc initDependencyEdit(name: string): DependencyEdit		22
-nim	toDependencyEdit	bau/configedit.html#toDependencyEdit,string,DepInfo	proc toDependencyEdit(name: string; dep: DepInfo): DependencyEdit		26
-nim	dependencyLine	bau/configedit.html#dependencyLine,DependencyEdit	proc dependencyLine(edit: DependencyEdit): string		42
-nim	upsertDependencyInSection	bau/configedit.html#upsertDependencyInSection,string,string,DependencyEdit	proc upsertDependencyInSection(content, sectionName: string; edit: DependencyEdit): DependencyEditResult		93
-nim	removeDependencyFromSection	bau/configedit.html#removeDependencyFromSection,string,string,string	proc removeDependencyFromSection(content, sectionName, depName: string): DependencyEditResult		115
-nim	addDependency	bau/configedit.html#addDependency,string,DependencyEdit	proc addDependency(projectDir: string; edit: DependencyEdit)		138
-nim	removeDependency	bau/configedit.html#removeDependency,string,string	proc removeDependency(projectDir, depName: string)		147
-nim	writePatchEntry	bau/configedit.html#writePatchEntry,string,string,string	proc writePatchEntry(projectDir, depName, depPath: string)		160
+nim	vbMajor	bau/configedit.html#vbMajor	VersionBumpKind.vbMajor		22
+nim	vbMinor	bau/configedit.html#vbMinor	VersionBumpKind.vbMinor		22
+nim	vbPatch	bau/configedit.html#vbPatch	VersionBumpKind.vbPatch		22
+nim	VersionBumpKind	bau/configedit.html#VersionBumpKind	enum VersionBumpKind		22
+nim	VersionBumpResult	bau/configedit.html#VersionBumpResult	object VersionBumpResult		27
+nim	initDependencyEdit	bau/configedit.html#initDependencyEdit,string	proc initDependencyEdit(name: string): DependencyEdit		34
+nim	toDependencyEdit	bau/configedit.html#toDependencyEdit,string,DepInfo	proc toDependencyEdit(name: string; dep: DepInfo): DependencyEdit		38
+nim	dependencyLine	bau/configedit.html#dependencyLine,DependencyEdit	proc dependencyLine(edit: DependencyEdit): string		54
+nim	upsertDependencyInSection	bau/configedit.html#upsertDependencyInSection,string,string,DependencyEdit	proc upsertDependencyInSection(content, sectionName: string; edit: DependencyEdit): DependencyEditResult		126
+nim	removeDependencyFromSection	bau/configedit.html#removeDependencyFromSection,string,string,string	proc removeDependencyFromSection(content, sectionName, depName: string): DependencyEditResult		148
+nim	parseVersionBumpKind	bau/configedit.html#parseVersionBumpKind,string	proc parseVersionBumpKind(value: string): VersionBumpKind		168
+nim	bumpedSemVer	bau/configedit.html#bumpedSemVer,string,VersionBumpKind	proc bumpedSemVer(version: string; kind: VersionBumpKind): string		197
+nim	updatePackageVersionContent	bau/configedit.html#updatePackageVersionContent,string,string	proc updatePackageVersionContent(content, newVersion: string): DependencyEditResult		247
+nim	updateNimbleVersionContent	bau/configedit.html#updateNimbleVersionContent,string,string	proc updateNimbleVersionContent(content, newVersion: string): DependencyEditResult		258
+nim	bumpPackageVersion	bau/configedit.html#bumpPackageVersion,string,VersionBumpKind	proc bumpPackageVersion(projectDir: string; kind: VersionBumpKind; dryRun = false): VersionBumpResult		271
+nim	addDependency	bau/configedit.html#addDependency,string,DependencyEdit	proc addDependency(projectDir: string; edit: DependencyEdit)		300
+nim	removeDependency	bau/configedit.html#removeDependency,string,string	proc removeDependency(projectDir, depName: string)		309
+nim	writePatchEntry	bau/configedit.html#writePatchEntry,string,string,string	proc writePatchEntry(projectDir, depName, depPath: string)		322

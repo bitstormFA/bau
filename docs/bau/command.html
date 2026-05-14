@@ -67,6 +67,7 @@
   jobs*: int                 ## Parallel build job count.
   verbose*: bool             ## Whether verbose output is enabled.
   quiet*: bool               ## Whether normal progress output is suppressed.
+  help*: bool                ## Whether command-specific help was requested.
   watch*: bool               ## Whether to watch files and rerun work.
   color*: string             ## Color mode: `auto`, `always`, or `never`.
   args*: seq[string]         ## Positional command arguments.
@@ -80,6 +81,9 @@
   changed*: bool             ## Limit work to changed tests where supported.
   json*: bool                ## Request JSON output.
   list*: bool                ## Request list output for commands that support it.
+  rawCommand*: string        ## Original first CLI token before alias resolution.
+  rawArgs*: seq[string]      ## Original command-line arguments.
+  aliasResolved*: bool       ## True when this parse came from an alias expansion.
   offline*: bool             ## Avoid network dependency operations.
   locked*: bool              ## Require an up-to-date lockfile.
   update*: bool              ## Request update mode for install/deps commands.
@@ -97,6 +101,7 @@
   docSkipExamples*: bool     ## Skip runnable examples during docs.
   docIncludePrivate*: bool   ## Include private symbols in docs.
   docNoIndex*: bool          ## Suppress docs index generation.
+  testShowOutput*: string    ## Test output mode override.
   installDir*: string        ## Installation directory override.
   passthroughArgs*: seq[string] ## Arguments passed after `--`.
   initInfo*: ProjectInitInfo ## Project initialization metadata.">CliOptions</a></li>
@@ -127,7 +132,9 @@
   cmdTree,                  ## Print dependency tree output.
   cmdExplain,               ## Explain build cache state.
   cmdPublish,               ## Publish package metadata.
+  cmdBump,                  ## Increment the project package version.
   cmdShell,                 ## Open a shell with Bau environment.
+  cmdShellInit,             ## Add Bau's binary directory to the selected shell.
   cmdPlugin,                ## Delegate to an external `bau-*` plugin.
   cmdCompileCommands,       ## Generate compile command databases.
   cmdCiTemplate,            ## Generate CI templates.
@@ -154,6 +161,10 @@
 </ul>
 <ul class="simple nested-toc-section">applyDependencyArgs
   <li><a class="reference" href="#applyDependencyArgs%2COperationOptions%2CopenArray%5Bstring%5D" title="applyDependencyArgs(opOpts: var OperationOptions; args: openArray[string])">applyDependencyArgs(opOpts: var OperationOptions; args: openArray[string])</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">bumpCommand
+  <li><a class="reference" href="#bumpCommand%2CCliOptions" title="bumpCommand(opts: CliOptions)">bumpCommand(opts: CliOptions)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">cacheCommand
@@ -242,6 +253,18 @@
   <li><a class="reference" href="#printHelp" title="printHelp()">printHelp()</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">printTaskCommandHelp
+  <li><a class="reference" href="#printTaskCommandHelp" title="printTaskCommandHelp()">printTaskCommandHelp()</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">printTaskDetails
+  <li><a class="reference" href="#printTaskDetails%2CBauConfig%2Cstring%2CCliOptions" title="printTaskDetails(cfg: BauConfig; projectDir: string; opts: CliOptions)">printTaskDetails(cfg: BauConfig; projectDir: string; opts: CliOptions)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">printTaskList
+  <li><a class="reference" href="#printTaskList%2CBauConfig" title="printTaskList(cfg: BauConfig)">printTaskList(cfg: BauConfig)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">printVersion
   <li><a class="reference" href="#printVersion" title="printVersion()">printVersion()</a></li>
 
@@ -256,6 +279,10 @@
 </ul>
 <ul class="simple nested-toc-section">shellCommand
   <li><a class="reference" href="#shellCommand%2CCliOptions" title="shellCommand(opts: CliOptions)">shellCommand(opts: CliOptions)</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">shellInitCommand
+  <li><a class="reference" href="#shellInitCommand%2CCliOptions" title="shellInitCommand(opts: CliOptions)">shellInitCommand(opts: CliOptions)</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">tailorCommand
@@ -279,14 +306,14 @@
 
   </div>
   <div class="nine columns" id="content">
-    
+
     <div id="tocRoot"></div>
-    
+
     <p class="module-desc">Implements Bau's command-line parser and command handlers.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
-    <a class="reference external" href="util.html">util</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="init.html">init</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="atlas.html">atlas</a>, <a class="reference external" href="nimble.html">nimble</a>, <a class="reference external" href="ci_templates.html">ci_templates</a>, <a class="reference external" href="lock.html">lock</a>, <a class="reference external" href="metadata.html">metadata</a>, <a class="reference external" href="packaging.html">packaging</a>, <a class="reference external" href="tailor.html">tailor</a>, <a class="reference external" href="taskgraph.html">taskgraph</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="affected.html">affected</a>, <a class="reference external" href="depscheck.html">depscheck</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="toolchain.html">toolchain</a>, <a class="reference external" href="workspace.html">workspace</a>, <a class="reference external" href="ops.html">ops</a>, <a class="reference external" href="configedit.html">configedit</a>
+    <a class="reference external" href="argv.html">argv</a>, <a class="reference external" href="util.html">util</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="init.html">init</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="atlas.html">atlas</a>, <a class="reference external" href="nimble.html">nimble</a>, <a class="reference external" href="ci_templates.html">ci_templates</a>, <a class="reference external" href="lock.html">lock</a>, <a class="reference external" href="metadata.html">metadata</a>, <a class="reference external" href="packaging.html">packaging</a>, <a class="reference external" href="tailor.html">tailor</a>, <a class="reference external" href="taskgraph.html">taskgraph</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="affected.html">affected</a>, <a class="reference external" href="depscheck.html">depscheck</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="testexec.html">testexec</a>, <a class="reference external" href="toolchain.html">toolchain</a>, <a class="reference external" href="workspace.html">workspace</a>, <a class="reference external" href="ops.html">ops</a>, <a class="reference external" href="configedit.html">configedit</a>, <a class="reference external" href="installer.html">installer</a>
   </dl>
 </div>
 <div class="section" id="7">
@@ -299,6 +326,7 @@
   <span class="Identifier">jobs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>                 <span class="Comment">## Parallel build job count.</span>
   <span class="Identifier">verbose</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Whether verbose output is enabled.</span>
   <span class="Identifier">quiet</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>               <span class="Comment">## Whether normal progress output is suppressed.</span>
+  <span class="Identifier">help</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## Whether command-specific help was requested.</span>
   <span class="Identifier">watch</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>               <span class="Comment">## Whether to watch files and rerun work.</span>
   <span class="Identifier">color</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>             <span class="Comment">## Color mode: `auto`, `always`, or `never`.</span>
   <span class="Identifier">args</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>         <span class="Comment">## Positional command arguments.</span>
@@ -312,6 +340,9 @@
   <span class="Identifier">changed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Limit work to changed tests where supported.</span>
   <span class="Identifier">json</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## Request JSON output.</span>
   <span class="Identifier">list</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## Request list output for commands that support it.</span>
+  <span class="Identifier">rawCommand</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Original first CLI token before alias resolution.</span>
+  <span class="Identifier">rawArgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>      <span class="Comment">## Original command-line arguments.</span>
+  <span class="Identifier">aliasResolved</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>       <span class="Comment">## True when this parse came from an alias expansion.</span>
   <span class="Identifier">offline</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Avoid network dependency operations.</span>
   <span class="Identifier">locked</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## Require an up-to-date lockfile.</span>
   <span class="Identifier">update</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## Request update mode for install/deps commands.</span>
@@ -329,13 +360,14 @@
   <span class="Identifier">docSkipExamples</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>     <span class="Comment">## Skip runnable examples during docs.</span>
   <span class="Identifier">docIncludePrivate</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>   <span class="Comment">## Include private symbols in docs.</span>
   <span class="Identifier">docNoIndex</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>          <span class="Comment">## Suppress docs index generation.</span>
+  <span class="Identifier">testShowOutput</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>    <span class="Comment">## Test output mode override.</span>
   <span class="Identifier">installDir</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Installation directory override.</span>
   <span class="Identifier">passthroughArgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Arguments passed after `--`.</span>
   <span class="Identifier">initInfo</span><span class="Operator">*</span><span class="Other">:</span> <a href="init.html#ProjectInitInfo"><span class="Identifier">ProjectInitInfo</span></a> <span class="Comment">## Project initialization metadata.</span></pre></dt>
   <dd>
-    
+
     Parsed command-line options.
-    
+
   </dd>
 </div>
 <div id="Command">
@@ -366,7 +398,9 @@
   <span class="Identifier">cmdTree</span><span class="Other">,</span>                  <span class="Comment">## Print dependency tree output.</span>
   <span class="Identifier">cmdExplain</span><span class="Other">,</span>               <span class="Comment">## Explain build cache state.</span>
   <span class="Identifier">cmdPublish</span><span class="Other">,</span>               <span class="Comment">## Publish package metadata.</span>
+  <span class="Identifier">cmdBump</span><span class="Other">,</span>                  <span class="Comment">## Increment the project package version.</span>
   <span class="Identifier">cmdShell</span><span class="Other">,</span>                 <span class="Comment">## Open a shell with Bau environment.</span>
+  <span class="Identifier">cmdShellInit</span><span class="Other">,</span>             <span class="Comment">## Add Bau's binary directory to the selected shell.</span>
   <span class="Identifier">cmdPlugin</span><span class="Other">,</span>                <span class="Comment">## Delegate to an external `bau-*` plugin.</span>
   <span class="Identifier">cmdCompileCommands</span><span class="Other">,</span>       <span class="Comment">## Generate compile command databases.</span>
   <span class="Identifier">cmdCiTemplate</span><span class="Other">,</span>            <span class="Comment">## Generate CI templates.</span>
@@ -380,9 +414,9 @@
   <span class="Identifier">cmdCache</span><span class="Other">,</span>                 <span class="Comment">## Inspect or clean task cache.</span>
   <span class="Identifier">cmdDoctor</span>                  <span class="Comment">## Check toolchain health.</span></pre></dt>
   <dd>
-    
+
     Parsed CLI command.
-    
+
   </dd>
 </div>
 
@@ -398,9 +432,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute affected-work commands.
-    
+
   </dd>
 </div>
 
@@ -410,9 +444,22 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#applyDependencyArgs%2COperationOptions%2CopenArray%5Bstring%5D"><span class="Identifier">applyDependencyArgs</span></a><span class="Other">(</span><span class="Identifier">opOpts</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="ops.html#OperationOptions"><span class="Identifier">OperationOptions</span></a><span class="Other">;</span> <span class="Identifier">args</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Parse dependency-specific CLI flags into operation options.
-    
+
+  </dd>
+</div>
+
+</div>
+<div id="bumpCommand-procs-all">
+  <div id="bumpCommand,CliOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#bumpCommand%2CCliOptions"><span class="Identifier">bumpCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
+    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+                                <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+
+    Increment the project package version in Bau metadata.
+
   </dd>
 </div>
 
@@ -424,9 +471,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute task-cache inspection and cleanup commands.
-    
+
   </dd>
 </div>
 
@@ -435,12 +482,12 @@
   <div id="ciCommand,CliOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#ciCommand%2CCliOptions"><span class="Identifier">ciCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
-                                   <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span>
+    <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute Bau's local CI sequence.
-    
+
   </dd>
 </div>
 
@@ -451,9 +498,9 @@
     <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                                         <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute Nimble-to-Bau conversion.
-    
+
   </dd>
 </div>
 
@@ -462,9 +509,9 @@
   <div id="defaultOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#defaultOptions"><span class="Identifier">defaultOptions</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Return default CLI options before parsing user arguments.
-    
+
   </dd>
 </div>
 
@@ -476,25 +523,25 @@
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute dependency subcommands such as sync, update, lock, and verify.
-    
+
   </dd>
 </div>
 
 </div>
 <div id="dispatchCommand-procs-all">
   <div id="dispatchCommand,CliOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#dispatchCommand%2CCliOptions"><span class="Identifier">dispatchCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span>
-    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span>
-    <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span>
-    <span class="Identifier">JsonParsingError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">LibraryError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteEnvEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#dispatchCommand%2CCliOptions"><span class="Identifier">dispatchCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
+    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
+    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span>
+    <span class="Identifier">JsonParsingError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">LibraryError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
+    <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Dispatch parsed CLI options to the selected command implementation.
-    
+
   </dd>
 </div>
 
@@ -505,9 +552,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute toolchain and project health checks.
-    
+
   </dd>
 </div>
 
@@ -518,9 +565,9 @@
     <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
                      <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute the environment-reporting command.
-    
+
   </dd>
 </div>
 
@@ -531,9 +578,9 @@
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">JsonParsingError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute build-cache explanation output.
-    
+
   </dd>
 </div>
 
@@ -544,9 +591,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute the <tt class="docutils literal"><span class="pre"><span class="Identifier">fmt</span></span></tt> command.
-    
+
   </dd>
 </div>
 
@@ -558,9 +605,9 @@
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Format Nim files under a project's <tt class="docutils literal"><span class="pre"><span class="Identifier">src</span></span></tt> directory with <tt class="docutils literal"><span class="pre"><span class="Identifier">nimpretty</span></span></tt>.
-    
+
   </dd>
 </div>
 
@@ -573,9 +620,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Generate <tt class="docutils literal"><span class="pre"><span class="Identifier">compile_commands</span><span class="Operator">.</span><span class="Identifier">json</span></span></tt> for one project.
-    
+
   </dd>
 </div>
 
@@ -586,9 +633,9 @@
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute the <tt class="docutils literal"><span class="pre"><span class="Identifier">graph</span></span></tt> command.
-    
+
   </dd>
 </div>
 
@@ -600,9 +647,9 @@
     <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute install, update, and uninstall commands.
-    
+
   </dd>
 </div>
 
@@ -614,9 +661,9 @@
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
                                      <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute the <tt class="docutils literal"><span class="pre"><span class="Identifier">lint</span></span></tt> command.
-    
+
   </dd>
 </div>
 
@@ -628,9 +675,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute the <tt class="docutils literal"><span class="pre"><span class="Identifier">metadata</span></span></tt> command.
-    
+
   </dd>
 </div>
 
@@ -642,9 +689,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute dependency status reporting.
-    
+
   </dd>
 </div>
 
@@ -655,9 +702,9 @@
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute package inspection and manifest generation.
-    
+
   </dd>
 </div>
 
@@ -668,9 +715,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Parse command-line parameters into <tt class="docutils literal"><span class="pre"><span class="Identifier">CliOptions</span></span></tt>.
-    
+
   </dd>
 </div>
 
@@ -681,9 +728,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute an external <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span><span class="Operator">-*</span></span></tt> plugin command.
-    
+
   </dd>
 </div>
 
@@ -692,9 +739,44 @@
   <div id="printHelp">
   <dt><pre><span class="Keyword">proc</span> <a href="#printHelp"><span class="Identifier">printHelp</span></a><span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Print Bau's command-line help text.
-    
+
+  </dd>
+</div>
+
+</div>
+<div id="printTaskCommandHelp-procs-all">
+  <div id="printTaskCommandHelp">
+  <dt><pre><span class="Keyword">proc</span> <a href="#printTaskCommandHelp"><span class="Identifier">printTaskCommandHelp</span></a><span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+
+    Print help for the task command.
+
+  </dd>
+</div>
+
+</div>
+<div id="printTaskDetails-procs-all">
+  <div id="printTaskDetails,BauConfig,string,CliOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#printTaskDetails%2CBauConfig%2Cstring%2CCliOptions"><span class="Identifier">printTaskDetails</span></a><span class="Other">(</span><span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
+    <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+
+    Print metadata for one configured task.
+
+  </dd>
+</div>
+
+</div>
+<div id="printTaskList-procs-all">
+  <div id="printTaskList,BauConfig">
+  <dt><pre><span class="Keyword">proc</span> <a href="#printTaskList%2CBauConfig"><span class="Identifier">printTaskList</span></a><span class="Other">(</span><span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+
+    Print configured tasks with descriptions and useful flags.
+
   </dd>
 </div>
 
@@ -703,9 +785,9 @@
   <div id="printVersion">
   <dt><pre><span class="Keyword">proc</span> <a href="#printVersion"><span class="Identifier">printVersion</span></a><span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Print Bau's version string.
-    
+
   </dd>
 </div>
 
@@ -717,9 +799,9 @@
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute package publishing or publish dry-run inspection.
-    
+
   </dd>
 </div>
 
@@ -730,9 +812,9 @@
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute dependency query commands.
-    
+
   </dd>
 </div>
 
@@ -744,9 +826,22 @@
                      <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
                                       <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute an interactive shell with Bau environment variables set.
-    
+
+  </dd>
+</div>
+
+</div>
+<div id="shellInitCommand-procs-all">
+  <div id="shellInitCommand,CliOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#shellInitCommand%2CCliOptions"><span class="Identifier">shellInitCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+
+    Add Bau's binary directory to the selected shell startup file.
+
   </dd>
 </div>
 
@@ -757,9 +852,9 @@
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute target-discovery and config-tailoring commands.
-    
+
   </dd>
 </div>
 
@@ -770,9 +865,9 @@
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Execute dependency tree reporting.
-    
+
   </dd>
 </div>
 
@@ -784,9 +879,9 @@
                       <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
                       <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-    
+
     Watch project files and rerun the selected build-like command.
-    
+
   </dd>
 </div>
 
@@ -801,10 +896,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-13 12:17:28 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 12:30:05 UTC</small>
       </div>
     </div>
   </div>
-  
+
 </body>
 </html>

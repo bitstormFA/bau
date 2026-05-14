@@ -5,41 +5,44 @@ nim	bkTest	bau/config.html#bkTest	BuildKind.bkTest		8
 nim	BuildKind	bau/config.html#BuildKind	enum BuildKind		8
 nim	PackageInfo	bau/config.html#PackageInfo	object PackageInfo		13
 nim	BuildInfo	bau/config.html#BuildInfo	object BuildInfo		25
-nim	ProfileInfo	bau/config.html#ProfileInfo	object ProfileInfo		33
-nim	DepInfo	bau/config.html#DepInfo	object DepInfo		40
-nim	SourceInfo	bau/config.html#SourceInfo	object SourceInfo		50
-nim	ToolchainInfo	bau/config.html#ToolchainInfo	object ToolchainInfo		57
-nim	FeatureInfo	bau/config.html#FeatureInfo	object FeatureInfo		61
-nim	GovernanceInfo	bau/config.html#GovernanceInfo	object GovernanceInfo		64
-nim	CacheInfo	bau/config.html#CacheInfo	object CacheInfo		69
-nim	InstallInfo	bau/config.html#InstallInfo	object InstallInfo		75
-nim	DocsInfo	bau/config.html#DocsInfo	object DocsInfo		78
-nim	TargetInfo	bau/config.html#TargetInfo	object TargetInfo		92
-nim	ScriptInfo	bau/config.html#ScriptInfo	object ScriptInfo		100
-nim	TaskInfo	bau/config.html#TaskInfo	object TaskInfo		105
-nim	BauConfig	bau/config.html#BauConfig	object BauConfig		121
-nim	WorkspaceConfig	bau/config.html#WorkspaceConfig	object WorkspaceConfig		140
-nim	FullConfig	bau/config.html#FullConfig	object FullConfig		151
-nim	initPackageInfo	bau/config.html#initPackageInfo	proc initPackageInfo(): PackageInfo		157
-nim	initBuildInfo	bau/config.html#initBuildInfo	proc initBuildInfo(): BuildInfo		161
-nim	initToolchainInfo	bau/config.html#initToolchainInfo	proc initToolchainInfo(): ToolchainInfo		165
-nim	initGovernanceInfo	bau/config.html#initGovernanceInfo	proc initGovernanceInfo(): GovernanceInfo		169
-nim	initCacheInfo	bau/config.html#initCacheInfo	proc initCacheInfo(): CacheInfo		173
-nim	initInstallInfo	bau/config.html#initInstallInfo	proc initInstallInfo(): InstallInfo		177
-nim	initDocsInfo	bau/config.html#initDocsInfo	proc initDocsInfo(): DocsInfo		181
-nim	initProfileInfo	bau/config.html#initProfileInfo	proc initProfileInfo(): ProfileInfo		186
-nim	initBauConfig	bau/config.html#initBauConfig	proc initBauConfig(): BauConfig		190
-nim	resolveCatalogDeps	bau/config.html#resolveCatalogDeps,BauConfig	proc resolveCatalogDeps(cfg: var BauConfig)		393
-nim	parseBauConfig	bau/config.html#parseBauConfig,string,string	proc parseBauConfig(data: string; fileName: string = ""): BauConfig		400
-nim	parseBauConfigFile	bau/config.html#parseBauConfigFile,string	proc parseBauConfigFile(path: string): BauConfig		484
-nim	parseTasksToml	bau/config.html#parseTasksToml,string	proc parseTasksToml(data: string): seq[TaskInfo]		520
-nim	mergeProfile	bau/config.html#mergeProfile,ProfileInfo,ProfileInfo	proc mergeProfile(base: var ProfileInfo; override: ProfileInfo)		533
-nim	mergePackageDefaults	bau/config.html#mergePackageDefaults,PackageInfo,PackageInfo	proc mergePackageDefaults(base: var PackageInfo; defaults: PackageInfo)		548
-nim	applyWorkspaceDefaults	bau/config.html#applyWorkspaceDefaults,BauConfig,WorkspaceConfig	proc applyWorkspaceDefaults(cfg: var BauConfig; ws: WorkspaceConfig)		571
-nim	applyPatches	bau/config.html#applyPatches,BauConfig	proc applyPatches(cfg: var BauConfig)		607
-nim	resolveProfile	bau/config.html#resolveProfile,Table[string,ProfileInfo],string	proc resolveProfile(profiles: Table[string, ProfileInfo]; name: string): ProfileInfo		613
-nim	loadGlobalConfig	bau/config.html#loadGlobalConfig	proc loadGlobalConfig(): Option[FullConfig]		624
-nim	loadLocalConfig	bau/config.html#loadLocalConfig,string	proc loadLocalConfig(projectDir: string): Option[BauConfig]		643
-nim	loadWorkspaceConfig	bau/config.html#loadWorkspaceConfig,string	proc loadWorkspaceConfig(path: string): Option[WorkspaceConfig]		655
-nim	mergeBauConfig	bau/config.html#mergeBauConfig,BauConfig,BauConfig	proc mergeBauConfig(base: var BauConfig; override: BauConfig)		668
-nim	loadEffectiveConfig	bau/config.html#loadEffectiveConfig,string,string	proc loadEffectiveConfig(projectDir: string; workspaceRoot: string = ""): BauConfig		755
+nim	ProfileInfo	bau/config.html#ProfileInfo	object ProfileInfo		35
+nim	DepInfo	bau/config.html#DepInfo	object DepInfo		42
+nim	SourceInfo	bau/config.html#SourceInfo	object SourceInfo		52
+nim	ToolchainInfo	bau/config.html#ToolchainInfo	object ToolchainInfo		59
+nim	FeatureInfo	bau/config.html#FeatureInfo	object FeatureInfo		63
+nim	GovernanceInfo	bau/config.html#GovernanceInfo	object GovernanceInfo		66
+nim	CacheInfo	bau/config.html#CacheInfo	object CacheInfo		71
+nim	InstallInfo	bau/config.html#InstallInfo	object InstallInfo		77
+nim	DocsInfo	bau/config.html#DocsInfo	object DocsInfo		80
+nim	TestInfo	bau/config.html#TestInfo	object TestInfo		94
+nim	TargetInfo	bau/config.html#TargetInfo	object TargetInfo		102
+nim	ScriptInfo	bau/config.html#ScriptInfo	object ScriptInfo		113
+nim	TaskInfo	bau/config.html#TaskInfo	object TaskInfo		118
+nim	BauConfig	bau/config.html#BauConfig	object BauConfig		137
+nim	WorkspaceConfig	bau/config.html#WorkspaceConfig	object WorkspaceConfig		159
+nim	FullConfig	bau/config.html#FullConfig	object FullConfig		170
+nim	initPackageInfo	bau/config.html#initPackageInfo	proc initPackageInfo(): PackageInfo		176
+nim	initBuildInfo	bau/config.html#initBuildInfo	proc initBuildInfo(): BuildInfo		180
+nim	initToolchainInfo	bau/config.html#initToolchainInfo	proc initToolchainInfo(): ToolchainInfo		184
+nim	initGovernanceInfo	bau/config.html#initGovernanceInfo	proc initGovernanceInfo(): GovernanceInfo		188
+nim	initCacheInfo	bau/config.html#initCacheInfo	proc initCacheInfo(): CacheInfo		192
+nim	initInstallInfo	bau/config.html#initInstallInfo	proc initInstallInfo(): InstallInfo		196
+nim	initDocsInfo	bau/config.html#initDocsInfo	proc initDocsInfo(): DocsInfo		200
+nim	initTestInfo	bau/config.html#initTestInfo	proc initTestInfo(): TestInfo		205
+nim	initProfileInfo	bau/config.html#initProfileInfo	proc initProfileInfo(): ProfileInfo		209
+nim	initBauConfig	bau/config.html#initBauConfig	proc initBauConfig(): BauConfig		213
+nim	defaultTargetName	bau/config.html#defaultTargetName,BauConfig	proc defaultTargetName(cfg: BauConfig): string		225
+nim	resolveCatalogDeps	bau/config.html#resolveCatalogDeps,BauConfig	proc resolveCatalogDeps(cfg: var BauConfig)		447
+nim	parseBauConfig	bau/config.html#parseBauConfig,string,string	proc parseBauConfig(data: string; fileName: string = ""): BauConfig		454
+nim	parseBauConfigFile	bau/config.html#parseBauConfigFile,string	proc parseBauConfigFile(path: string): BauConfig		547
+nim	parseTasksToml	bau/config.html#parseTasksToml,string	proc parseTasksToml(data: string): seq[TaskInfo]		583
+nim	mergeProfile	bau/config.html#mergeProfile,ProfileInfo,ProfileInfo	proc mergeProfile(base: var ProfileInfo; override: ProfileInfo)		596
+nim	mergePackageDefaults	bau/config.html#mergePackageDefaults,PackageInfo,PackageInfo	proc mergePackageDefaults(base: var PackageInfo; defaults: PackageInfo)		611
+nim	applyWorkspaceDefaults	bau/config.html#applyWorkspaceDefaults,BauConfig,WorkspaceConfig	proc applyWorkspaceDefaults(cfg: var BauConfig; ws: WorkspaceConfig)		634
+nim	applyPatches	bau/config.html#applyPatches,BauConfig	proc applyPatches(cfg: var BauConfig)		670
+nim	resolveProfile	bau/config.html#resolveProfile,Table[string,ProfileInfo],string	proc resolveProfile(profiles: Table[string, ProfileInfo]; name: string): ProfileInfo		676
+nim	loadGlobalConfig	bau/config.html#loadGlobalConfig	proc loadGlobalConfig(): Option[FullConfig]		687
+nim	loadLocalConfig	bau/config.html#loadLocalConfig,string	proc loadLocalConfig(projectDir: string): Option[BauConfig]		706
+nim	loadWorkspaceConfig	bau/config.html#loadWorkspaceConfig,string	proc loadWorkspaceConfig(path: string): Option[WorkspaceConfig]		718
+nim	mergeBauConfig	bau/config.html#mergeBauConfig,BauConfig,BauConfig	proc mergeBauConfig(base: var BauConfig; override: BauConfig)		731
+nim	loadEffectiveConfig	bau/config.html#loadEffectiveConfig,string,string	proc loadEffectiveConfig(projectDir: string; workspaceRoot: string = ""): BauConfig		831

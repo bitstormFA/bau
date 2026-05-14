@@ -3,11 +3,11 @@ nim	dependencyTreeJson	bau/metadata.html#dependencyTreeJson,BauConfig,string	pro
 nim	dependencyStatusJson	bau/metadata.html#dependencyStatusJson,BauConfig,string	proc dependencyStatusJson(cfg: BauConfig; projectDir: string): JsonNode		184
 nim	dependencyTreeText	bau/metadata.html#dependencyTreeText,BauConfig,string	proc dependencyTreeText(cfg: BauConfig; projectDir: string): string		300
 nim	dependencyStatusText	bau/metadata.html#dependencyStatusText,BauConfig,string	proc dependencyStatusText(cfg: BauConfig; projectDir: string): string		335
-nim	configMetadataJson	bau/metadata.html#configMetadataJson,BauConfig,string,int	proc configMetadataJson(cfg: BauConfig; projectDir: string; formatVersion: int = 1): JsonNode		423
-nim	graphJson	bau/metadata.html#graphJson,BauConfig,string	proc graphJson(cfg: BauConfig; projectDir: string = ""): JsonNode		554
-nim	graphDot	bau/metadata.html#graphDot,BauConfig,string	proc graphDot(cfg: BauConfig; projectDir: string = ""): string		606
-nim	queryDeps	bau/metadata.html#queryDeps,BauConfig,string	proc queryDeps(cfg: BauConfig; name: string): seq[string]		618
-nim	queryResolvedDeps	bau/metadata.html#queryResolvedDeps,string,string	proc queryResolvedDeps(projectDir: string; name: string): seq[string]		636
-nim	queryResolvedWhy	bau/metadata.html#queryResolvedWhy,string,string	proc queryResolvedWhy(projectDir, depName: string): string		653
-nim	queryWhy	bau/metadata.html#queryWhy,BauConfig,string	proc queryWhy(cfg: BauConfig; depName: string): string		673
-nim	buildStatusJson	bau/metadata.html#buildStatusJson,BauConfig,string,string	proc buildStatusJson(cfg: BauConfig; projectDir: string; profile: string): JsonNode		699
+nim	configMetadataJson	bau/metadata.html#configMetadataJson,BauConfig,string,int	proc configMetadataJson(cfg: BauConfig; projectDir: string; formatVersion: int = 1): JsonNode		438
+nim	graphJson	bau/metadata.html#graphJson,BauConfig,string	proc graphJson(cfg: BauConfig; projectDir: string = ""): JsonNode		597
+nim	graphDot	bau/metadata.html#graphDot,BauConfig,string	proc graphDot(cfg: BauConfig; projectDir: string = ""): string		665
+nim	queryDeps	bau/metadata.html#queryDeps,BauConfig,string	proc queryDeps(cfg: BauConfig; name: string): seq[string]		677
+nim	queryResolvedDeps	bau/metadata.html#queryResolvedDeps,string,string	proc queryResolvedDeps(projectDir: string; name: string): seq[string]		696
+nim	queryResolvedWhy	bau/metadata.html#queryResolvedWhy,string,string	proc queryResolvedWhy(projectDir, depName: string): string		713
+nim	queryWhy	bau/metadata.html#queryWhy,BauConfig,string	proc queryWhy(cfg: BauConfig; depName: string): string		733
+nim	buildStatusJson	bau/metadata.html#buildStatusJson,BauConfig,string,string	proc buildStatusJson(cfg: BauConfig; projectDir: string; profile: string): JsonNode		759

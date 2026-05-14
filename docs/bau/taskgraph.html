@@ -67,7 +67,8 @@
   dryRun*: bool              ## Print planned work without running commands.
   force*: bool               ## Ignore freshness and cache hits.
   keepGoing*: bool           ## Continue independent tasks after failures.
-  features*: FeatureSelection ## Feature selection exposed to tasks.">TaskRunOptions</a></li>
+  features*: FeatureSelection ## Feature selection exposed to tasks.
+  taskArgs*: seq[string]     ## Arguments passed after `bau task &lt;name&gt; --`.">TaskRunOptions</a></li>
 
     </ul>
   </details>
@@ -100,7 +101,7 @@
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
-    <a class="reference external" href="argv.html">argv</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="remote.html">remote</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="util.html">util</a>
+    <a class="reference external" href="argv.html">argv</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="remote.html">remote</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="testexec.html">testexec</a>, <a class="reference external" href="util.html">util</a>
   </dl>
 </div>
 <div class="section" id="7">
@@ -113,7 +114,8 @@
   <span class="Identifier">dryRun</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## Print planned work without running commands.</span>
   <span class="Identifier">force</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>               <span class="Comment">## Ignore freshness and cache hits.</span>
   <span class="Identifier">keepGoing</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>           <span class="Comment">## Continue independent tasks after failures.</span>
-  <span class="Identifier">features</span><span class="Operator">*</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Comment">## Feature selection exposed to tasks.</span></pre></dt>
+  <span class="Identifier">features</span><span class="Operator">*</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Comment">## Feature selection exposed to tasks.</span>
+  <span class="Identifier">taskArgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>     <span class="Comment">## Arguments passed after `bau task &lt;name&gt; --`.</span></pre></dt>
   <dd>
     
     Options controlling task execution.
@@ -164,7 +166,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-13 12:17:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 12:30:26 UTC</small>
       </div>
     </div>
   </div>

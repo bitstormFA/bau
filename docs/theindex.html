@@ -28,7 +28,7 @@
     <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="bau.html">bau</a>, <a href="bau/affected.html">bau/affected</a>, <a href="bau/argv.html">bau/argv</a>, <a href="bau/atlas.html">bau/atlas</a>, <a href="bau/build.html">bau/build</a>, <a href="bau/buildscript.html">bau/buildscript</a>, <a href="bau/ci_templates.html">bau/ci_templates</a>, <a href="bau/command.html">bau/command</a>, <a href="bau/config.html">bau/config</a>, <a href="bau/configedit.html">bau/configedit</a>, <a href="bau/depscheck.html">bau/depscheck</a>, <a href="bau/digest.html">bau/digest</a>, <a href="bau/docgen.html">bau/docgen</a>, <a href="bau/features.html">bau/features</a>, <a href="bau/fingerprint.html">bau/fingerprint</a>, <a href="bau/init.html">bau/init</a>, <a href="bau/installer.html">bau/installer</a>, <a href="bau/lock.html">bau/lock</a>, <a href="bau/mcp.html">bau/mcp</a>, <a href="bau/metadata.html">bau/metadata</a>, <a href="bau/nimble.html">bau/nimble</a>, <a href="bau/nimscan.html">bau/nimscan</a>, <a href="bau/ops.html">bau/ops</a>, <a href="bau/packaging.html">bau/packaging</a>, <a href="bau/remote.html">bau/remote</a>, <a href="bau/tailor.html">bau/tailor</a>, <a href="bau/taskcache.html">bau/taskcache</a>, <a href="bau/taskgraph.html">bau/taskgraph</a>, <a href="bau/toolchain.html">bau/toolchain</a>, <a href="bau/util.html">bau/util</a>, <a href="bau/workspace.html">bau/workspace</a>.<br/><p /><h2>API symbols</h2>
+      Modules: <a href="bau.html">bau</a>, <a href="bau/affected.html">bau/affected</a>, <a href="bau/argv.html">bau/argv</a>, <a href="bau/atlas.html">bau/atlas</a>, <a href="bau/build.html">bau/build</a>, <a href="bau/buildscript.html">bau/buildscript</a>, <a href="bau/ci_templates.html">bau/ci_templates</a>, <a href="bau/command.html">bau/command</a>, <a href="bau/config.html">bau/config</a>, <a href="bau/configedit.html">bau/configedit</a>, <a href="bau/depscheck.html">bau/depscheck</a>, <a href="bau/digest.html">bau/digest</a>, <a href="bau/docgen.html">bau/docgen</a>, <a href="bau/features.html">bau/features</a>, <a href="bau/fingerprint.html">bau/fingerprint</a>, <a href="bau/init.html">bau/init</a>, <a href="bau/installer.html">bau/installer</a>, <a href="bau/lock.html">bau/lock</a>, <a href="bau/mcp.html">bau/mcp</a>, <a href="bau/metadata.html">bau/metadata</a>, <a href="bau/nimble.html">bau/nimble</a>, <a href="bau/nimscan.html">bau/nimscan</a>, <a href="bau/ops.html">bau/ops</a>, <a href="bau/packaging.html">bau/packaging</a>, <a href="bau/remote.html">bau/remote</a>, <a href="bau/tailor.html">bau/tailor</a>, <a href="bau/taskcache.html">bau/taskcache</a>, <a href="bau/taskgraph.html">bau/taskgraph</a>, <a href="bau/testexec.html">bau/testexec</a>, <a href="bau/toolchain.html">bau/toolchain</a>, <a href="bau/util.html">bau/util</a>, <a href="bau/workspace.html">bau/workspace</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%3D%3D%60" href="#%60%3D%3D%60"><span>`==`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="fingerprint: proc `==`(a, b: Fingerprint): bool" href="bau/fingerprint.html#%3D%3D%2CFingerprint%2CFingerprint">fingerprint: proc `==`(a, b: Fingerprint): bool</a></li>
@@ -179,6 +179,18 @@
                   projectDir: string; verbose: bool;
                   featureSelection: FeatureSelection = FeatureSelection()): string</a></li>
           </ul></dd>
+<dt><a name="bumpCommand" href="#bumpCommand"><span>bumpCommand:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc bumpCommand(opts: CliOptions)" href="bau/command.html#bumpCommand%2CCliOptions">command: proc bumpCommand(opts: CliOptions)</a></li>
+          </ul></dd>
+<dt><a name="bumpedSemVer" href="#bumpedSemVer"><span>bumpedSemVer:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: proc bumpedSemVer(version: string; kind: VersionBumpKind): string" href="bau/configedit.html#bumpedSemVer%2Cstring%2CVersionBumpKind">configedit: proc bumpedSemVer(version: string; kind: VersionBumpKind): string</a></li>
+          </ul></dd>
+<dt><a name="bumpPackageVersion" href="#bumpPackageVersion"><span>bumpPackageVersion:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: proc bumpPackageVersion(projectDir: string; kind: VersionBumpKind; dryRun = false): VersionBumpResult" href="bau/configedit.html#bumpPackageVersion%2Cstring%2CVersionBumpKind">configedit: proc bumpPackageVersion(projectDir: string; kind: VersionBumpKind; dryRun = false): VersionBumpResult</a></li>
+          </ul></dd>
 <dt><a name="cacheCommand" href="#cacheCommand"><span>cacheCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: proc cacheCommand(opts: CliOptions)" href="bau/command.html#cacheCommand%2CCliOptions">command: proc cacheCommand(opts: CliOptions)</a></li>
@@ -274,6 +286,10 @@
 <dt><a name="cmdBuild" href="#cmdBuild"><span>cmdBuild:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: Command.cmdBuild" href="bau/command.html#cmdBuild">command: Command.cmdBuild</a></li>
+          </ul></dd>
+<dt><a name="cmdBump" href="#cmdBump"><span>cmdBump:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: Command.cmdBump" href="bau/command.html#cmdBump">command: Command.cmdBump</a></li>
           </ul></dd>
 <dt><a name="cmdCache" href="#cmdCache"><span>cmdCache:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -391,6 +407,10 @@
 <li><a class="reference external"
           data-doc-search-tag="command: Command.cmdShell" href="bau/command.html#cmdShell">command: Command.cmdShell</a></li>
           </ul></dd>
+<dt><a name="cmdShellInit" href="#cmdShellInit"><span>cmdShellInit:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: Command.cmdShellInit" href="bau/command.html#cmdShellInit">command: Command.cmdShellInit</a></li>
+          </ul></dd>
 <dt><a name="cmdTailor" href="#cmdTailor"><span>cmdTailor:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: Command.cmdTailor" href="bau/command.html#cmdTailor">command: Command.cmdTailor</a></li>
@@ -444,6 +464,12 @@
 <dt><a name="collectPackageFiles" href="#collectPackageFiles"><span>collectPackageFiles:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="packaging: proc collectPackageFiles(projectDir: string; cfg: BauConfig): seq[string]" href="bau/packaging.html#collectPackageFiles%2Cstring%2CBauConfig">packaging: proc collectPackageFiles(projectDir: string; cfg: BauConfig): seq[string]</a></li>
+          </ul></dd>
+<dt><a name="collectTestCases" href="#collectTestCases"><span>collectTestCases:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: proc collectTestCases(cfg: BauConfig; projectDir: string; opts: TestRunOptions): seq[
+    TestCase]" href="bau/testexec.html#collectTestCases%2CBauConfig%2Cstring%2CTestRunOptions">testexec: proc collectTestCases(cfg: BauConfig; projectDir: string; opts: TestRunOptions): seq[
+    TestCase]</a></li>
           </ul></dd>
 <dt><a name="Command" href="#Command"><span>Command:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -570,6 +596,10 @@
 <dt><a name="DefaultResolver" href="#DefaultResolver"><span>DefaultResolver:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="lock: const DefaultResolver" href="bau/lock.html#DefaultResolver">lock: const DefaultResolver</a></li>
+          </ul></dd>
+<dt><a name="defaultTargetName" href="#defaultTargetName"><span>defaultTargetName:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="config: proc defaultTargetName(cfg: BauConfig): string" href="bau/config.html#defaultTargetName%2CBauConfig">config: proc defaultTargetName(cfg: BauConfig): string</a></li>
           </ul></dd>
 <dt><a name="DependencyCheck" href="#DependencyCheck"><span>DependencyCheck:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -710,6 +740,16 @@
 <dt><a name="doctorCommand" href="#doctorCommand"><span>doctorCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: proc doctorCommand(opts: CliOptions)" href="bau/command.html#doctorCommand%2CCliOptions">command: proc doctorCommand(opts: CliOptions)</a></li>
+          </ul></dd>
+<dt><a name="effectiveTestOutputMode" href="#effectiveTestOutputMode"><span>effectiveTestOutputMode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: proc effectiveTestOutputMode(cfg: BauConfig; override: string): TestOutputMode" href="bau/testexec.html#effectiveTestOutputMode%2CBauConfig%2Cstring">testexec: proc effectiveTestOutputMode(cfg: BauConfig; override: string): TestOutputMode</a></li>
+          </ul></dd>
+<dt><a name="effectiveTestProfiles" href="#effectiveTestProfiles"><span>effectiveTestProfiles:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: proc effectiveTestProfiles(cfg: BauConfig; requestedProfile: string;
+                      useConfiguredProfiles = true): seq[string]" href="bau/testexec.html#effectiveTestProfiles%2CBauConfig%2Cstring">testexec: proc effectiveTestProfiles(cfg: BauConfig; requestedProfile: string;
+                      useConfiguredProfiles = true): seq[string]</a></li>
           </ul></dd>
 <dt><a name="enabledFeatureEnv" href="#enabledFeatureEnv"><span>enabledFeatureEnv:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -997,6 +1037,14 @@
 <li><a class="reference external"
           data-doc-search-tag="lock: proc initResolveGraph(): ResolveGraph" href="bau/lock.html#initResolveGraph">lock: proc initResolveGraph(): ResolveGraph</a></li>
           </ul></dd>
+<dt><a name="initShellPath" href="#initShellPath"><span>initShellPath:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="installer: proc initShellPath(selectedShell = &quot;&quot;; pathEnv = getEnv(&quot;PATH&quot;); home = homeDir()): ShellInitResult" href="bau/installer.html#initShellPath%2Cstring">installer: proc initShellPath(selectedShell = &quot;&quot;; pathEnv = getEnv(&quot;PATH&quot;); home = homeDir()): ShellInitResult</a></li>
+          </ul></dd>
+<dt><a name="initTestInfo" href="#initTestInfo"><span>initTestInfo:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="config: proc initTestInfo(): TestInfo" href="bau/config.html#initTestInfo">config: proc initTestInfo(): TestInfo</a></li>
+          </ul></dd>
 <dt><a name="initToolchainInfo" href="#initToolchainInfo"><span>initToolchainInfo:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="config: proc initToolchainInfo(): ToolchainInfo" href="bau/config.html#initToolchainInfo">config: proc initToolchainInfo(): ToolchainInfo</a></li>
@@ -1277,6 +1325,14 @@
 <li><a class="reference external"
           data-doc-search-tag="config: proc parseTasksToml(data: string): seq[TaskInfo]" href="bau/config.html#parseTasksToml%2Cstring">config: proc parseTasksToml(data: string): seq[TaskInfo]</a></li>
           </ul></dd>
+<dt><a name="parseTestOutputMode" href="#parseTestOutputMode"><span>parseTestOutputMode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: proc parseTestOutputMode(value: string): TestOutputMode" href="bau/testexec.html#parseTestOutputMode%2Cstring">testexec: proc parseTestOutputMode(value: string): TestOutputMode</a></li>
+          </ul></dd>
+<dt><a name="parseVersionBumpKind" href="#parseVersionBumpKind"><span>parseVersionBumpKind:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: proc parseVersionBumpKind(value: string): VersionBumpKind" href="bau/configedit.html#parseVersionBumpKind%2Cstring">configedit: proc parseVersionBumpKind(value: string): VersionBumpKind</a></li>
+          </ul></dd>
 <dt><a name="platformTriple" href="#platformTriple"><span>platformTriple:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="util: proc platformTriple(): string" href="bau/util.html#platformTriple">util: proc platformTriple(): string</a></li>
@@ -1292,6 +1348,18 @@
 <dt><a name="printHelp" href="#printHelp"><span>printHelp:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: proc printHelp()" href="bau/command.html#printHelp">command: proc printHelp()</a></li>
+          </ul></dd>
+<dt><a name="printTaskCommandHelp" href="#printTaskCommandHelp"><span>printTaskCommandHelp:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc printTaskCommandHelp()" href="bau/command.html#printTaskCommandHelp">command: proc printTaskCommandHelp()</a></li>
+          </ul></dd>
+<dt><a name="printTaskDetails" href="#printTaskDetails"><span>printTaskDetails:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc printTaskDetails(cfg: BauConfig; projectDir: string; opts: CliOptions)" href="bau/command.html#printTaskDetails%2CBauConfig%2Cstring%2CCliOptions">command: proc printTaskDetails(cfg: BauConfig; projectDir: string; opts: CliOptions)</a></li>
+          </ul></dd>
+<dt><a name="printTaskList" href="#printTaskList"><span>printTaskList:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc printTaskList(cfg: BauConfig)" href="bau/command.html#printTaskList%2CBauConfig">command: proc printTaskList(cfg: BauConfig)</a></li>
           </ul></dd>
 <dt><a name="printVersion" href="#printVersion"><span>printVersion:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1461,6 +1529,10 @@
 <li><a class="reference external"
           data-doc-search-tag="util: proc runCmdLive(cmd: string; args: openArray[string] = []; cwd: string = &quot;&quot;)" href="bau/util.html#runCmdLive%2Cstring%2CopenArray%5Bstring%5D%2Cstring">util: proc runCmdLive(cmd: string; args: openArray[string] = []; cwd: string = &quot;&quot;)</a></li>
           </ul></dd>
+<dt><a name="runCmdLiveStatus" href="#runCmdLiveStatus"><span>runCmdLiveStatus:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="util: proc runCmdLiveStatus(cmd: string; args: openArray[string] = []; cwd: string = &quot;&quot;): int" href="bau/util.html#runCmdLiveStatus%2Cstring%2CopenArray%5Bstring%5D%2Cstring">util: proc runCmdLiveStatus(cmd: string; args: openArray[string] = []; cwd: string = &quot;&quot;): int</a></li>
+          </ul></dd>
 <dt><a name="runOperation" href="#runOperation"><span>runOperation:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="ops: proc runOperation(projectDir: string;
@@ -1486,6 +1558,12 @@
 <dt><a name="runTaskByName" href="#runTaskByName"><span>runTaskByName:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="taskgraph: proc runTaskByName(cfg: BauConfig; name, projectDir: string; opts: TaskRunOptions): bool" href="bau/taskgraph.html#runTaskByName%2CBauConfig%2Cstring%2Cstring%2CTaskRunOptions">taskgraph: proc runTaskByName(cfg: BauConfig; name, projectDir: string; opts: TaskRunOptions): bool</a></li>
+          </ul></dd>
+<dt><a name="runTests" href="#runTests"><span>runTests:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: proc runTests(cfg: BauConfig; projectDir: string; opts: TestRunOptions;
+         useConfiguredProfiles = true): TestRunResult" href="bau/testexec.html#runTests%2CBauConfig%2Cstring%2CTestRunOptions">testexec: proc runTests(cfg: BauConfig; projectDir: string; opts: TestRunOptions;
+         useConfiguredProfiles = true): TestRunResult</a></li>
           </ul></dd>
 <dt><a name="saveFile" href="#saveFile"><span>saveFile:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1530,6 +1608,14 @@
 <dt><a name="shellCommand" href="#shellCommand"><span>shellCommand:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: proc shellCommand(opts: CliOptions)" href="bau/command.html#shellCommand%2CCliOptions">command: proc shellCommand(opts: CliOptions)</a></li>
+          </ul></dd>
+<dt><a name="shellInitCommand" href="#shellInitCommand"><span>shellInitCommand:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc shellInitCommand(opts: CliOptions)" href="bau/command.html#shellInitCommand%2CCliOptions">command: proc shellInitCommand(opts: CliOptions)</a></li>
+          </ul></dd>
+<dt><a name="ShellInitResult" href="#ShellInitResult"><span>ShellInitResult:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="installer: object ShellInitResult" href="bau/installer.html#ShellInitResult">installer: object ShellInitResult</a></li>
           </ul></dd>
 <dt><a name="skGit" href="#skGit"><span>skGit:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1612,8 +1698,12 @@
 <dt><a name="taskCacheEntry" href="#taskCacheEntry"><span>taskCacheEntry:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="taskcache: proc taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
-               profile: string; selection: FeatureSelection = FeatureSelection()): TaskCacheEntry" href="bau/taskcache.html#taskCacheEntry%2CTaskInfo%2Cstring%2CBauConfig%2Cstring%2CFeatureSelection">taskcache: proc taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
-               profile: string; selection: FeatureSelection = FeatureSelection()): TaskCacheEntry</a></li>
+               profile: string;
+               selection: FeatureSelection = FeatureSelection();
+               taskArgs: openArray[string] = []): TaskCacheEntry" href="bau/taskcache.html#taskCacheEntry%2CTaskInfo%2Cstring%2CBauConfig%2Cstring%2CFeatureSelection%2CopenArray%5Bstring%5D">taskcache: proc taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
+               profile: string;
+               selection: FeatureSelection = FeatureSelection();
+               taskArgs: openArray[string] = []): TaskCacheEntry</a></li>
           </ul></dd>
 <dt><a name="TaskCacheExplain" href="#TaskCacheExplain"><span>TaskCacheExplain:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1622,14 +1712,18 @@
 <dt><a name="taskCacheKey" href="#taskCacheKey"><span>taskCacheKey:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="taskcache: proc taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-             selection: FeatureSelection = FeatureSelection()): string" href="bau/taskcache.html#taskCacheKey%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection">taskcache: proc taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-             selection: FeatureSelection = FeatureSelection()): string</a></li>
+             selection: FeatureSelection = FeatureSelection();
+             taskArgs: openArray[string] = []): string" href="bau/taskcache.html#taskCacheKey%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection%2CopenArray%5Bstring%5D">taskcache: proc taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
+             selection: FeatureSelection = FeatureSelection();
+             taskArgs: openArray[string] = []): string</a></li>
           </ul></dd>
 <dt><a name="taskCacheKeyInputs" href="#taskCacheKeyInputs"><span>taskCacheKeyInputs:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="taskcache: proc taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-                   selection: FeatureSelection = FeatureSelection()): seq[string]" href="bau/taskcache.html#taskCacheKeyInputs%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection">taskcache: proc taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-                   selection: FeatureSelection = FeatureSelection()): seq[string]</a></li>
+                   selection: FeatureSelection = FeatureSelection();
+                   taskArgs: openArray[string] = []): seq[string]" href="bau/taskcache.html#taskCacheKeyInputs%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection%2CopenArray%5Bstring%5D">taskcache: proc taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
+                   selection: FeatureSelection = FeatureSelection();
+                   taskArgs: openArray[string] = []): seq[string]</a></li>
           </ul></dd>
 <dt><a name="TaskInfo" href="#TaskInfo"><span>TaskInfo:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1643,11 +1737,31 @@
 <li><a class="reference external"
           data-doc-search-tag="taskgraph: object TaskRunOptions" href="bau/taskgraph.html#TaskRunOptions">taskgraph: object TaskRunOptions</a></li>
           </ul></dd>
+<dt><a name="TestCase" href="#TestCase"><span>TestCase:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: object TestCase" href="bau/testexec.html#TestCase">testexec: object TestCase</a></li>
+          </ul></dd>
+<dt><a name="TestInfo" href="#TestInfo"><span>TestInfo:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="config: object TestInfo" href="bau/config.html#TestInfo">config: object TestInfo</a></li>
+          </ul></dd>
 <dt><a name="testOperation" href="#testOperation"><span>testOperation:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="ops: proc testOperation(projectDir: string;
               opts: OperationOptions = defaultOperationOptions()): OperationResult" href="bau/ops.html#testOperation%2Cstring%2COperationOptions">ops: proc testOperation(projectDir: string;
               opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+          </ul></dd>
+<dt><a name="TestOutputMode" href="#TestOutputMode"><span>TestOutputMode:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: enum TestOutputMode" href="bau/testexec.html#TestOutputMode">testexec: enum TestOutputMode</a></li>
+          </ul></dd>
+<dt><a name="TestRunOptions" href="#TestRunOptions"><span>TestRunOptions:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: object TestRunOptions" href="bau/testexec.html#TestRunOptions">testexec: object TestRunOptions</a></li>
+          </ul></dd>
+<dt><a name="TestRunResult" href="#TestRunResult"><span>TestRunResult:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: object TestRunResult" href="bau/testexec.html#TestRunResult">testexec: object TestRunResult</a></li>
           </ul></dd>
 <dt><a name="toBauConfig" href="#toBauConfig"><span>toBauConfig:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1664,6 +1778,18 @@
 <dt><a name="toLockFile" href="#toLockFile"><span>toLockFile:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="lock: proc toLockFile(graph: ResolveGraph): LockFile" href="bau/lock.html#toLockFile%2CResolveGraph">lock: proc toLockFile(graph: ResolveGraph): LockFile</a></li>
+          </ul></dd>
+<dt><a name="tomAlways" href="#tomAlways"><span>tomAlways:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: TestOutputMode.tomAlways" href="bau/testexec.html#tomAlways">testexec: TestOutputMode.tomAlways</a></li>
+          </ul></dd>
+<dt><a name="tomAuto" href="#tomAuto"><span>tomAuto:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: TestOutputMode.tomAuto" href="bau/testexec.html#tomAuto">testexec: TestOutputMode.tomAuto</a></li>
+          </ul></dd>
+<dt><a name="tomNever" href="#tomNever"><span>tomNever:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="testexec: TestOutputMode.tomNever" href="bau/testexec.html#tomNever">testexec: TestOutputMode.tomNever</a></li>
           </ul></dd>
 <dt><a name="ToolchainCheck" href="#ToolchainCheck"><span>ToolchainCheck:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1697,6 +1823,14 @@
 <li><a class="reference external"
           data-doc-search-tag="atlas: proc updateDeps(projectDir: string; filter: string = &quot;&quot;; verbose: bool = false)" href="bau/atlas.html#updateDeps%2Cstring%2Cstring%2Cbool">atlas: proc updateDeps(projectDir: string; filter: string = &quot;&quot;; verbose: bool = false)</a></li>
           </ul></dd>
+<dt><a name="updateNimbleVersionContent" href="#updateNimbleVersionContent"><span>updateNimbleVersionContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: proc updateNimbleVersionContent(content, newVersion: string): DependencyEditResult" href="bau/configedit.html#updateNimbleVersionContent%2Cstring%2Cstring">configedit: proc updateNimbleVersionContent(content, newVersion: string): DependencyEditResult</a></li>
+          </ul></dd>
+<dt><a name="updatePackageVersionContent" href="#updatePackageVersionContent"><span>updatePackageVersionContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: proc updatePackageVersionContent(content, newVersion: string): DependencyEditResult" href="bau/configedit.html#updatePackageVersionContent%2Cstring%2Cstring">configedit: proc updatePackageVersionContent(content, newVersion: string): DependencyEditResult</a></li>
+          </ul></dd>
 <dt><a name="upsertDependencyInSection" href="#upsertDependencyInSection"><span>upsertDependencyInSection:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="configedit: proc upsertDependencyInSection(content, sectionName: string; edit: DependencyEdit): DependencyEditResult" href="bau/configedit.html#upsertDependencyInSection%2Cstring%2Cstring%2CDependencyEdit">configedit: proc upsertDependencyInSection(content, sectionName: string; edit: DependencyEdit): DependencyEditResult</a></li>
@@ -1709,9 +1843,29 @@
                  workspaceRoot, lockPath: string): LockValidationReport" href="bau/lock.html#validateLockFile%2CopenArray%5BLockProject%5D%2Cstring%2Cstring">lock: proc validateLockFile(projects: openArray[LockProject];
                  workspaceRoot, lockPath: string): LockValidationReport</a></li>
           </ul></dd>
+<dt><a name="vbMajor" href="#vbMajor"><span>vbMajor:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: VersionBumpKind.vbMajor" href="bau/configedit.html#vbMajor">configedit: VersionBumpKind.vbMajor</a></li>
+          </ul></dd>
+<dt><a name="vbMinor" href="#vbMinor"><span>vbMinor:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: VersionBumpKind.vbMinor" href="bau/configedit.html#vbMinor">configedit: VersionBumpKind.vbMinor</a></li>
+          </ul></dd>
+<dt><a name="vbPatch" href="#vbPatch"><span>vbPatch:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: VersionBumpKind.vbPatch" href="bau/configedit.html#vbPatch">configedit: VersionBumpKind.vbPatch</a></li>
+          </ul></dd>
 <dt><a name="verifyPackage" href="#verifyPackage"><span>verifyPackage:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="packaging: proc verifyPackage(projectDir: string; cfg: BauConfig)" href="bau/packaging.html#verifyPackage%2Cstring%2CBauConfig">packaging: proc verifyPackage(projectDir: string; cfg: BauConfig)</a></li>
+          </ul></dd>
+<dt><a name="VersionBumpKind" href="#VersionBumpKind"><span>VersionBumpKind:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: enum VersionBumpKind" href="bau/configedit.html#VersionBumpKind">configedit: enum VersionBumpKind</a></li>
+          </ul></dd>
+<dt><a name="VersionBumpResult" href="#VersionBumpResult"><span>VersionBumpResult:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="configedit: object VersionBumpResult" href="bau/configedit.html#VersionBumpResult">configedit: object VersionBumpResult</a></li>
           </ul></dd>
 <dt><a name="versionSatisfies" href="#versionSatisfies"><span>versionSatisfies:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1761,7 +1915,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-13 12:17:50 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 12:30:29 UTC</small>
       </div>
     </div>
   </div>

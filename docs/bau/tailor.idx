@@ -1,6 +1,6 @@
 nimTitle	tailor	bau/tailor.html	module bau/tailor		0
 nim	TailorResult	bau/tailor.html#TailorResult	object TailorResult		7
-nim	discoverTargets	bau/tailor.html#discoverTargets,BauConfig,string	proc discoverTargets(cfg: BauConfig; projectDir: string): TailorResult		24
-nim	tailorReport	bau/tailor.html#tailorReport,TailorResult	proc tailorReport(tailored: TailorResult): string		43
-nim	appendTailoredTargets	bau/tailor.html#appendTailoredTargets,string,TailorResult	proc appendTailoredTargets(projectDir: string; tailored: TailorResult)		51
-nim	tailorJson	bau/tailor.html#tailorJson,TailorResult	proc tailorJson(tailored: TailorResult): JsonNode		68
+nim	discoverTargets	bau/tailor.html#discoverTargets,BauConfig,string	proc discoverTargets(cfg: BauConfig; projectDir: string): TailorResult		25
+nim	tailorReport	bau/tailor.html#tailorReport,TailorResult	proc tailorReport(tailored: TailorResult): string		44
+nim	appendTailoredTargets	bau/tailor.html#appendTailoredTargets,string,TailorResult	proc appendTailoredTargets(projectDir: string; tailored: TailorResult)		52
+nim	tailorJson	bau/tailor.html#tailorJson,TailorResult	proc tailorJson(tailored: TailorResult): JsonNode		69

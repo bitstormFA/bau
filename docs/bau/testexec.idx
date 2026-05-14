@@ -1,0 +1,13 @@
+nimTitle	testexec	bau/testexec.html	module bau/testexec		0
+nim	tomAuto	bau/testexec.html#tomAuto	TestOutputMode.tomAuto		7
+nim	tomAlways	bau/testexec.html#tomAlways	TestOutputMode.tomAlways		7
+nim	tomNever	bau/testexec.html#tomNever	TestOutputMode.tomNever		7
+nim	TestOutputMode	bau/testexec.html#TestOutputMode	enum TestOutputMode		7
+nim	TestRunOptions	bau/testexec.html#TestRunOptions	object TestRunOptions		12
+nim	TestCase	bau/testexec.html#TestCase	object TestCase		22
+nim	TestRunResult	bau/testexec.html#TestRunResult	object TestRunResult		26
+nim	parseTestOutputMode	bau/testexec.html#parseTestOutputMode,string	proc parseTestOutputMode(value: string): TestOutputMode		30
+nim	effectiveTestOutputMode	bau/testexec.html#effectiveTestOutputMode,BauConfig,string	proc effectiveTestOutputMode(cfg: BauConfig; override: string): TestOutputMode		42
+nim	effectiveTestProfiles	bau/testexec.html#effectiveTestProfiles,BauConfig,string	proc effectiveTestProfiles(cfg: BauConfig; requestedProfile: string;\n                      useConfiguredProfiles = true): seq[string]		50
+nim	collectTestCases	bau/testexec.html#collectTestCases,BauConfig,string,TestRunOptions	proc collectTestCases(cfg: BauConfig; projectDir: string; opts: TestRunOptions): seq[\n    TestCase]		113
+nim	runTests	bau/testexec.html#runTests,BauConfig,string,TestRunOptions	proc runTests(cfg: BauConfig; projectDir: string; opts: TestRunOptions;\n         useConfiguredProfiles = true): TestRunResult		169

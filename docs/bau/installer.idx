@@ -1,9 +1,11 @@
 nimTitle	installer	bau/installer.html	module bau/installer		0
-nim	iaInstall	bau/installer.html#iaInstall	InstallAction.iaInstall		7
-nim	iaUpdate	bau/installer.html#iaUpdate	InstallAction.iaUpdate		7
-nim	iaRemove	bau/installer.html#iaRemove	InstallAction.iaRemove		7
-nim	InstallAction	bau/installer.html#InstallAction	enum InstallAction		7
-nim	InstallResult	bau/installer.html#InstallResult	object InstallResult		12
-nim	defaultInstallDir	bau/installer.html#defaultInstallDir	proc defaultInstallDir(): string		22
-nim	resolveInstallDir	bau/installer.html#resolveInstallDir,BauConfig,string,string	proc resolveInstallDir(cfg: BauConfig; projectDir, overrideDir: string): string		31
-nim	installTargets	bau/installer.html#installTargets,BauConfig,string,string,string,string,InstallAction,bool,bool,bool,bool,FeatureSelection	proc installTargets(cfg: BauConfig;\n               projectDir, profile, targetName, overrideDir: string;\n               action: InstallAction; allTargets, force, dryRun, verbose: bool;\n               featureSelection: FeatureSelection): seq[InstallResult]		152
+nim	iaInstall	bau/installer.html#iaInstall	InstallAction.iaInstall		12
+nim	iaUpdate	bau/installer.html#iaUpdate	InstallAction.iaUpdate		12
+nim	iaRemove	bau/installer.html#iaRemove	InstallAction.iaRemove		12
+nim	InstallAction	bau/installer.html#InstallAction	enum InstallAction		12
+nim	InstallResult	bau/installer.html#InstallResult	object InstallResult		17
+nim	ShellInitResult	bau/installer.html#ShellInitResult	object ShellInitResult		27
+nim	defaultInstallDir	bau/installer.html#defaultInstallDir	proc defaultInstallDir(): string		35
+nim	resolveInstallDir	bau/installer.html#resolveInstallDir,BauConfig,string,string	proc resolveInstallDir(cfg: BauConfig; projectDir, overrideDir: string): string		41
+nim	initShellPath	bau/installer.html#initShellPath,string	proc initShellPath(selectedShell = ""; pathEnv = getEnv("PATH"); home = homeDir()): ShellInitResult		126
+nim	installTargets	bau/installer.html#installTargets,BauConfig,string,string,string,string,InstallAction,bool,bool,bool,bool,FeatureSelection	proc installTargets(cfg: BauConfig;\n               projectDir, profile, targetName, overrideDir: string;\n               action: InstallAction; allTargets, force, dryRun, verbose: bool;\n               featureSelection: FeatureSelection): seq[InstallResult]		243

@@ -55,6 +55,8 @@ bau/taskcache.html
 bau/taskcache.idx
 bau/taskgraph.html
 bau/taskgraph.idx
+bau/testexec.html
+bau/testexec.idx
 bau/toolchain.html
 bau/toolchain.idx
 bau/util.html

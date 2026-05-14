@@ -22,9 +22,10 @@ nim	detectNimCompiler	bau/util.html#detectNimCompiler	proc detectNimCompiler(): 
 nim	detectAtlas	bau/util.html#detectAtlas	proc detectAtlas(): string		105
 nim	runCmd	bau/util.html#runCmd,string,openArray[string],string	proc runCmd(cmd: string; args: openArray[string] = []; cwd: string = ""): tuple[\n    exitCode: int, output: string]		111
 nim	runCmdChecked	bau/util.html#runCmdChecked,string,openArray[string],string	proc runCmdChecked(cmd: string; args: openArray[string] = []; cwd: string = ""): string		125
-nim	runCmdLive	bau/util.html#runCmdLive,string,openArray[string],string	proc runCmdLive(cmd: string; args: openArray[string] = []; cwd: string = "")		134
-nim	info	bau/util.html#info,string	proc info(msg: string)		143
-nim	warn	bau/util.html#warn,string	proc warn(msg: string)		152
-nim	error	bau/util.html#error,string	proc error(msg: string)		159
-nim	success	bau/util.html#success,string	proc success(msg: string)		166
-nim	toTomlString	bau/util.html#toTomlString,string	proc toTomlString(s: string): string		175
+nim	runCmdLiveStatus	bau/util.html#runCmdLiveStatus,string,openArray[string],string	proc runCmdLiveStatus(cmd: string; args: openArray[string] = []; cwd: string = ""): int		134
+nim	runCmdLive	bau/util.html#runCmdLive,string,openArray[string],string	proc runCmdLive(cmd: string; args: openArray[string] = []; cwd: string = "")		142
+nim	info	bau/util.html#info,string	proc info(msg: string)		148
+nim	warn	bau/util.html#warn,string	proc warn(msg: string)		157
+nim	error	bau/util.html#error,string	proc error(msg: string)		164
+nim	success	bau/util.html#success,string	proc success(msg: string)		171
+nim	toTomlString	bau/util.html#toTomlString,string	proc toTomlString(s: string): string		180

@@ -128,21 +128,29 @@
 
 </ul>
 <ul class="simple nested-toc-section">taskCacheEntry
-  <li><a class="reference" href="#taskCacheEntry%2CTaskInfo%2Cstring%2CBauConfig%2Cstring%2CFeatureSelection" title="taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
-               profile: string; selection: FeatureSelection = FeatureSelection()): TaskCacheEntry">taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
-               profile: string; selection: FeatureSelection = FeatureSelection()): TaskCacheEntry</a></li>
+  <li><a class="reference" href="#taskCacheEntry%2CTaskInfo%2Cstring%2CBauConfig%2Cstring%2CFeatureSelection%2CopenArray%5Bstring%5D" title="taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
+               profile: string;
+               selection: FeatureSelection = FeatureSelection();
+               taskArgs: openArray[string] = []): TaskCacheEntry">taskCacheEntry(task: TaskInfo; projectDir: string; cfg: BauConfig;
+               profile: string;
+               selection: FeatureSelection = FeatureSelection();
+               taskArgs: openArray[string] = []): TaskCacheEntry</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">taskCacheKey
-  <li><a class="reference" href="#taskCacheKey%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection" title="taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-             selection: FeatureSelection = FeatureSelection()): string">taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-             selection: FeatureSelection = FeatureSelection()): string</a></li>
+  <li><a class="reference" href="#taskCacheKey%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection%2CopenArray%5Bstring%5D" title="taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
+             selection: FeatureSelection = FeatureSelection();
+             taskArgs: openArray[string] = []): string">taskCacheKey(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
+             selection: FeatureSelection = FeatureSelection();
+             taskArgs: openArray[string] = []): string</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">taskCacheKeyInputs
-  <li><a class="reference" href="#taskCacheKeyInputs%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection" title="taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-                   selection: FeatureSelection = FeatureSelection()): seq[string]">taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
-                   selection: FeatureSelection = FeatureSelection()): seq[string]</a></li>
+  <li><a class="reference" href="#taskCacheKeyInputs%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection%2CopenArray%5Bstring%5D" title="taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
+                   selection: FeatureSelection = FeatureSelection();
+                   taskArgs: openArray[string] = []): seq[string]">taskCacheKeyInputs(task: TaskInfo; projectDir, profile: string; cfg: BauConfig;
+                   selection: FeatureSelection = FeatureSelection();
+                   taskArgs: openArray[string] = []): seq[string]</a></li>
 
 </ul>
 
@@ -333,10 +341,11 @@
 
 </div>
 <div id="taskCacheEntry-procs-all">
-  <div id="taskCacheEntry,TaskInfo,string,BauConfig,string,FeatureSelection">
-  <dt><pre><span class="Keyword">proc</span> <a href="#taskCacheEntry%2CTaskInfo%2Cstring%2CBauConfig%2Cstring%2CFeatureSelection"><span class="Identifier">taskCacheEntry</span></a><span class="Other">(</span><span class="Identifier">task</span><span class="Other">:</span> <a href="config.html#TaskInfo"><span class="Identifier">TaskInfo</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span>
+  <div id="taskCacheEntry,TaskInfo,string,BauConfig,string,FeatureSelection,openArray[string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#taskCacheEntry%2CTaskInfo%2Cstring%2CBauConfig%2Cstring%2CFeatureSelection%2CopenArray%5Bstring%5D"><span class="Identifier">taskCacheEntry</span></a><span class="Other">(</span><span class="Identifier">task</span><span class="Other">:</span> <a href="config.html#TaskInfo"><span class="Identifier">TaskInfo</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span>
                     <span class="Identifier">profile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                    <span class="Identifier">selection</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Other">=</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#TaskCacheEntry"><span class="Identifier">TaskCacheEntry</span></a> {.
+                    <span class="Identifier">selection</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Other">=</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                    <span class="Identifier">taskArgs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="#TaskCacheEntry"><span class="Identifier">TaskCacheEntry</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -348,9 +357,10 @@
 
 </div>
 <div id="taskCacheKey-procs-all">
-  <div id="taskCacheKey,TaskInfo,string,string,BauConfig,FeatureSelection">
-  <dt><pre><span class="Keyword">proc</span> <a href="#taskCacheKey%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection"><span class="Identifier">taskCacheKey</span></a><span class="Other">(</span><span class="Identifier">task</span><span class="Other">:</span> <a href="config.html#TaskInfo"><span class="Identifier">TaskInfo</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">,</span> <span class="Identifier">profile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span>
-                  <span class="Identifier">selection</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Other">=</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
+  <div id="taskCacheKey,TaskInfo,string,string,BauConfig,FeatureSelection,openArray[string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#taskCacheKey%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection%2CopenArray%5Bstring%5D"><span class="Identifier">taskCacheKey</span></a><span class="Other">(</span><span class="Identifier">task</span><span class="Other">:</span> <a href="config.html#TaskInfo"><span class="Identifier">TaskInfo</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">,</span> <span class="Identifier">profile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span>
+                  <span class="Identifier">selection</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Other">=</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                  <span class="Identifier">taskArgs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -362,13 +372,13 @@
 
 </div>
 <div id="taskCacheKeyInputs-procs-all">
-  <div id="taskCacheKeyInputs,TaskInfo,string,string,BauConfig,FeatureSelection">
-  <dt><pre><span class="Keyword">proc</span> <a href="#taskCacheKeyInputs%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection"><span class="Identifier">taskCacheKeyInputs</span></a><span class="Other">(</span><span class="Identifier">task</span><span class="Other">:</span> <a href="config.html#TaskInfo"><span class="Identifier">TaskInfo</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">,</span> <span class="Identifier">profile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+  <div id="taskCacheKeyInputs,TaskInfo,string,string,BauConfig,FeatureSelection,openArray[string]">
+  <dt><pre><span class="Keyword">proc</span> <a href="#taskCacheKeyInputs%2CTaskInfo%2Cstring%2Cstring%2CBauConfig%2CFeatureSelection%2CopenArray%5Bstring%5D"><span class="Identifier">taskCacheKeyInputs</span></a><span class="Other">(</span><span class="Identifier">task</span><span class="Other">:</span> <a href="config.html#TaskInfo"><span class="Identifier">TaskInfo</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">,</span> <span class="Identifier">profile</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
                         <span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span>
-                        <span class="Identifier">selection</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Other">=</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span>
-    <span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
-              <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
-              <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+                        <span class="Identifier">selection</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Other">=</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                        <span class="Identifier">taskArgs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Return the textual inputs used to derive a task cache key.
@@ -387,7 +397,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-13 12:17:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 12:30:25 UTC</small>
       </div>
     </div>
   </div>
