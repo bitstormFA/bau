@@ -192,6 +192,8 @@
 <li><a class="reference" href="#TestInfo" title="TestInfo = object
   runner*: string            ## Explicit test runner file relative to the project root.
   profiles*: seq[string]     ## Profiles used as the test matrix.
+  defaultProfile*: string    ## Single profile used for fast local test runs.
+  fullProfiles*: seq[string] ## Full profile matrix used by `bau test --full` and CI.
   recursive*: bool           ## Whether test file discovery descends into subdirectories.
   exclude*: seq[string]      ## Test filenames or relative paths to skip.
   showOutput*: string        ## Default test output mode: auto, always, or never.
@@ -583,6 +585,8 @@
   <dt><pre><a href="#TestInfo"><span class="Identifier">TestInfo</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">runner</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>            <span class="Comment">## Explicit test runner file relative to the project root.</span>
   <span class="Identifier">profiles</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>     <span class="Comment">## Profiles used as the test matrix.</span>
+  <span class="Identifier">defaultProfile</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>    <span class="Comment">## Single profile used for fast local test runs.</span>
+  <span class="Identifier">fullProfiles</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Full profile matrix used by `bau test --full` and CI.</span>
   <span class="Identifier">recursive</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>           <span class="Comment">## Whether test file discovery descends into subdirectories.</span>
   <span class="Identifier">exclude</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>      <span class="Comment">## Test filenames or relative paths to skip.</span>
   <span class="Identifier">showOutput</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Default test output mode: auto, always, or never.</span>
@@ -945,7 +949,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 12:30:29 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:51 UTC</small>
       </div>
     </div>
   </div>

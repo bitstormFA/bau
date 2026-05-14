@@ -1,6 +1,6 @@
 [package]
 name = "bau"
-version = "0.4.0"
+version = "0.4.1"
 description = "A modern build tool for Nim"
 authors = ["bitstorm <bitstorm@tutanota.com>"]
 license = "MIT"

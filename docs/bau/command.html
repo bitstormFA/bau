@@ -64,7 +64,9 @@
       <li><a class="reference" href="#CliOptions" title="CliOptions = object
   command*: Command          ## Selected command.
   profile*: string           ## Build profile.
+  profileExplicit*: bool     ## True when `--profile` was provided.
   jobs*: int                 ## Parallel build job count.
+  jobsExplicit*: bool        ## True when `--jobs` was provided.
   verbose*: bool             ## Whether verbose output is enabled.
   quiet*: bool               ## Whether normal progress output is suppressed.
   help*: bool                ## Whether command-specific help was requested.
@@ -102,6 +104,10 @@
   docIncludePrivate*: bool   ## Include private symbols in docs.
   docNoIndex*: bool          ## Suppress docs index generation.
   testShowOutput*: string    ## Test output mode override.
+  testNoMatrix*: bool        ## Run a single test profile instead of the matrix.
+  testFull*: bool            ## Run the full configured test matrix.
+  testFast*: bool            ## Run the fast local test mode.
+  testNoRunner*: bool        ## Discover test files instead of using a runner.
   installDir*: string        ## Installation directory override.
   passthroughArgs*: seq[string] ## Arguments passed after `--`.
   initInfo*: ProjectInitInfo ## Project initialization metadata.">CliOptions</a></li>
@@ -323,7 +329,9 @@
   <dt><pre><a href="#CliOptions"><span class="Identifier">CliOptions</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">command</span><span class="Operator">*</span><span class="Other">:</span> <a href="#Command"><span class="Identifier">Command</span></a>          <span class="Comment">## Selected command.</span>
   <span class="Identifier">profile</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>           <span class="Comment">## Build profile.</span>
+  <span class="Identifier">profileExplicit</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>     <span class="Comment">## True when `--profile` was provided.</span>
   <span class="Identifier">jobs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>                 <span class="Comment">## Parallel build job count.</span>
+  <span class="Identifier">jobsExplicit</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## True when `--jobs` was provided.</span>
   <span class="Identifier">verbose</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Whether verbose output is enabled.</span>
   <span class="Identifier">quiet</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>               <span class="Comment">## Whether normal progress output is suppressed.</span>
   <span class="Identifier">help</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## Whether command-specific help was requested.</span>
@@ -361,6 +369,10 @@
   <span class="Identifier">docIncludePrivate</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>   <span class="Comment">## Include private symbols in docs.</span>
   <span class="Identifier">docNoIndex</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>          <span class="Comment">## Suppress docs index generation.</span>
   <span class="Identifier">testShowOutput</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>    <span class="Comment">## Test output mode override.</span>
+  <span class="Identifier">testNoMatrix</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## Run a single test profile instead of the matrix.</span>
+  <span class="Identifier">testFull</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Run the full configured test matrix.</span>
+  <span class="Identifier">testFast</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Run the fast local test mode.</span>
+  <span class="Identifier">testNoRunner</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## Discover test files instead of using a runner.</span>
   <span class="Identifier">installDir</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Installation directory override.</span>
   <span class="Identifier">passthroughArgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Arguments passed after `--`.</span>
   <span class="Identifier">initInfo</span><span class="Operator">*</span><span class="Other">:</span> <a href="init.html#ProjectInitInfo"><span class="Identifier">ProjectInitInfo</span></a> <span class="Comment">## Project initialization metadata.</span></pre></dt>
@@ -896,7 +908,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 12:30:05 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:27 UTC</small>
       </div>
     </div>
   </div>

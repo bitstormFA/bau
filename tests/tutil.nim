@@ -39,7 +39,7 @@ block nim_version:
   doAssert '.' in v
 
 block bau_version:
-  doAssert BauVersion == "0.4.0"
+  doAssert BauVersion == "0.4.1"
 
 block global_config_path:
   let p = globalConfigPath()

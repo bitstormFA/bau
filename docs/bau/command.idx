@@ -42,38 +42,38 @@ nim	cmdCache	bau/command.html#cmdCache	Command.cmdCache		14
 nim	cmdDoctor	bau/command.html#cmdDoctor	Command.cmdDoctor		14
 nim	Command	bau/command.html#Command	enum Command		14
 nim	CliOptions	bau/command.html#CliOptions	object CliOptions		57
-nim	defaultOptions	bau/command.html#defaultOptions	proc defaultOptions(): CliOptions		102
-nim	parseCliOptions	bau/command.html#parseCliOptions,seq[string]	proc parseCliOptions(params: seq[string] = commandLineParams()): CliOptions		119
-nim	printHelp	bau/command.html#printHelp	proc printHelp()		401
-nim	printVersion	bau/command.html#printVersion	proc printVersion()		504
-nim	applyDependencyArgs	bau/command.html#applyDependencyArgs,OperationOptions,openArray[string]	proc applyDependencyArgs(opOpts: var OperationOptions; args: openArray[string])		537
-nim	printTaskCommandHelp	bau/command.html#printTaskCommandHelp	proc printTaskCommandHelp()		580
-nim	printTaskList	bau/command.html#printTaskList,BauConfig	proc printTaskList(cfg: BauConfig)		607
-nim	printTaskDetails	bau/command.html#printTaskDetails,BauConfig,string,CliOptions	proc printTaskDetails(cfg: BauConfig; projectDir: string; opts: CliOptions)		630
-nim	fmtSources	bau/command.html#fmtSources,string,bool	proc fmtSources(projectDir: string; verbose: bool = false)		668
-nim	fmtCommand	bau/command.html#fmtCommand,CliOptions	proc fmtCommand(opts: CliOptions)		686
-nim	lintCommand	bau/command.html#lintCommand,CliOptions	proc lintCommand(opts: CliOptions)		692
-nim	ciCommand	bau/command.html#ciCommand,CliOptions	proc ciCommand(opts: CliOptions)		726
-nim	depsCommand	bau/command.html#depsCommand,CliOptions	proc depsCommand(opts: CliOptions)		800
-nim	metadataCommand	bau/command.html#metadataCommand,CliOptions	proc metadataCommand(opts: CliOptions)		961
-nim	graphCommand	bau/command.html#graphCommand,CliOptions	proc graphCommand(opts: CliOptions)		978
-nim	queryCommand	bau/command.html#queryCommand,CliOptions	proc queryCommand(opts: CliOptions)		990
-nim	packageCommand	bau/command.html#packageCommand,CliOptions	proc packageCommand(opts: CliOptions)		1026
-nim	installCommand	bau/command.html#installCommand,CliOptions	proc installCommand(opts: CliOptions)		1080
-nim	tailorCommand	bau/command.html#tailorCommand,CliOptions	proc tailorCommand(opts: CliOptions)		1110
-nim	envCommand	bau/command.html#envCommand,CliOptions	proc envCommand(opts: CliOptions)		1158
-nim	affectedCommand	bau/command.html#affectedCommand,CliOptions	proc affectedCommand(opts: CliOptions)		1185
-nim	cacheCommand	bau/command.html#cacheCommand,CliOptions	proc cacheCommand(opts: CliOptions)		1250
-nim	doctorCommand	bau/command.html#doctorCommand,CliOptions	proc doctorCommand(opts: CliOptions)		1293
-nim	outdatedCommand	bau/command.html#outdatedCommand,CliOptions	proc outdatedCommand(opts: CliOptions)		1307
-nim	treeCommand	bau/command.html#treeCommand,CliOptions	proc treeCommand(opts: CliOptions)		1344
-nim	explainCommand	bau/command.html#explainCommand,CliOptions	proc explainCommand(opts: CliOptions)		1407
-nim	publishCommand	bau/command.html#publishCommand,CliOptions	proc publishCommand(opts: CliOptions)		1419
-nim	bumpCommand	bau/command.html#bumpCommand,CliOptions	proc bumpCommand(opts: CliOptions)		1449
-nim	shellCommand	bau/command.html#shellCommand,CliOptions	proc shellCommand(opts: CliOptions)		1472
-nim	shellInitCommand	bau/command.html#shellInitCommand,CliOptions	proc shellInitCommand(opts: CliOptions)		1500
-nim	pluginCommand	bau/command.html#pluginCommand,CliOptions	proc pluginCommand(opts: CliOptions)		1523
-nim	convertCommand	bau/command.html#convertCommand,CliOptions	proc convertCommand(opts: CliOptions)		1543
-nim	watchLoop	bau/command.html#watchLoop,CliOptions	proc watchLoop(opts: CliOptions)		1615
-nim	generateCompileCommands	bau/command.html#generateCompileCommands,string,string,FeatureSelection	proc generateCompileCommands(projectDir: string; profile: string;\n                        featureSelection: FeatureSelection = FeatureSelection())		1714
-nim	dispatchCommand	bau/command.html#dispatchCommand,CliOptions	proc dispatchCommand(opts: CliOptions)		1766
+nim	defaultOptions	bau/command.html#defaultOptions	proc defaultOptions(): CliOptions		108
+nim	parseCliOptions	bau/command.html#parseCliOptions,seq[string]	proc parseCliOptions(params: seq[string] = commandLineParams()): CliOptions		125
+nim	printHelp	bau/command.html#printHelp	proc printHelp()		439
+nim	printVersion	bau/command.html#printVersion	proc printVersion()		547
+nim	applyDependencyArgs	bau/command.html#applyDependencyArgs,OperationOptions,openArray[string]	proc applyDependencyArgs(opOpts: var OperationOptions; args: openArray[string])		580
+nim	printTaskCommandHelp	bau/command.html#printTaskCommandHelp	proc printTaskCommandHelp()		623
+nim	printTaskList	bau/command.html#printTaskList,BauConfig	proc printTaskList(cfg: BauConfig)		651
+nim	printTaskDetails	bau/command.html#printTaskDetails,BauConfig,string,CliOptions	proc printTaskDetails(cfg: BauConfig; projectDir: string; opts: CliOptions)		674
+nim	fmtSources	bau/command.html#fmtSources,string,bool	proc fmtSources(projectDir: string; verbose: bool = false)		712
+nim	fmtCommand	bau/command.html#fmtCommand,CliOptions	proc fmtCommand(opts: CliOptions)		730
+nim	lintCommand	bau/command.html#lintCommand,CliOptions	proc lintCommand(opts: CliOptions)		736
+nim	ciCommand	bau/command.html#ciCommand,CliOptions	proc ciCommand(opts: CliOptions)		770
+nim	depsCommand	bau/command.html#depsCommand,CliOptions	proc depsCommand(opts: CliOptions)		852
+nim	metadataCommand	bau/command.html#metadataCommand,CliOptions	proc metadataCommand(opts: CliOptions)		1013
+nim	graphCommand	bau/command.html#graphCommand,CliOptions	proc graphCommand(opts: CliOptions)		1030
+nim	queryCommand	bau/command.html#queryCommand,CliOptions	proc queryCommand(opts: CliOptions)		1042
+nim	packageCommand	bau/command.html#packageCommand,CliOptions	proc packageCommand(opts: CliOptions)		1078
+nim	installCommand	bau/command.html#installCommand,CliOptions	proc installCommand(opts: CliOptions)		1132
+nim	tailorCommand	bau/command.html#tailorCommand,CliOptions	proc tailorCommand(opts: CliOptions)		1162
+nim	envCommand	bau/command.html#envCommand,CliOptions	proc envCommand(opts: CliOptions)		1210
+nim	affectedCommand	bau/command.html#affectedCommand,CliOptions	proc affectedCommand(opts: CliOptions)		1237
+nim	cacheCommand	bau/command.html#cacheCommand,CliOptions	proc cacheCommand(opts: CliOptions)		1302
+nim	doctorCommand	bau/command.html#doctorCommand,CliOptions	proc doctorCommand(opts: CliOptions)		1345
+nim	outdatedCommand	bau/command.html#outdatedCommand,CliOptions	proc outdatedCommand(opts: CliOptions)		1359
+nim	treeCommand	bau/command.html#treeCommand,CliOptions	proc treeCommand(opts: CliOptions)		1396
+nim	explainCommand	bau/command.html#explainCommand,CliOptions	proc explainCommand(opts: CliOptions)		1459
+nim	publishCommand	bau/command.html#publishCommand,CliOptions	proc publishCommand(opts: CliOptions)		1471
+nim	bumpCommand	bau/command.html#bumpCommand,CliOptions	proc bumpCommand(opts: CliOptions)		1501
+nim	shellCommand	bau/command.html#shellCommand,CliOptions	proc shellCommand(opts: CliOptions)		1524
+nim	shellInitCommand	bau/command.html#shellInitCommand,CliOptions	proc shellInitCommand(opts: CliOptions)		1552
+nim	pluginCommand	bau/command.html#pluginCommand,CliOptions	proc pluginCommand(opts: CliOptions)		1575
+nim	convertCommand	bau/command.html#convertCommand,CliOptions	proc convertCommand(opts: CliOptions)		1595
+nim	watchLoop	bau/command.html#watchLoop,CliOptions	proc watchLoop(opts: CliOptions)		1667
+nim	generateCompileCommands	bau/command.html#generateCompileCommands,string,string,FeatureSelection	proc generateCompileCommands(projectDir: string; profile: string;\n                        featureSelection: FeatureSelection = FeatureSelection())		1766
+nim	dispatchCommand	bau/command.html#dispatchCommand,CliOptions	proc dispatchCommand(opts: CliOptions)		1818

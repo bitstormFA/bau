@@ -1,4 +1,4 @@
 nimTitle	taskgraph	bau/taskgraph.html	module bau/taskgraph		0
 nim	TaskRunOptions	bau/taskgraph.html#TaskRunOptions	object TaskRunOptions		7
-nim	runTaskByName	bau/taskgraph.html#runTaskByName,BauConfig,string,string,TaskRunOptions	proc runTaskByName(cfg: BauConfig; name, projectDir: string; opts: TaskRunOptions): bool		250
-nim	taskNames	bau/taskgraph.html#taskNames,BauConfig	proc taskNames(cfg: BauConfig): seq[string]		261
+nim	runTaskByName	bau/taskgraph.html#runTaskByName,BauConfig,string,string,TaskRunOptions	proc runTaskByName(cfg: BauConfig; name, projectDir: string; opts: TaskRunOptions): bool		256
+nim	taskNames	bau/taskgraph.html#taskNames,BauConfig	proc taskNames(cfg: BauConfig): seq[string]		267
