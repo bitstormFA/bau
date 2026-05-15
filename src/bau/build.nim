@@ -245,8 +245,12 @@ proc collectFingerprintConfigInputs*(projectDir: string): seq[string] =
 
 proc collectFingerprintEnvInputs*(): seq[string] =
   ## Return environment entries included in build fingerprints.
+  ##
+  ## Keep this list intentionally narrow. Broad environment values such as PATH
+  ## and Bau's own BAU_JOBS/BAU_COLOR runtime settings are either represented in
+  ## compiler flags already or too volatile to be useful as freshness inputs.
   for key, val in envPairs():
-    if key.startsWith("BAU_") or key in ["PATH", "NIM", "ATLAS"]:
+    if key in ["NIM", "ATLAS", "BAU_FLAGS", "BAU_GC"]:
       result.add(key & "=" & val)
   result.sort()
 

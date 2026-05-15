@@ -294,8 +294,6 @@ proc fingerprintDiffSummary(cached, fresh: Fingerprint): string =
     parts.add("platform changed")
   if cached.profile != fresh.profile:
     parts.add("profile changed")
-  if cached.mtimeHash != fresh.mtimeHash:
-    parts.add("source timestamps changed")
   if parts.len == 0:
     result = "fingerprint changed"
   elif parts.len <= 3:

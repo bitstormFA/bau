@@ -98,6 +98,10 @@ proc computeFingerprint*(sourcePaths: openArray[string];
 
 proc `==`*(a, b: Fingerprint): bool =
   ## Compare all fingerprint fields for freshness checks.
+  ##
+  ## Source mtimes are recorded for diagnostics, but content hashes decide
+  ## freshness. This avoids recompiling after a checkout, formatter, generator,
+  ## or archive extraction touches files without changing their contents.
   a.sourceHash == b.sourceHash and
   a.configHash == b.configHash and
   a.envHash == b.envHash and
@@ -105,8 +109,7 @@ proc `==`*(a, b: Fingerprint): bool =
   a.flagsHash == b.flagsHash and
   a.profile == b.profile and
   a.platform == b.platform and
-  a.toolchain == b.toolchain and
-  a.mtimeHash == b.mtimeHash
+  a.toolchain == b.toolchain
 
 proc toJson*(fp: Fingerprint): string =
   ## Serialize a fingerprint to JSON text.

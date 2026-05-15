@@ -1,4 +1,5 @@
 import std/[os, options]
+import bau/build
 import bau/fingerprint
 
 block fingerprint_equality:
@@ -40,6 +41,44 @@ block fingerprint_inputs_normalize_source_paths:
   let dotted = computeFingerprint(initFingerprintInputs(
     [tmp / "src" / ".." / "src" / "demo.nim"], ["--hints:off"], "dev"))
   doAssert direct == dotted
+
+block fingerprint_ignores_source_mtime_when_content_is_same:
+  let tmp = getTempDir() / "bau-test-fp-mtime"
+  if dirExists(tmp):
+    removeDir(tmp)
+  createDir(tmp)
+  defer:
+    if dirExists(tmp):
+      removeDir(tmp)
+
+  let source = tmp / "demo.nim"
+  writeFile(source, "const demo* = 1\n")
+  let first = computeFingerprint([source], ["--hints:off"], "dev")
+  sleep(1100)
+  writeFile(source, "const demo* = 1\n")
+  let second = computeFingerprint([source], ["--hints:off"], "dev")
+  doAssert first.sourceHash == second.sourceHash
+  doAssert first == second
+
+block fingerprint_env_inputs_ignore_volatile_runtime_env:
+  let oldPath = getEnv("PATH", "")
+  let oldJobs = getEnv("BAU_JOBS", "")
+  let oldColor = getEnv("BAU_COLOR", "")
+  let hadPath = existsEnv("PATH")
+  let hadJobs = existsEnv("BAU_JOBS")
+  let hadColor = existsEnv("BAU_COLOR")
+  defer:
+    if hadPath: putEnv("PATH", oldPath) else: delEnv("PATH")
+    if hadJobs: putEnv("BAU_JOBS", oldJobs) else: delEnv("BAU_JOBS")
+    if hadColor: putEnv("BAU_COLOR", oldColor) else: delEnv("BAU_COLOR")
+
+  putEnv("PATH", "/tmp/bau-test-path")
+  putEnv("BAU_JOBS", "32")
+  putEnv("BAU_COLOR", "always")
+  let inputs = collectFingerprintEnvInputs()
+  doAssert "PATH=/tmp/bau-test-path" notin inputs
+  doAssert "BAU_JOBS=32" notin inputs
+  doAssert "BAU_COLOR=always" notin inputs
 
 block fingerprint_json_roundtrip:
   let fp = computeFingerprint(["x.nim", "y.nim"], ["-d:foo"], "test")
