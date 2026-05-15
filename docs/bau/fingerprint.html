@@ -149,9 +149,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Computes and stores build fingerprints for incremental compilation.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -174,9 +174,9 @@
   <span class="Identifier">toolchain</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>         <span class="Comment">## Toolchain identifier.</span>
   <span class="Identifier">mtimeHash</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>         <span class="Comment">## Hash of source modification times.</span></pre></dt>
   <dd>
-
+    
     Hash record used to decide whether a target is fresh.
-
+    
   </dd>
 </div>
 <div id="FingerprintInputs">
@@ -189,9 +189,9 @@
   <span class="Identifier">platform</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>          <span class="Comment">## Platform identifier, usually `os-cpu`.</span>
   <span class="Identifier">toolchain</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>         <span class="Comment">## Toolchain identifier, usually `nim-&lt;version&gt;`.</span></pre></dt>
   <dd>
-
+    
     Inputs that determine a target build fingerprint.
-
+    
   </dd>
 </div>
 
@@ -204,9 +204,11 @@
   <div id="==,Fingerprint,Fingerprint">
   <dt><pre><span class="Keyword">proc</span> <a href="#%3D%3D%2CFingerprint%2CFingerprint"><span class="Identifier">`==`</span></a><span class="Other">(</span><span class="Identifier">a</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <a href="#Fingerprint"><span class="Identifier">Fingerprint</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
+    
+    <p>Compare all fingerprint fields for freshness checks.</p>
+<p>Source mtimes are recorded for diagnostics, but content hashes decide freshness. This avoids recompiling after a checkout, formatter, generator, or archive extraction touches files without changing their contents.</p>
 
-    Compare all fingerprint fields for freshness checks.
-
+    
   </dd>
 </div>
 
@@ -217,9 +219,9 @@
                                         <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span>
                                         <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Remove and recreate the fingerprint directory.
-
+    
   </dd>
 </div>
 
@@ -229,9 +231,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#computeFingerprint%2CFingerprintInputs"><span class="Identifier">computeFingerprint</span></a><span class="Other">(</span><span class="Identifier">inputs</span><span class="Other">:</span> <a href="#FingerprintInputs"><span class="Identifier">FingerprintInputs</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#Fingerprint"><span class="Identifier">Fingerprint</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Compute a fingerprint by hashing source, config, env, compiler, and flags.
-
+    
   </dd>
 </div>
 <div id="computeFingerprint,openArray[string],openArray[string],string,openArray[string],openArray[string]">
@@ -241,9 +243,9 @@
                         <span class="Identifier">envInputs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="#Fingerprint"><span class="Identifier">Fingerprint</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Compute a fingerprint from raw input sequences.
-
+    
   </dd>
 </div>
 
@@ -254,11 +256,11 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">JsonParsingError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Parse fingerprint JSON text.</p>
 <p>Missing fields become empty strings for compatibility with older files.</p>
 
-
+    
   </dd>
 </div>
 
@@ -271,9 +273,9 @@
                            <span class="Identifier">envInputs</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="#FingerprintInputs"><span class="Identifier">FingerprintInputs</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Build fingerprint input metadata from explicit source, flag, and config inputs.
-
+    
   </dd>
 </div>
 
@@ -285,9 +287,9 @@
                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Load a saved fingerprint, returning <tt class="docutils literal"><span class="pre"><span class="Identifier">none</span></span></tt> when absent or unreadable.
-
+    
   </dd>
 </div>
 
@@ -297,9 +299,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#removeFingerprint%2Cstring%2Cstring%2Cstring"><span class="Identifier">removeFingerprint</span></a><span class="Other">(</span><span class="Identifier">fpDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">targetName</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">unitName</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Remove a saved fingerprint if it exists.
-
+    
   </dd>
 </div>
 
@@ -310,9 +312,9 @@
                      <span class="Identifier">fp</span><span class="Other">:</span> <a href="#Fingerprint"><span class="Identifier">Fingerprint</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Persist a fingerprint for a target build unit.
-
+    
   </dd>
 </div>
 
@@ -321,9 +323,9 @@
   <div id="toJson,Fingerprint">
   <dt><pre><span class="Keyword">proc</span> <a href="#toJson%2CFingerprint"><span class="Identifier">toJson</span></a><span class="Other">(</span><span class="Identifier">fp</span><span class="Other">:</span> <a href="#Fingerprint"><span class="Identifier">Fingerprint</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Serialize a fingerprint to JSON text.
-
+    
   </dd>
 </div>
 
@@ -338,10 +340,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:48 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:12 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

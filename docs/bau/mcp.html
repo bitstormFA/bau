@@ -86,9 +86,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Serves Bau operations over the Model Context Protocol.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -104,9 +104,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#formatMcpResponse%2Cstring"><span class="Identifier">formatMcpResponse</span></a><span class="Other">(</span><span class="Identifier">response</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Wrap a JSON-RPC response body in MCP <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Identifier">Length</span></span></tt> framing.
-
+    
   </dd>
 </div>
 
@@ -119,11 +119,11 @@
                                 <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Handle one JSON-RPC request body for Bau's MCP server.</p>
 <p>Notifications return an empty string because they do not produce responses.</p>
 
-
+    
   </dd>
 </div>
 
@@ -135,9 +135,9 @@
     <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Run the stdio MCP server loop for a project directory.
-
+    
   </dd>
 </div>
 
@@ -147,11 +147,11 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#readMcpMessage%2CStream"><span class="Identifier">readMcpMessage</span></a><span class="Other">(</span><span class="Identifier">input</span><span class="Other">:</span> <span class="Identifier">Stream</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Read one MCP message from a stream.</p>
 <p>Supports both standard <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Identifier">Length</span></span></tt> framing and bare JSON lines.</p>
 
-
+    
   </dd>
 </div>
 
@@ -166,10 +166,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:37 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:05 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

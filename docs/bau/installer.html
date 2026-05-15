@@ -120,9 +120,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Installs, updates, and removes Bau-built binaries.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -139,9 +139,9 @@
   <span class="Identifier">iaUpdate</span> <span class="Other">=</span> <span class="StringLit">&quot;update&quot;</span><span class="Other">,</span>      <span class="Comment">## Replace an existing installed binary.</span>
   <span class="Identifier">iaRemove</span> <span class="Other">=</span> <span class="StringLit">&quot;remove&quot;</span>        <span class="Comment">## Remove an installed binary.</span></pre></dt>
   <dd>
-
+    
     Binary installation operation to perform.
-
+    
   </dd>
 </div>
 <div id="InstallResult">
@@ -155,9 +155,9 @@
   <span class="Identifier">changed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## True when the filesystem was modified.</span>
   <span class="Identifier">dryRun</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## True when the command only planned the operation.</span></pre></dt>
   <dd>
-
+    
     Outcome for one target handled by install commands.
-
+    
   </dd>
 </div>
 <div id="ShellInitResult">
@@ -169,9 +169,9 @@
   <span class="Identifier">alreadyInPath</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>       <span class="Comment">## True when the current PATH already contains binDir.</span>
   <span class="Identifier">alreadyConfigured</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>   <span class="Comment">## True when the startup file already mentions binDir.</span></pre></dt>
   <dd>
-
+    
     Outcome from configuring a shell startup file.
-
+    
   </dd>
 </div>
 
@@ -186,11 +186,11 @@
                                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                                    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Return the default binary install directory.</p>
 <p>Bau installs to <tt class="docutils literal"><span class="pre"><span class="Operator">~/.</span><span class="Identifier">bau</span><span class="Operator">/</span><span class="Identifier">bin</span></span></tt> unless overridden by CLI or config.</p>
 
-
+    
   </dd>
 </div>
 
@@ -202,9 +202,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Ensure the selected shell starts with <tt class="docutils literal"><span class="pre"><span class="Operator">~/.</span><span class="Identifier">bau</span><span class="Operator">/</span><span class="Identifier">bin</span></span></tt> on <tt class="docutils literal"><span class="pre"><span class="Identifier">PATH</span></span></tt>.
-
+    
   </dd>
 </div>
 
@@ -220,11 +220,11 @@
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Install, update, or remove one or more binary targets.</p>
 <p>Target selection follows <tt class="docutils literal"><span class="pre"><span class="Identifier">targetName</span></span></tt> unless <tt class="docutils literal"><span class="pre"><span class="Identifier">allTargets</span></span></tt> is true.</p>
 
-
+    
   </dd>
 </div>
 
@@ -235,11 +235,11 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Resolve the install directory from CLI override, config, or defaults.</p>
 <p>Relative configured paths are interpreted relative to <tt class="docutils literal"><span class="pre"><span class="Identifier">projectDir</span></span></tt>.</p>
 
-
+    
   </dd>
 </div>
 
@@ -254,10 +254,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:41 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:08 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

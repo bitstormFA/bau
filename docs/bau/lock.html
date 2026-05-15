@@ -250,9 +250,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Reads, writes, and verifies reproducible Bau dependency lockfiles.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -270,9 +270,9 @@
   <span class="Identifier">package</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>           <span class="Comment">## Resolved package key, when known.</span>
   <span class="Identifier">optional</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Whether the edge is optional.</span></pre></dt>
   <dd>
-
+    
     Dependency edge from one package to another.
-
+    
   </dd>
 </div>
 <div id="DependencyReq">
@@ -290,9 +290,9 @@
   <span class="Identifier">enabledBy</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>    <span class="Comment">## Features that can enable this dependency.</span>
   <span class="Identifier">workspaceMember</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>   <span class="Comment">## Workspace member that declared the requirement.</span></pre></dt>
   <dd>
-
+    
     Root dependency requirement captured in a lockfile.
-
+    
   </dd>
 </div>
 <div id="LockDiagnostic">
@@ -302,9 +302,9 @@
   <span class="Identifier">path</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>              <span class="Comment">## Related file or directory path.</span>
   <span class="Identifier">message</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>           <span class="Comment">## Human-readable diagnostic message.</span></pre></dt>
   <dd>
-
+    
     One lock validation diagnostic.
-
+    
   </dd>
 </div>
 <div id="LockDiagnosticKind">
@@ -318,9 +318,9 @@
   <span class="Identifier">ldkRevisionMismatch</span> <span class="Other">=</span> <span class="StringLit">&quot;revision-mismatch&quot;</span><span class="Other">,</span> <span class="Comment">## Materialized Git revision differs from the lock.</span>
   <span class="Identifier">ldkUnmaterialized</span> <span class="Other">=</span> <span class="StringLit">&quot;unmaterialized&quot;</span> <span class="Comment">## Required direct dependency was not materialized.</span></pre></dt>
   <dd>
-
+    
     Machine-readable lock validation issue kind.
-
+    
   </dd>
 </div>
 <div id="LockFile">
@@ -332,9 +332,9 @@
   <span class="Identifier">rootDependencies</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#DependencyReq"><span class="Identifier">DependencyReq</span></a><span class="Other">]</span> <span class="Comment">## Direct requirements captured in the lock.</span>
   <span class="Identifier">packages</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">OrderedTable</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#ResolvedPackage"><span class="Identifier">ResolvedPackage</span></a><span class="Other">]</span> <span class="Comment">## Locked packages keyed by identity string.</span></pre></dt>
   <dd>
-
+    
     Parsed or generated Bau lockfile content.
-
+    
   </dd>
 </div>
 <div id="LockProject">
@@ -343,9 +343,9 @@
   <span class="Identifier">projectDir</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Absolute project directory.</span>
   <span class="Identifier">cfg</span><span class="Operator">*</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a>            <span class="Comment">## Effective project configuration.</span></pre></dt>
   <dd>
-
+    
     Workspace project included in lock generation.
-
+    
   </dd>
 </div>
 <div id="LockValidationReport">
@@ -354,9 +354,9 @@
   <span class="Identifier">messages</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>     <span class="Comment">## Human-readable diagnostic messages.</span>
   <span class="Identifier">diagnostics</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#LockDiagnostic"><span class="Identifier">LockDiagnostic</span></a><span class="Other">]</span> <span class="Comment">## Structured diagnostics.</span></pre></dt>
   <dd>
-
+    
     Result of validating a Bau lockfile.
-
+    
   </dd>
 </div>
 <div id="PackageId">
@@ -365,9 +365,9 @@
   <span class="Identifier">version</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>           <span class="Comment">## Resolved package version.</span>
   <span class="Identifier">source</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>            <span class="Comment">## Canonical source URI.</span></pre></dt>
   <dd>
-
+    
     Identity of one resolved package.
-
+    
   </dd>
 </div>
 <div id="ResolvedPackage">
@@ -383,9 +383,9 @@
   <span class="Identifier">materialized</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## True when package files were present locally.</span>
   <span class="Identifier">lockedAt</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>             <span class="Comment">## Unix timestamp when the materialized package was locked.</span></pre></dt>
   <dd>
-
+    
     Fully or partially resolved package lock entry.
-
+    
   </dd>
 </div>
 <div id="ResolveGraph">
@@ -396,18 +396,18 @@
   <span class="Identifier">rootDependencies</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#DependencyReq"><span class="Identifier">DependencyReq</span></a><span class="Other">]</span> <span class="Comment">## Direct requirements from projects.</span>
   <span class="Identifier">packages</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">OrderedTable</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="#ResolvedPackage"><span class="Identifier">ResolvedPackage</span></a><span class="Other">]</span> <span class="Comment">## Resolved packages keyed by identity string.</span></pre></dt>
   <dd>
-
+    
     In-memory dependency graph before lockfile emission.
-
+    
   </dd>
 </div>
 <div id="SourceId">
   <dt><pre><a href="#SourceId"><span class="Identifier">SourceId</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">uri</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>               <span class="Comment">## Canonical URI including source kind prefix.</span></pre></dt>
   <dd>
-
+    
     Stable source identity used in lock entries.
-
+    
   </dd>
 </div>
 <div id="SourceKind">
@@ -418,9 +418,9 @@
   <span class="Identifier">skVendor</span> <span class="Other">=</span> <span class="StringLit">&quot;vendor&quot;</span><span class="Other">,</span>      <span class="Comment">## Vendor directory source.</span>
   <span class="Identifier">skMirror</span> <span class="Other">=</span> <span class="StringLit">&quot;mirror&quot;</span>        <span class="Comment">## Local registry or mirror source.</span></pre></dt>
   <dd>
-
+    
     Dependency source category encoded into lock metadata.
-
+    
   </dd>
 </div>
 <div id="SourceProvider">
@@ -430,9 +430,9 @@
   <span class="Identifier">uri</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>               <span class="Comment">## Canonical source URI.</span>
   <span class="Identifier">replaceWith</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>       <span class="Comment">## Replacement source name, if configured.</span></pre></dt>
   <dd>
-
+    
     Resolved source definition used to identify packages.
-
+    
   </dd>
 </div>
 
@@ -444,25 +444,25 @@
     <div id="DefaultResolver">
   <dt><pre><a href="#DefaultResolver"><span class="Identifier">DefaultResolver</span></a> <span class="Other">=</span> <span class="StringLit">&quot;atlas-bridge&quot;</span></pre></dt>
   <dd>
-
+    
     Default resolver identifier written to locks.
-
+    
   </dd>
 </div>
 <div id="LockFileName">
   <dt><pre><a href="#LockFileName"><span class="Identifier">LockFileName</span></a> <span class="Other">=</span> <span class="StringLit">&quot;bau.lock&quot;</span></pre></dt>
   <dd>
-
+    
     Filename used for Bau dependency locks.
-
+    
   </dd>
 </div>
 <div id="LockFileVersion">
   <dt><pre><a href="#LockFileVersion"><span class="Identifier">LockFileVersion</span></a> <span class="Other">=</span> <span class="DecNumber">2</span></pre></dt>
   <dd>
-
+    
     Current lockfile format version.
-
+    
   </dd>
 </div>
 
@@ -478,9 +478,9 @@
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Build a dependency graph from configured projects and materialized packages.
-
+    
   </dd>
 </div>
 
@@ -491,9 +491,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
-
-
+    
+    
+    
   </dd>
 </div>
 
@@ -505,9 +505,9 @@
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Generate a lockfile for a single project configuration.
-
+    
   </dd>
 </div>
 <div id="generateLockFile,openArray[LockProject],string">
@@ -516,9 +516,9 @@
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Generate a lockfile for a workspace project set.
-
+    
   </dd>
 </div>
 
@@ -529,9 +529,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
     <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
-
-
+    
+    
+    
   </dd>
 </div>
 
@@ -540,9 +540,9 @@
   <div id="initLockFile">
   <dt><pre><span class="Keyword">proc</span> <a href="#initLockFile"><span class="Identifier">initLockFile</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#LockFile"><span class="Identifier">LockFile</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return an empty lockfile using the current format version.
-
+    
   </dd>
 </div>
 
@@ -551,9 +551,9 @@
   <div id="initResolveGraph">
   <dt><pre><span class="Keyword">proc</span> <a href="#initResolveGraph"><span class="Identifier">initResolveGraph</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="#ResolveGraph"><span class="Identifier">ResolveGraph</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return an empty dependency resolution graph.
-
+    
   </dd>
 </div>
 
@@ -563,9 +563,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#lockIdentity%2CSourceProvider%2CDepInfo"><span class="Identifier">lockIdentity</span></a><span class="Other">(</span><span class="Identifier">provider</span><span class="Other">:</span> <a href="#SourceProvider"><span class="Identifier">SourceProvider</span></a><span class="Other">;</span> <span class="Identifier">dep</span><span class="Other">:</span> <a href="config.html#DepInfo"><span class="Identifier">DepInfo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#SourceId"><span class="Identifier">SourceId</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Build the canonical source identity for a dependency and provider.
-
+    
   </dd>
 </div>
 
@@ -577,9 +577,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return true when a single-project lockfile validates successfully.
-
+    
   </dd>
 </div>
 <div id="lockIsValid,openArray[LockProject],string,string">
@@ -589,9 +589,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return true when a workspace lockfile validates successfully.
-
+    
   </dd>
 </div>
 
@@ -601,9 +601,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#packageMaterialPath%2Cstring%2CResolvedPackage"><span class="Identifier">packageMaterialPath</span></a><span class="Other">(</span><span class="Identifier">workspaceRoot</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">pkg</span><span class="Other">:</span> <a href="#ResolvedPackage"><span class="Identifier">ResolvedPackage</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the absolute materialized package path for a resolved package.
-
+    
   </dd>
 </div>
 
@@ -614,11 +614,11 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Parse a Bau lockfile from disk.</p>
 <p>Missing files return an empty lockfile; unsupported versions raise.</p>
 
-
+    
   </dd>
 </div>
 
@@ -628,9 +628,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#readNimbleVersion%2Cstring%2Cstring"><span class="Identifier">readNimbleVersion</span></a><span class="Other">(</span><span class="Identifier">depPath</span><span class="Other">,</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Read a dependency version from a <tt class="docutils literal"><span class="pre"><span class="Operator">.</span><span class="Identifier">nimble</span></span></tt> file when available.
-
+    
   </dd>
 </div>
 
@@ -640,9 +640,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#requirementsHash%2CopenArray%5BLockProject%5D%2Cstring"><span class="Identifier">requirementsHash</span></a><span class="Other">(</span><span class="Identifier">projects</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><a href="#LockProject"><span class="Identifier">LockProject</span></a><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">workspaceRoot</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Hash dependency requirements that should invalidate a lock when changed.
-
+    
   </dd>
 </div>
 
@@ -652,9 +652,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#sourceProvider%2Cstring%2CSourceInfo"><span class="Identifier">sourceProvider</span></a><span class="Other">(</span><span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">info</span><span class="Other">:</span> <a href="config.html#SourceInfo"><span class="Identifier">SourceInfo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#SourceProvider"><span class="Identifier">SourceProvider</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Convert configured source info into a source provider descriptor.
-
+    
   </dd>
 </div>
 
@@ -664,9 +664,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#toLockFile%2CResolveGraph"><span class="Identifier">toLockFile</span></a><span class="Other">(</span><span class="Identifier">graph</span><span class="Other">:</span> <a href="#ResolveGraph"><span class="Identifier">ResolveGraph</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#LockFile"><span class="Identifier">LockFile</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Convert an in-memory resolve graph to lockfile content.
-
+    
   </dd>
 </div>
 
@@ -675,17 +675,17 @@
   <div id="toString,PackageId">
   <dt><pre><span class="Keyword">proc</span> <a href="#toString%2CPackageId"><span class="Identifier">toString</span></a><span class="Other">(</span><span class="Identifier">id</span><span class="Other">:</span> <a href="#PackageId"><span class="Identifier">PackageId</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Format a package identity as the stable lock-table key.
-
+    
   </dd>
 </div>
 <div id="toString,ResolvedPackage">
   <dt><pre><span class="Keyword">proc</span> <a href="#toString%2CResolvedPackage"><span class="Identifier">toString</span></a><span class="Other">(</span><span class="Identifier">pkg</span><span class="Other">:</span> <a href="#ResolvedPackage"><span class="Identifier">ResolvedPackage</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Format a resolved package identity as the stable lock-table key.
-
+    
   </dd>
 </div>
 
@@ -695,9 +695,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#unresolvedLockEntries%2CBauConfig%2CLockFile%2Cstring"><span class="Identifier">unresolvedLockEntries</span></a><span class="Other">(</span><span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span> <span class="Identifier">lock</span><span class="Other">:</span> <a href="#LockFile"><span class="Identifier">LockFile</span></a><span class="Other">;</span> <span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span>
     <span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return non-optional dependencies that are missing resolved material.
-
+    
   </dd>
 </div>
 
@@ -709,9 +709,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Validate a lockfile against a single project configuration.
-
+    
   </dd>
 </div>
 <div id="validateLockFile,openArray[LockProject],string,string">
@@ -721,9 +721,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Validate a lockfile against workspace projects and materialized packages.
-
+    
   </dd>
 </div>
 
@@ -734,9 +734,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Write a lockfile in Bau's deterministic TOML format.
-
+    
   </dd>
 </div>
 
@@ -751,10 +751,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:48 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:12 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

@@ -142,9 +142,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Discovers modules and orchestrates Nim API documentation generation.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -166,9 +166,9 @@
   <span class="Identifier">includePrivate</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>      <span class="Comment">## Include private symbols in generated API docs.</span>
   <span class="Identifier">noIndex</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Suppress Bau's documentation index generation.</span></pre></dt>
   <dd>
-
+    
     Runtime options for API documentation generation.
-
+    
   </dd>
 </div>
 <div id="DocBuildReport">
@@ -181,9 +181,9 @@
   <span class="Identifier">commands</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#DocCommandResult"><span class="Identifier">DocCommandResult</span></a><span class="Other">]</span> <span class="Comment">## Nim doc command results.</span>
   <span class="Identifier">generatedFiles</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Generated files relative to `outDir`.</span></pre></dt>
   <dd>
-
+    
     Complete result of a documentation build.
-
+    
   </dd>
 </div>
 <div id="DocCommandResult">
@@ -195,9 +195,9 @@
   <span class="Identifier">exitCode</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>             <span class="Comment">## Process exit code.</span>
   <span class="Identifier">output</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>            <span class="Comment">## Combined compiler output.</span></pre></dt>
   <dd>
-
+    
     Result of one Nim doc invocation.
-
+    
   </dd>
 </div>
 <div id="DocDiagnostic">
@@ -206,9 +206,9 @@
   <span class="Identifier">file</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>              <span class="Comment">## Project-relative file path.</span>
   <span class="Identifier">message</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>           <span class="Comment">## Human-readable diagnostic message.</span></pre></dt>
   <dd>
-
+    
     Documentation-quality diagnostic.
-
+    
   </dd>
 </div>
 <div id="DocModule">
@@ -220,9 +220,9 @@
   <span class="Identifier">outputPath</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Expected generated HTML path.</span>
   <span class="Identifier">entrypoint</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>          <span class="Comment">## True when selected as an explicit entrypoint.</span></pre></dt>
   <dd>
-
+    
     One Nim source file selected for documentation.
-
+    
   </dd>
 </div>
 
@@ -234,9 +234,9 @@
     <div id="DocManifestName">
   <dt><pre><a href="#DocManifestName"><span class="Identifier">DocManifestName</span></a> <span class="Other">=</span> <span class="StringLit">&quot;.bau-docs-manifest&quot;</span></pre></dt>
   <dd>
-
+    
     Manifest listing files produced by <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span> <span class="Identifier">doc</span></span></tt>.
-
+    
   </dd>
 </div>
 
@@ -253,11 +253,11 @@
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Generate Nim API documentation and return a structured build report.</p>
 <p>Previously generated files tracked by Bau's manifest are removed before invoking Nim doc.</p>
 
-
+    
   </dd>
 </div>
 
@@ -269,11 +269,11 @@
     <a href="#DocModule"><span class="Identifier">DocModule</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span>
                  <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Discover Nim modules that should be documented for a project.</p>
 <p>Explicit entrypoints and include/exclude patterns are resolved before the final list is sorted by project-relative path.</p>
 
-
+    
   </dd>
 </div>
 
@@ -284,9 +284,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Convert a documentation build report to JSON.
-
+    
   </dd>
 </div>
 
@@ -297,9 +297,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the preferred HTML file to open for a documentation report.
-
+    
   </dd>
 </div>
 
@@ -314,10 +314,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:41 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:08 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

@@ -61,7 +61,7 @@
   <details open>
     <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
     <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#BauVersion" title="BauVersion = &quot;0.4.1&quot;">BauVersion</a></li>
+      <li><a class="reference" href="#BauVersion" title="BauVersion = &quot;0.4.2&quot;">BauVersion</a></li>
 <li><a class="reference" href="#BuildDirName" title="BuildDirName = &quot;build&quot;">BuildDirName</a></li>
 <li><a class="reference" href="#ConfigFileName" title="ConfigFileName = &quot;bau.toml&quot;">ConfigFileName</a></li>
 <li><a class="reference" href="#FingerprintDirName" title="FingerprintDirName = &quot;.bau/fingerprints&quot;">FingerprintDirName</a></li>
@@ -182,9 +182,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Shared filesystem, command, hashing, and terminal helpers.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -196,51 +196,51 @@
   <h1><a class="toc-backref" href="#10">Consts</a></h1>
   <dl class="item">
     <div id="BauVersion">
-  <dt><pre><a href="#BauVersion"><span class="Identifier">BauVersion</span></a> <span class="Other">=</span> <span class="StringLit">&quot;0.4.1&quot;</span></pre></dt>
+  <dt><pre><a href="#BauVersion"><span class="Identifier">BauVersion</span></a> <span class="Other">=</span> <span class="StringLit">&quot;0.4.2&quot;</span></pre></dt>
   <dd>
-
+    
     Version reported by the Bau CLI.
-
+    
   </dd>
 </div>
 <div id="BuildDirName">
   <dt><pre><a href="#BuildDirName"><span class="Identifier">BuildDirName</span></a> <span class="Other">=</span> <span class="StringLit">&quot;build&quot;</span></pre></dt>
   <dd>
-
+    
     Default build artifact directory.
-
+    
   </dd>
 </div>
 <div id="ConfigFileName">
   <dt><pre><a href="#ConfigFileName"><span class="Identifier">ConfigFileName</span></a> <span class="Other">=</span> <span class="StringLit">&quot;bau.toml&quot;</span></pre></dt>
   <dd>
-
+    
     Primary project configuration filename.
-
+    
   </dd>
 </div>
 <div id="FingerprintDirName">
   <dt><pre><a href="#FingerprintDirName"><span class="Identifier">FingerprintDirName</span></a> <span class="Other">=</span> <span class="StringLit">&quot;.bau/fingerprints&quot;</span></pre></dt>
   <dd>
-
+    
     Directory for incremental build fingerprints.
-
+    
   </dd>
 </div>
 <div id="GlobalConfigDir">
   <dt><pre><a href="#GlobalConfigDir"><span class="Identifier">GlobalConfigDir</span></a> <span class="Other">=</span> <span class="StringLit">&quot;bau&quot;</span></pre></dt>
   <dd>
-
+    
     User config directory name below the platform config root.
-
+    
   </dd>
 </div>
 <div id="LocalConfigFileName">
   <dt><pre><a href="#LocalConfigFileName"><span class="Identifier">LocalConfigFileName</span></a> <span class="Other">=</span> <span class="StringLit">&quot;bau.local.toml&quot;</span></pre></dt>
   <dd>
-
+    
     Optional local override filename.
-
+    
   </dd>
 </div>
 
@@ -253,9 +253,9 @@
   <div id="currentColorMode">
   <dt><pre><span class="Keyword">proc</span> <a href="#currentColorMode"><span class="Identifier">currentColorMode</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the active color mode used by terminal helpers.
-
+    
   </dd>
 </div>
 
@@ -265,9 +265,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#detectAtlas"><span class="Identifier">detectAtlas</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Find the <tt class="docutils literal"><span class="pre"><span class="Identifier">atlas</span></span></tt> executable on <tt class="docutils literal"><span class="pre"><span class="Identifier">PATH</span></span></tt>, raising if it is unavailable.
-
+    
   </dd>
 </div>
 
@@ -277,9 +277,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#detectNimCompiler"><span class="Identifier">detectNimCompiler</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Find the <tt class="docutils literal"><span class="pre"><span class="Identifier">nim</span></span></tt> executable on <tt class="docutils literal"><span class="pre"><span class="Identifier">PATH</span></span></tt>, raising if it is unavailable.
-
+    
   </dd>
 </div>
 
@@ -288,9 +288,9 @@
   <div id="error,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#error%2Cstring"><span class="Identifier">error</span></a><span class="Other">(</span><span class="Identifier">msg</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Print an error message.
-
+    
   </dd>
 </div>
 
@@ -300,9 +300,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#findConfig%2Cstring"><span class="Identifier">findConfig</span></a><span class="Other">(</span><span class="Identifier">startDir</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">getCurrentDir</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the nearest <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span><span class="Operator">.</span><span class="Identifier">toml</span></span></tt> path, or an empty string when absent.
-
+    
   </dd>
 </div>
 
@@ -312,11 +312,11 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#findProjectRoot%2Cstring"><span class="Identifier">findProjectRoot</span></a><span class="Other">(</span><span class="Identifier">startDir</span><span class="Other">:</span> <span class="Identifier">string</span> <span class="Other">=</span> <span class="Identifier">getCurrentDir</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Walk upward from <tt class="docutils literal"><span class="pre"><span class="Identifier">startDir</span></span></tt> until a <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span><span class="Operator">.</span><span class="Identifier">toml</span></span></tt> file is found.</p>
 <p>Raises <tt class="docutils literal"><span class="pre"><span class="Identifier">IOError</span></span></tt> when no project root exists in the directory ancestry.</p>
 
-
+    
   </dd>
 </div>
 
@@ -327,9 +327,9 @@
                                   <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                                   <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the path to the user-level Bau config file.
-
+    
   </dd>
 </div>
 
@@ -340,9 +340,9 @@
                                  <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                                  <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the path to the user-level Bau tasks file.
-
+    
   </dd>
 </div>
 
@@ -352,9 +352,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#hashFile%2Cstring"><span class="Identifier">hashFile</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                                       <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return Bau's prefixed SHA-256 digest for a file's contents.
-
+    
   </dd>
 </div>
 
@@ -363,9 +363,9 @@
   <div id="hashStr,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#hashStr%2Cstring"><span class="Identifier">hashStr</span></a><span class="Other">(</span><span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return Bau's prefixed SHA-256 digest for a string.
-
+    
   </dd>
 </div>
 
@@ -375,9 +375,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#homeDir"><span class="Identifier">homeDir</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                          <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the current user's home directory.
-
+    
   </dd>
 </div>
 
@@ -386,9 +386,9 @@
   <div id="info,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#info%2Cstring"><span class="Identifier">info</span></a><span class="Other">(</span><span class="Identifier">msg</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Print an informational message unless quiet output is enabled.
-
+    
   </dd>
 </div>
 
@@ -397,9 +397,9 @@
   <div id="nimVersion">
   <dt><pre><span class="Keyword">proc</span> <a href="#nimVersion"><span class="Identifier">nimVersion</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the Nim version baked into the compiler that built Bau.
-
+    
   </dd>
 </div>
 
@@ -408,9 +408,9 @@
   <div id="platformTriple">
   <dt><pre><span class="Keyword">proc</span> <a href="#platformTriple"><span class="Identifier">platformTriple</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the host platform as <tt class="docutils literal"><span class="pre"><span class="Identifier">os</span><span class="Operator">-</span><span class="Identifier">cpu</span></span></tt>.
-
+    
   </dd>
 </div>
 
@@ -420,9 +420,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#readFileChecked%2Cstring"><span class="Identifier">readFileChecked</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Read a file, raising an <tt class="docutils literal"><span class="pre"><span class="Identifier">IOError</span></span></tt> that includes the requested path.
-
+    
   </dd>
 </div>
 
@@ -434,9 +434,9 @@
     <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
                                      <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Run a command and capture combined stdout and stderr.
-
+    
   </dd>
 </div>
 
@@ -448,9 +448,9 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Run a command and return captured output, raising on nonzero exit.
-
+    
   </dd>
 </div>
 
@@ -462,9 +462,9 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Run a command attached to the parent terminal, raising on nonzero exit.
-
+    
   </dd>
 </div>
 
@@ -477,9 +477,9 @@
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Run a command attached to the parent terminal and return its exit code.
-
+    
   </dd>
 </div>
 
@@ -489,9 +489,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#saveFile%2Cstring%2Cstring"><span class="Identifier">saveFile</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">content</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Write <tt class="docutils literal"><span class="pre"><span class="Identifier">content</span></span></tt> to <tt class="docutils literal"><span class="pre"><span class="Identifier">path</span></span></tt>, creating parent directories first.
-
+    
   </dd>
 </div>
 
@@ -501,11 +501,11 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#setOutputOptions%2Cbool%2Cstring"><span class="Identifier">setOutputOptions</span></a><span class="Other">(</span><span class="Identifier">quiet</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">;</span> <span class="Identifier">color</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Configure process-wide terminal output behavior.</p>
 <p><tt class="docutils literal"><span class="pre"><span class="Identifier">color</span></span></tt> accepts <tt class="docutils literal"><span class="pre"><span class="Identifier">auto</span></span></tt>, <tt class="docutils literal"><span class="pre"><span class="Identifier">always</span></span></tt>, or <tt class="docutils literal"><span class="pre"><span class="Identifier">never</span></span></tt>; unknown values keep the previous color setting.</p>
 
-
+    
   </dd>
 </div>
 
@@ -515,9 +515,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#success%2Cstring"><span class="Identifier">success</span></a><span class="Other">(</span><span class="Identifier">msg</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span>
                             <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Print a success message unless quiet output is enabled.
-
+    
   </dd>
 </div>
 
@@ -526,9 +526,9 @@
   <div id="toTomlString,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#toTomlString%2Cstring"><span class="Identifier">toTomlString</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Quote a string for TOML output, using multiline syntax when needed.
-
+    
   </dd>
 </div>
 
@@ -537,9 +537,9 @@
   <div id="warn,string">
   <dt><pre><span class="Keyword">proc</span> <a href="#warn%2Cstring"><span class="Identifier">warn</span></a><span class="Other">(</span><span class="Identifier">msg</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Print a warning message.
-
+    
   </dd>
 </div>
 
@@ -554,10 +554,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:51 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:13 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

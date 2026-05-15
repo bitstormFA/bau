@@ -99,8 +99,9 @@ exclude = ["src/demo/private/**"]
   write(tmp / "src" / "demo.nim", """
 ## Demo package.
 
-import demo/api
+import demo/[api, extra]
 export api
+export extra
 """)
   write(tmp / "src" / "demo" / "api.nim", """
 ## Public API.

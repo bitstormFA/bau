@@ -144,9 +144,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Discovers, plans, and runs project tests according to Bau configuration.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -162,9 +162,9 @@
   <span class="Identifier">path</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>              <span class="Comment">## Absolute path to the Nim test file.</span>
   <span class="Identifier">runner</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## True when this file is acting as an aggregate runner.</span></pre></dt>
   <dd>
-
+    
     One runner or test file selected for execution.
-
+    
   </dd>
 </div>
 <div id="TestInvocationTiming">
@@ -177,9 +177,9 @@
   <span class="Identifier">totalMs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int64</span>            <span class="Comment">## Compile plus run milliseconds.</span>
   <span class="Identifier">passed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## True when compile and run both succeeded.</span></pre></dt>
   <dd>
-
+    
     Timing data for one profile/file invocation.
-
+    
   </dd>
 </div>
 <div id="TestOutputMode">
@@ -188,9 +188,9 @@
   <span class="Identifier">tomAlways</span> <span class="Other">=</span> <span class="StringLit">&quot;always&quot;</span><span class="Other">,</span>     <span class="Comment">## Stream all test process output live.</span>
   <span class="Identifier">tomNever</span> <span class="Other">=</span> <span class="StringLit">&quot;never&quot;</span>         <span class="Comment">## Capture output and print only Bau summaries.</span></pre></dt>
   <dd>
-
+    
     How test process output is shown.
-
+    
   </dd>
 </div>
 <div id="TestRunOptions">
@@ -213,9 +213,9 @@
   <span class="Identifier">noRunner</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Discover test files instead of using a runner.</span>
   <span class="Identifier">featureSelection</span><span class="Operator">*</span><span class="Other">:</span> <a href="features.html#FeatureSelection"><span class="Identifier">FeatureSelection</span></a> <span class="Comment">## Enabled feature set.</span></pre></dt>
   <dd>
-
+    
     Options controlling a <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span> <span class="Identifier">test</span></span></tt> run.
-
+    
   </dd>
 </div>
 <div id="TestRunResult">
@@ -225,9 +225,9 @@
   <span class="Identifier">failed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>               <span class="Comment">## Number of failed profile/file invocations.</span>
   <span class="Identifier">timings</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#TestInvocationTiming"><span class="Identifier">TestInvocationTiming</span></a><span class="Other">]</span> <span class="Comment">## Per-invocation timing details.</span></pre></dt>
   <dd>
-
+    
     Aggregate test result counters.
-
+    
   </dd>
 </div>
 
@@ -243,9 +243,9 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return runner or individual test files selected for a test run.
-
+    
   </dd>
 </div>
 
@@ -255,9 +255,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#effectiveTestOutputMode%2CBauConfig%2Cstring"><span class="Identifier">effectiveTestOutputMode</span></a><span class="Other">(</span><span class="Identifier">cfg</span><span class="Other">:</span> <a href="config.html#BauConfig"><span class="Identifier">BauConfig</span></a><span class="Other">;</span> <span class="Identifier">override</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#TestOutputMode"><span class="Identifier">TestOutputMode</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the effective test output mode from CLI or <tt class="docutils literal"><span class="pre"><span class="Punctuation">[</span><span class="Identifier">test</span><span class="Punctuation">]</span></span></tt>.
-
+    
   </dd>
 </div>
 
@@ -270,9 +270,9 @@
                            <span class="Identifier">full</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">fast</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Return the profile matrix used by a test run.
-
+    
   </dd>
 </div>
 
@@ -282,9 +282,9 @@
   <dt><pre><span class="Keyword">proc</span> <a href="#parseTestOutputMode%2Cstring"><span class="Identifier">parseTestOutputMode</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="#TestOutputMode"><span class="Identifier">TestOutputMode</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Parse a user-facing test output mode string.
-
+    
   </dd>
 </div>
 
@@ -297,9 +297,9 @@
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Run selected tests and return aggregate counters.
-
+    
   </dd>
 </div>
 
@@ -314,10 +314,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:48 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:12 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

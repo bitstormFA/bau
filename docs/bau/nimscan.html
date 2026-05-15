@@ -101,9 +101,9 @@
 
   </div>
   <div class="nine columns" id="content">
-
+    
     <div id="tocRoot"></div>
-
+    
     <p class="module-desc">Scans Nim modules, imports, and target candidates.</p>
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
@@ -119,9 +119,9 @@
   <span class="Identifier">importer</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>          <span class="Comment">## Module that imports or depends on another module.</span>
   <span class="Identifier">imported</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>          <span class="Comment">## Module imported by `importer`.</span></pre></dt>
   <dd>
-
+    
     Compiler-reported dependency edge.
-
+    
   </dd>
 </div>
 <div id="NimModuleInfo">
@@ -132,9 +132,9 @@
   <span class="Identifier">includes</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>     <span class="Comment">## Non-stdlib modules included by the file.</span>
   <span class="Identifier">isMainModule</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## True when the file references `isMainModule`.</span></pre></dt>
   <dd>
-
+    
     Lightweight facts extracted from a Nim source file.
-
+    
   </dd>
 </div>
 
@@ -150,11 +150,11 @@
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Ask the Nim compiler for dependency edges for targets and tests.</p>
 <p>Failures are tolerated so source-level scanning can still provide results.</p>
 
-
+    
   </dd>
 </div>
 
@@ -165,11 +165,11 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     <p>Scan one Nim module for imports, includes, and <tt class="docutils literal"><span class="pre"><span class="Identifier">isMainModule</span></span></tt>.</p>
 <p>The scanner is intentionally lightweight and ignores stdlib imports.</p>
 
-
+    
   </dd>
 </div>
 
@@ -180,9 +180,9 @@
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
-
+    
     Scan project source and test directories for Nim modules.
-
+    
   </dd>
 </div>
 
@@ -197,10 +197,10 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-14 13:52:48 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:12 UTC</small>
       </div>
     </div>
   </div>
-
+  
 </body>
 </html>

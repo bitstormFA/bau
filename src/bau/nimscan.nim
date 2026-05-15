@@ -221,7 +221,8 @@ proc runCompilerDepend(projectDir: string; cfg: BauConfig;
   let absMain = if mainFile.isAbsolute: mainFile else: projectDir / mainFile
   if not fileExists(absMain):
     return
-  for file in generatedDependFiles(projectDir, mainFile):
+  let generatedFiles = generatedDependFiles(projectDir, mainFile)
+  for file in generatedFiles:
     if fileExists(file):
       try:
         removeFile(file)
@@ -232,12 +233,11 @@ proc runCompilerDepend(projectDir: string; cfg: BauConfig;
   args.add(compilerSearchPaths(projectDir, cfg))
   args.add(mainFile)
   let (exitCode, _) = runCmd(detectNimCompiler(), args, projectDir)
-  if exitCode != 0:
-    return
-  let dotFile = absMain.changeFileExt(".dot")
-  if fileExists(dotFile):
-    result = parseDotEdges(readFileChecked(dotFile))
-  for file in generatedDependFiles(projectDir, mainFile):
+  if exitCode == 0:
+    let dotFile = absMain.changeFileExt(".dot")
+    if fileExists(dotFile):
+      result = parseDotEdges(readFileChecked(dotFile))
+  for file in generatedFiles:
     if fileExists(file):
       try:
         removeFile(file)

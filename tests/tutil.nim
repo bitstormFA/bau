@@ -1,13 +1,13 @@
-import std/strutils
+import std/[os, strutils]
 import bau/util
 
 block find_project_root_basic:
-  let root = findProjectRoot("/home/fab/projects/bau/tests")
-  doAssert root == "/home/fab/projects/bau"
+  let root = findProjectRoot(getCurrentDir() / "tests")
+  doAssert root == getCurrentDir()
 
 block find_config_basic:
-  let config = findConfig("/home/fab/projects/bau/tests")
-  doAssert config == "/home/fab/projects/bau/bau.toml"
+  let config = findConfig(getCurrentDir() / "tests")
+  doAssert config == getCurrentDir() / "bau.toml"
 
 block hash_str_deterministic:
   let h1 = hashStr("hello")
@@ -39,7 +39,7 @@ block nim_version:
   doAssert '.' in v
 
 block bau_version:
-  doAssert BauVersion == "0.4.1"
+  doAssert BauVersion == "0.4.2"
 
 block global_config_path:
   let p = globalConfigPath()
