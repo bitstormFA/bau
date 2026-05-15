@@ -3,8 +3,24 @@
 import std/[os, strutils, osproc, streams, terminal]
 import bau/digest
 
+proc packageVersionFromToml(data: string): string {.compileTime.} =
+  var inPackage = false
+  for rawLine in data.splitLines():
+    let line = rawLine.strip()
+    if line.len == 0 or line.startsWith("#"):
+      continue
+    if line.startsWith("[") and line.endsWith("]"):
+      inPackage = line == "[package]"
+      continue
+    if inPackage and line.startsWith("version"):
+      let parts = line.split("=", 1)
+      if parts.len == 2:
+        return parts[1].strip().strip(chars = {'"', '\''})
+  raise newException(ValueError, "could not find [package].version in bau.toml")
+
 const
-  BauVersion* = "0.4.2"                   ## Version reported by the Bau CLI.
+  BauVersion* = packageVersionFromToml(staticRead("../bau.toml"))
+    ## Version reported by the Bau CLI.
   ConfigFileName* = "bau.toml"            ## Primary project configuration filename.
   LocalConfigFileName* = "bau.local.toml" ## Optional local override filename.
   GlobalConfigDir* = "bau" ## User config directory name below the platform config root.

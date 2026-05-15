@@ -1,6 +1,21 @@
 import std/[os, strutils]
 import bau/util
 
+proc packageVersionFromToml(path: string): string =
+  var inPackage = false
+  for rawLine in readFile(path).splitLines():
+    let line = rawLine.strip()
+    if line.len == 0 or line.startsWith("#"):
+      continue
+    if line.startsWith("[") and line.endsWith("]"):
+      inPackage = line == "[package]"
+      continue
+    if inPackage and line.startsWith("version"):
+      let parts = line.split("=", 1)
+      if parts.len == 2:
+        return parts[1].strip().strip(chars = {'"', '\''})
+  raise newException(ValueError, "could not find [package].version")
+
 block find_project_root_basic:
   let root = findProjectRoot(getCurrentDir() / "tests")
   doAssert root == getCurrentDir()
@@ -39,7 +54,7 @@ block nim_version:
   doAssert '.' in v
 
 block bau_version:
-  doAssert BauVersion == "0.4.2"
+  doAssert BauVersion == packageVersionFromToml(getCurrentDir() / "bau.toml")
 
 block global_config_path:
   let p = globalConfigPath()
