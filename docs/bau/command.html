@@ -110,7 +110,8 @@
   testNoRunner*: bool        ## Discover test files instead of using a runner.
   installDir*: string        ## Installation directory override.
   passthroughArgs*: seq[string] ## Arguments passed after `--`.
-  initInfo*: ProjectInitInfo ## Project initialization metadata.">CliOptions</a></li>
+  initInfo*: ProjectInitInfo ## Project initialization metadata.
+  agentTargets*: seq[string] ## Agent hosts selected for MCP setup.">CliOptions</a></li>
 <li><a class="reference" href="#Command" title="Command = enum
   cmdNone,                  ## No command was selected.
   cmdBuild,                 ## Build project targets.
@@ -139,6 +140,7 @@
   cmdExplain,               ## Explain target freshness state.
   cmdPublish,               ## Submit a package publication.
   cmdBump,                  ## Increment the project package version.
+  cmdMcp,                   ## Configure or run the MCP server.
   cmdShell,                 ## Open a shell with Bau environment.
   cmdShellInit,             ## Add Bau's binary directory to the selected shell.
   cmdPlugin,                ## Delegate to an external `bau-*` command.
@@ -235,6 +237,10 @@
   <li><a class="reference" href="#lintCommand%2CCliOptions" title="lintCommand(opts: CliOptions)">lintCommand(opts: CliOptions)</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">mcpCommand
+  <li><a class="reference" href="#mcpCommand%2CCliOptions" title="mcpCommand(opts: CliOptions)">mcpCommand(opts: CliOptions)</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">metadataCommand
   <li><a class="reference" href="#metadataCommand%2CCliOptions" title="metadataCommand(opts: CliOptions)">metadataCommand(opts: CliOptions)</a></li>
 
@@ -257,6 +263,10 @@
 </ul>
 <ul class="simple nested-toc-section">printHelp
   <li><a class="reference" href="#printHelp" title="printHelp()">printHelp()</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">printMcpCommandHelp
+  <li><a class="reference" href="#printMcpCommandHelp" title="printMcpCommandHelp()">printMcpCommandHelp()</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">printTaskCommandHelp
@@ -375,7 +385,8 @@
   <span class="Identifier">testNoRunner</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## Discover test files instead of using a runner.</span>
   <span class="Identifier">installDir</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Installation directory override.</span>
   <span class="Identifier">passthroughArgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Arguments passed after `--`.</span>
-  <span class="Identifier">initInfo</span><span class="Operator">*</span><span class="Other">:</span> <a href="init.html#ProjectInitInfo"><span class="Identifier">ProjectInitInfo</span></a> <span class="Comment">## Project initialization metadata.</span></pre></dt>
+  <span class="Identifier">initInfo</span><span class="Operator">*</span><span class="Other">:</span> <a href="init.html#ProjectInitInfo"><span class="Identifier">ProjectInitInfo</span></a> <span class="Comment">## Project initialization metadata.</span>
+  <span class="Identifier">agentTargets</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Agent hosts selected for MCP setup.</span></pre></dt>
   <dd>
     
     Parsed command-line options.
@@ -411,6 +422,7 @@
   <span class="Identifier">cmdExplain</span><span class="Other">,</span>               <span class="Comment">## Explain target freshness state.</span>
   <span class="Identifier">cmdPublish</span><span class="Other">,</span>               <span class="Comment">## Submit a package publication.</span>
   <span class="Identifier">cmdBump</span><span class="Other">,</span>                  <span class="Comment">## Increment the project package version.</span>
+  <span class="Identifier">cmdMcp</span><span class="Other">,</span>                   <span class="Comment">## Configure or run the MCP server.</span>
   <span class="Identifier">cmdShell</span><span class="Other">,</span>                 <span class="Comment">## Open a shell with Bau environment.</span>
   <span class="Identifier">cmdShellInit</span><span class="Other">,</span>             <span class="Comment">## Add Bau's binary directory to the selected shell.</span>
   <span class="Identifier">cmdPlugin</span><span class="Other">,</span>                <span class="Comment">## Delegate to an external `bau-*` command.</span>
@@ -680,6 +692,19 @@
 </div>
 
 </div>
+<div id="mcpCommand-procs-all">
+  <div id="mcpCommand,CliOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#mcpCommand%2CCliOptions"><span class="Identifier">mcpCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span>
+    <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
+                      <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Execute MCP helper commands.
+    
+  </dd>
+</div>
+
+</div>
 <div id="metadataCommand-procs-all">
   <div id="metadataCommand,CliOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#metadataCommand%2CCliOptions"><span class="Identifier">metadataCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.
@@ -754,6 +779,17 @@
   <dd>
     
     Print Bau's command-line help text.
+    
+  </dd>
+</div>
+
+</div>
+<div id="printMcpCommandHelp-procs-all">
+  <div id="printMcpCommandHelp">
+  <dt><pre><span class="Keyword">proc</span> <a href="#printMcpCommandHelp"><span class="Identifier">printMcpCommandHelp</span></a><span class="Other">(</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Print help for the <tt class="docutils literal"><span class="pre"><span class="Identifier">mcp</span></span></tt> command family.
     
   </dd>
 </div>
@@ -909,7 +945,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 12:53:17 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 13:28:40 UTC</small>
       </div>
     </div>
   </div>

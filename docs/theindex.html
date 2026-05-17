@@ -28,7 +28,7 @@
     <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="bau.html">bau</a>, <a href="bau/affected.html">bau/affected</a>, <a href="bau/argv.html">bau/argv</a>, <a href="bau/atlas.html">bau/atlas</a>, <a href="bau/build.html">bau/build</a>, <a href="bau/buildscript.html">bau/buildscript</a>, <a href="bau/ci_templates.html">bau/ci_templates</a>, <a href="bau/command.html">bau/command</a>, <a href="bau/config.html">bau/config</a>, <a href="bau/configedit.html">bau/configedit</a>, <a href="bau/depscheck.html">bau/depscheck</a>, <a href="bau/digest.html">bau/digest</a>, <a href="bau/docgen.html">bau/docgen</a>, <a href="bau/features.html">bau/features</a>, <a href="bau/fingerprint.html">bau/fingerprint</a>, <a href="bau/init.html">bau/init</a>, <a href="bau/installer.html">bau/installer</a>, <a href="bau/lock.html">bau/lock</a>, <a href="bau/mcp.html">bau/mcp</a>, <a href="bau/metadata.html">bau/metadata</a>, <a href="bau/nimble.html">bau/nimble</a>, <a href="bau/nimscan.html">bau/nimscan</a>, <a href="bau/ops.html">bau/ops</a>, <a href="bau/packaging.html">bau/packaging</a>, <a href="bau/remote.html">bau/remote</a>, <a href="bau/tailor.html">bau/tailor</a>, <a href="bau/taskcache.html">bau/taskcache</a>, <a href="bau/taskgraph.html">bau/taskgraph</a>, <a href="bau/testexec.html">bau/testexec</a>, <a href="bau/toolchain.html">bau/toolchain</a>, <a href="bau/util.html">bau/util</a>, <a href="bau/workspace.html">bau/workspace</a>.<br/><p /><h2>API symbols</h2>
+      Modules: <a href="bau.html">bau</a>, <a href="bau/affected.html">bau/affected</a>, <a href="bau/agentsetup.html">bau/agentsetup</a>, <a href="bau/argv.html">bau/argv</a>, <a href="bau/atlas.html">bau/atlas</a>, <a href="bau/build.html">bau/build</a>, <a href="bau/buildscript.html">bau/buildscript</a>, <a href="bau/ci_templates.html">bau/ci_templates</a>, <a href="bau/command.html">bau/command</a>, <a href="bau/config.html">bau/config</a>, <a href="bau/configedit.html">bau/configedit</a>, <a href="bau/depscheck.html">bau/depscheck</a>, <a href="bau/digest.html">bau/digest</a>, <a href="bau/docgen.html">bau/docgen</a>, <a href="bau/features.html">bau/features</a>, <a href="bau/fingerprint.html">bau/fingerprint</a>, <a href="bau/init.html">bau/init</a>, <a href="bau/installer.html">bau/installer</a>, <a href="bau/lock.html">bau/lock</a>, <a href="bau/mcp.html">bau/mcp</a>, <a href="bau/metadata.html">bau/metadata</a>, <a href="bau/nimble.html">bau/nimble</a>, <a href="bau/nimscan.html">bau/nimscan</a>, <a href="bau/ops.html">bau/ops</a>, <a href="bau/packaging.html">bau/packaging</a>, <a href="bau/remote.html">bau/remote</a>, <a href="bau/tailor.html">bau/tailor</a>, <a href="bau/taskcache.html">bau/taskcache</a>, <a href="bau/taskgraph.html">bau/taskgraph</a>, <a href="bau/testexec.html">bau/testexec</a>, <a href="bau/toolchain.html">bau/toolchain</a>, <a href="bau/util.html">bau/util</a>, <a href="bau/workspace.html">bau/workspace</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%3D%3D%60" href="#%60%3D%3D%60"><span>`==`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="fingerprint: proc `==`(a, b: Fingerprint): bool" href="bau/fingerprint.html#%3D%3D%2CFingerprint%2CFingerprint">fingerprint: proc `==`(a, b: Fingerprint): bool</a></li>
@@ -55,6 +55,32 @@
 <li><a class="reference external"
           data-doc-search-tag="affected: object AffectedReport" href="bau/affected.html#AffectedReport">affected: object AffectedReport</a></li>
           </ul></dd>
+<dt><a name="AgentSetupFile" href="#AgentSetupFile"><span>AgentSetupFile:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: object AgentSetupFile" href="bau/agentsetup.html#AgentSetupFile">agentsetup: object AgentSetupFile</a></li>
+          </ul></dd>
+<dt><a name="agentSetupOperation" href="#agentSetupOperation"><span>agentSetupOperation:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="ops: proc agentSetupOperation(projectDir: string;
+                    opts: OperationOptions = defaultOperationOptions()): OperationResult" href="bau/ops.html#agentSetupOperation%2Cstring%2COperationOptions">ops: proc agentSetupOperation(projectDir: string;
+                    opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+          </ul></dd>
+<dt><a name="AgentSetupOptions" href="#AgentSetupOptions"><span>AgentSetupOptions:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: object AgentSetupOptions" href="bau/agentsetup.html#AgentSetupOptions">agentsetup: object AgentSetupOptions</a></li>
+          </ul></dd>
+<dt><a name="AgentSetupResult" href="#AgentSetupResult"><span>AgentSetupResult:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: object AgentSetupResult" href="bau/agentsetup.html#AgentSetupResult">agentsetup: object AgentSetupResult</a></li>
+          </ul></dd>
+<dt><a name="agentSetupResultJson" href="#agentSetupResultJson"><span>agentSetupResultJson:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: proc agentSetupResultJson(setup: AgentSetupResult): JsonNode" href="bau/agentsetup.html#agentSetupResultJson%2CAgentSetupResult">agentsetup: proc agentSetupResultJson(setup: AgentSetupResult): JsonNode</a></li>
+          </ul></dd>
+<dt><a name="AgentTarget" href="#AgentTarget"><span>AgentTarget:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: enum AgentTarget" href="bau/agentsetup.html#AgentTarget">agentsetup: enum AgentTarget</a></li>
+          </ul></dd>
 <dt><a name="appendTailoredTargets" href="#appendTailoredTargets"><span>appendTailoredTargets:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="tailor: proc appendTailoredTargets(projectDir: string; tailored: TailorResult)" href="bau/tailor.html#appendTailoredTargets%2Cstring%2CTailorResult">tailor: proc appendTailoredTargets(projectDir: string; tailored: TailorResult)</a></li>
@@ -71,6 +97,18 @@
 <li><a class="reference external"
           data-doc-search-tag="config: proc applyWorkspaceDefaults(cfg: var BauConfig; ws: WorkspaceConfig)" href="bau/config.html#applyWorkspaceDefaults%2CBauConfig%2CWorkspaceConfig">config: proc applyWorkspaceDefaults(cfg: var BauConfig; ws: WorkspaceConfig)</a></li>
           </ul></dd>
+<dt><a name="atClaude" href="#atClaude"><span>atClaude:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: AgentTarget.atClaude" href="bau/agentsetup.html#atClaude">agentsetup: AgentTarget.atClaude</a></li>
+          </ul></dd>
+<dt><a name="atCodex" href="#atCodex"><span>atCodex:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: AgentTarget.atCodex" href="bau/agentsetup.html#atCodex">agentsetup: AgentTarget.atCodex</a></li>
+          </ul></dd>
+<dt><a name="atCopilot" href="#atCopilot"><span>atCopilot:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: AgentTarget.atCopilot" href="bau/agentsetup.html#atCopilot">agentsetup: AgentTarget.atCopilot</a></li>
+          </ul></dd>
 <dt><a name="atlasDepsDir" href="#atlasDepsDir"><span>atlasDepsDir:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="atlas: proc atlasDepsDir(projectDir: string): string" href="bau/atlas.html#atlasDepsDir%2Cstring">atlas: proc atlasDepsDir(projectDir: string): string</a></li>
@@ -82,6 +120,10 @@
 <dt><a name="atlasInitialized" href="#atlasInitialized"><span>atlasInitialized:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="atlas: proc atlasInitialized(projectDir: string): bool" href="bau/atlas.html#atlasInitialized%2Cstring">atlas: proc atlasInitialized(projectDir: string): bool</a></li>
+          </ul></dd>
+<dt><a name="BauAgentSkillContent" href="#BauAgentSkillContent"><span>BauAgentSkillContent:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: const BauAgentSkillContent" href="bau/agentsetup.html#BauAgentSkillContent">agentsetup: const BauAgentSkillContent</a></li>
           </ul></dd>
 <dt><a name="BauConfig" href="#BauConfig"><span>BauConfig:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -387,6 +429,10 @@
 <li><a class="reference external"
           data-doc-search-tag="command: Command.cmdLint" href="bau/command.html#cmdLint">command: Command.cmdLint</a></li>
           </ul></dd>
+<dt><a name="cmdMcp" href="#cmdMcp"><span>cmdMcp:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: Command.cmdMcp" href="bau/command.html#cmdMcp">command: Command.cmdMcp</a></li>
+          </ul></dd>
 <dt><a name="cmdMetadata" href="#cmdMetadata"><span>cmdMetadata:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: Command.cmdMetadata" href="bau/command.html#cmdMetadata">command: Command.cmdMetadata</a></li>
@@ -600,6 +646,10 @@
 <dt><a name="currentColorMode" href="#currentColorMode"><span>currentColorMode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="util: proc currentColorMode(): string" href="bau/util.html#currentColorMode">util: proc currentColorMode(): string</a></li>
+          </ul></dd>
+<dt><a name="defaultAgentTargets" href="#defaultAgentTargets"><span>defaultAgentTargets:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: proc defaultAgentTargets(): seq[AgentTarget]" href="bau/agentsetup.html#defaultAgentTargets">agentsetup: proc defaultAgentTargets(): seq[AgentTarget]</a></li>
           </ul></dd>
 <dt><a name="defaultInstallDir" href="#defaultInstallDir"><span>defaultInstallDir:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1253,6 +1303,10 @@
 <li><a class="reference external"
           data-doc-search-tag="lock: object LockValidationReport" href="bau/lock.html#LockValidationReport">lock: object LockValidationReport</a></li>
           </ul></dd>
+<dt><a name="mcpCommand" href="#mcpCommand"><span>mcpCommand:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc mcpCommand(opts: CliOptions)" href="bau/command.html#mcpCommand%2CCliOptions">command: proc mcpCommand(opts: CliOptions)</a></li>
+          </ul></dd>
 <dt><a name="mcpServerLoop" href="#mcpServerLoop"><span>mcpServerLoop:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="mcp: proc mcpServerLoop(projectDir: string)" href="bau/mcp.html#mcpServerLoop%2Cstring">mcp: proc mcpServerLoop(projectDir: string)</a></li>
@@ -1303,6 +1357,10 @@
 <li><a class="reference external"
           data-doc-search-tag="util: proc nimVersion(): string" href="bau/util.html#nimVersion">util: proc nimVersion(): string</a></li>
           </ul></dd>
+<dt><a name="normalizeAgentTargets" href="#normalizeAgentTargets"><span>normalizeAgentTargets:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: proc normalizeAgentTargets(values: openArray[string]): seq[AgentTarget]" href="bau/agentsetup.html#normalizeAgentTargets%2CopenArray%5Bstring%5D">agentsetup: proc normalizeAgentTargets(values: openArray[string]): seq[AgentTarget]</a></li>
+          </ul></dd>
 <dt><a name="normalizeFeatureDefine" href="#normalizeFeatureDefine"><span>normalizeFeatureDefine:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="features: proc normalizeFeatureDefine(name: string): string" href="bau/features.html#normalizeFeatureDefine%2Cstring">features: proc normalizeFeatureDefine(name: string): string</a></li>
@@ -1348,6 +1406,10 @@
           data-doc-search-tag="ops: proc packageOperation(projectDir: string;
                  opts: OperationOptions = defaultOperationOptions()): OperationResult" href="bau/ops.html#packageOperation%2Cstring%2COperationOptions">ops: proc packageOperation(projectDir: string;
                  opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+          </ul></dd>
+<dt><a name="parseAgentTarget" href="#parseAgentTarget"><span>parseAgentTarget:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: proc parseAgentTarget(value: string): AgentTarget" href="bau/agentsetup.html#parseAgentTarget%2Cstring">agentsetup: proc parseAgentTarget(value: string): AgentTarget</a></li>
           </ul></dd>
 <dt><a name="parseBauConfig" href="#parseBauConfig"><span>parseBauConfig:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1408,6 +1470,10 @@
 <dt><a name="printHelp" href="#printHelp"><span>printHelp:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="command: proc printHelp()" href="bau/command.html#printHelp">command: proc printHelp()</a></li>
+          </ul></dd>
+<dt><a name="printMcpCommandHelp" href="#printMcpCommandHelp"><span>printMcpCommandHelp:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="command: proc printMcpCommandHelp()" href="bau/command.html#printMcpCommandHelp">command: proc printMcpCommandHelp()</a></li>
           </ul></dd>
 <dt><a name="printTaskCommandHelp" href="#printTaskCommandHelp"><span>printTaskCommandHelp:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -1666,6 +1732,10 @@
 <dt><a name="setOutputOptions" href="#setOutputOptions"><span>setOutputOptions:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="util: proc setOutputOptions(quiet: bool; color: string)" href="bau/util.html#setOutputOptions%2Cbool%2Cstring">util: proc setOutputOptions(quiet: bool; color: string)</a></li>
+          </ul></dd>
+<dt><a name="setupAgents" href="#setupAgents"><span>setupAgents:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="agentsetup: proc setupAgents(projectDir: string; opts: AgentSetupOptions): AgentSetupResult" href="bau/agentsetup.html#setupAgents%2Cstring%2CAgentSetupOptions">agentsetup: proc setupAgents(projectDir: string; opts: AgentSetupOptions): AgentSetupResult</a></li>
           </ul></dd>
 <dt><a name="Sha256Prefix" href="#Sha256Prefix"><span>Sha256Prefix:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -2003,7 +2073,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 12:53:41 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 13:29:05 UTC</small>
       </div>
     </div>
   </div>

@@ -1,0 +1,14 @@
+nimTitle	agentsetup	bau/agentsetup.html	module bau/agentsetup		0
+nim	atCodex	bau/agentsetup.html#atCodex	AgentTarget.atCodex		7
+nim	atClaude	bau/agentsetup.html#atClaude	AgentTarget.atClaude		7
+nim	atCopilot	bau/agentsetup.html#atCopilot	AgentTarget.atCopilot		7
+nim	AgentTarget	bau/agentsetup.html#AgentTarget	enum AgentTarget		7
+nim	AgentSetupOptions	bau/agentsetup.html#AgentSetupOptions	object AgentSetupOptions		12
+nim	AgentSetupFile	bau/agentsetup.html#AgentSetupFile	object AgentSetupFile		17
+nim	AgentSetupResult	bau/agentsetup.html#AgentSetupResult	object AgentSetupResult		25
+nim	BauAgentSkillContent	bau/agentsetup.html#BauAgentSkillContent	const BauAgentSkillContent		29
+nim	parseAgentTarget	bau/agentsetup.html#parseAgentTarget,string	proc parseAgentTarget(value: string): AgentTarget		73
+nim	defaultAgentTargets	bau/agentsetup.html#defaultAgentTargets	proc defaultAgentTargets(): seq[AgentTarget]		85
+nim	normalizeAgentTargets	bau/agentsetup.html#normalizeAgentTargets,openArray[string]	proc normalizeAgentTargets(values: openArray[string]): seq[AgentTarget]		89
+nim	setupAgents	bau/agentsetup.html#setupAgents,string,AgentSetupOptions	proc setupAgents(projectDir: string; opts: AgentSetupOptions): AgentSetupResult		271
+nim	agentSetupResultJson	bau/agentsetup.html#agentSetupResultJson,AgentSetupResult	proc agentSetupResultJson(setup: AgentSetupResult): JsonNode		290
