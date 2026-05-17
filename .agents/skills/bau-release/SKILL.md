@@ -72,9 +72,15 @@ scripts/release.sh --version 0.5.0 --execute
 
 Execute mode updates `bau.toml` and `bau.nimble`, refreshes `bau.lock`, runs the
 release gate, generates docs and notes, commits `Release vX.Y.Z`, creates an
-annotated tag, pushes the commit and tag, publishes with `bau publish`, creates
-the GitHub release with `gh release create`, then verifies the remote tag,
-GitHub release, and Nimble search.
+annotated tag, pushes the commit and tag, ensures Nimble package registration,
+creates the GitHub release with `gh release create`, then verifies the remote
+tag, GitHub release, and Nimble version search.
+
+For this repository, `bau` is already registered in Nimble packages. New Nimble
+versions are discovered from Git tags, so the script skips duplicate Nimble
+registration and verifies `nimble search bau --ver` instead. For a first-time
+package registration, pass `--nimble-tags "tag words"` if the default tags are
+not appropriate.
 
 Use `--github-draft` when the GitHub release should be created as a draft:
 

@@ -23,6 +23,8 @@ Options:
   --remote NAME       Git remote to push to. Default: origin.
   --branch NAME       Branch to push HEAD to. Default: current branch.
   --github-draft      Create the GitHub release as a draft in execute mode.
+  --nimble-tags TEXT  Tags for first-time Nimble package registration.
+                     Default: nim build cli dependencies packaging
   --keep-temp         Keep the temporary dry-run clone even on success.
   --log-dir PATH      Write report and logs under PATH.
                      Default: build/release/<timestamp>-<version-or-bump>.
@@ -44,6 +46,7 @@ TARGET_VERSION=""
 REMOTE="origin"
 BRANCH=""
 GITHUB_DRAFT="false"
+NIMBLE_TAGS="nim build cli dependencies packaging"
 KEEP_TEMP="false"
 CUSTOM_LOG_DIR=""
 
@@ -407,6 +410,38 @@ generate_release_notes() {
   } > "$notes_path"
 }
 
+nimble_package_registered() {
+  local package="$1"
+  local search_output
+  search_output="$(nimble search "$package" 2>&1)" || {
+    printf '%s\n' "$search_output"
+    return 1
+  }
+  printf '%s\n' "$search_output" | awk -v package="$package" '
+    $0 == package ":" { found = 1 }
+    END { exit found ? 0 : 1 }
+  '
+}
+
+ensure_nimble_package_registration() {
+  if nimble_package_registered "$PACKAGE_NAME"; then
+    printf '%s is already registered in Nimble packages; version availability comes from Git tags.\n' "$PACKAGE_NAME"
+    return 0
+  fi
+
+  local output exit_code
+  output="$(printf '%s\n' "$NIMBLE_TAGS" | nimble publish 2>&1)"
+  exit_code=$?
+  printf '%s\n' "$output"
+  if [[ "$exit_code" -ne 0 ]]; then
+    return "$exit_code"
+  fi
+  if printf '%s\n' "$output" | grep -Eiq '(^|[[:space:]])Error:|EOF reached'; then
+    return 1
+  fi
+  printf '%s\n' "$output" | grep -Eiq 'Success: Pull request successful|Success:.*publish|Success:.*Publish'
+}
+
 planned_commands_json() {
   local draft_flag=""
   if [[ "$GITHUB_DRAFT" == "true" ]]; then
@@ -416,7 +451,7 @@ planned_commands_json() {
   local commands=(
     "git push $REMOTE HEAD:$BRANCH"
     "git push $REMOTE refs/tags/$TARGET_TAG"
-    "bau publish"
+    "nimble publish if $PACKAGE_NAME is not already registered"
     "gh release create $TARGET_TAG --title $TARGET_TAG --notes-file $NOTES_FILE$draft_flag"
   )
 
@@ -598,6 +633,15 @@ parse_args() {
       --github-draft)
         GITHUB_DRAFT="true"
         shift
+        ;;
+      --nimble-tags)
+        if [[ $# -lt 2 ]]; then
+          printf 'missing value for --nimble-tags\n' >&2
+          usage >&2
+          exit 2
+        fi
+        NIMBLE_TAGS="$2"
+        shift 2
         ;;
       --keep-temp)
         KEEP_TEMP="true"
@@ -786,7 +830,7 @@ main() {
   else
     run_step "Push release commit" git push "$REMOTE" "HEAD:$BRANCH" || return 1
     run_step "Push release tag" git push "$REMOTE" "refs/tags/$TARGET_TAG" || return 1
-    run_step "Publish to Nimble" bau publish || return 1
+    run_function_step "Ensure Nimble package registration" "register $PACKAGE_NAME with Nimble if needed" ensure_nimble_package_registration || return 1
     if [[ "$GITHUB_DRAFT" == "true" ]]; then
       run_step "Create draft GitHub release" gh release create "$TARGET_TAG" --title "$TARGET_TAG" --notes-file "$NOTES_FILE" --draft || return 1
     else
@@ -794,7 +838,7 @@ main() {
     fi
     run_step "Verify remote tag" git ls-remote --exit-code --tags "$REMOTE" "refs/tags/$TARGET_TAG" || return 1
     run_step "Verify GitHub release" gh release view "$TARGET_TAG" || return 1
-    run_step "Check Nimble search" nimble search "$PACKAGE_NAME" || return 1
+    run_step "Check Nimble version search" bash -c 'nimble search "$1" --ver | grep -F "$2"' bash "$PACKAGE_NAME" "$TARGET_TAG" || return 1
   fi
 }
 
