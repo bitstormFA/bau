@@ -104,6 +104,7 @@ bin = @["mcpdemo"]
   doAssert "bau_env" in names
   doAssert "bau_doctor" in names
   doAssert "bau_shell_init" in names
+  doAssert "bau_mcp_setup" in names
   doAssert "bau_new" in names
 
   let metadata = callTool(tmp, "bau_metadata", newJObject())
@@ -181,6 +182,14 @@ bin = @["mcpdemo"]
 
   let doctor = callTool(tmp, "bau_doctor", newJObject())
   doAssert doctor["ok"].getBool()
+
+  let agentSetup = callTool(tmp, "bau_mcp_setup", %*{
+    "targets": ["claude"],
+    "dryRun": true
+  })
+  doAssert agentSetup["ok"].getBool()
+  doAssert agentSetup["changed"].getInt() == 2
+  doAssert not fileExists(tmp / ".mcp.json")
 
   let ciTemplate = callTool(tmp, "bau_ci_template", %*{"kind": "github"})
   doAssert fileExists(ciTemplate["path"].getStr())

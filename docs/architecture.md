@@ -130,6 +130,7 @@ output.
 | `init` / `new` / `convert` / `tailor --write` | Mutation | Create or edit project files | `convert --dry-run` is validation with generated preview output; plain `tailor` is introspection, `tailor --check` is validation, and `tailor --write` is mutation |
 | `bump` | Mutation | Change Package version intent | `--dry-run` is validation with preview output |
 | `ci-template` | Mutation | Write CI configuration files | Creates or overwrites CI templates |
+| `mcp setup` | Mutation | Write project-local agent MCP and skill files | `--dry-run` is validation with preview output |
 | `shell` | Execution | Start a shell with Build Environment variables | Does not edit project state |
 | `shell-init` | Mutation | Edit local shell startup state | Adds Bau bin directory to shell config |
 | `doctor` | Validation | Check toolchain and project health | No intentional writes |
@@ -153,10 +154,10 @@ outputs. Plain package generation is **Execution** because it writes a Bau
 Output, but it is still not Publication. Version bumping is **Mutation** because
 it changes Package intent in the Project Manifest. Opening a Bau shell is
 **Execution**; shell initialization is **Mutation** because it edits local shell
-startup state. CI template generation is **Mutation** because it writes project
-files. External `bau-*` command delegation is classified by the delegated
-command's own behavior; it is not part of Bau's core Operation taxonomy unless
-modeled as a Bau Operation.
+startup state. CI template generation and MCP setup are **Mutation** because
+they write project files. External `bau-*` command delegation is classified by
+the delegated command's own behavior; it is not part of Bau's core Operation
+taxonomy unless modeled as a Bau Operation.
 
 ## Project Model
 

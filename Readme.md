@@ -336,6 +336,17 @@ affected work, package/publication preflights, and project setup. The important
 bit: MCP calls use the same Bau operations as the CLI, so tool automation is not
 a separate build path.
 
+To onboard a repository for coding agents, write project-local MCP config and a
+Bau skill:
+
+```sh
+bau mcp setup --all
+# or select one host:
+bau mcp setup --codex
+bau mcp setup --claude
+bau mcp setup --copilot
+```
+
 ## Documentation
 
 - [Concept glossary](CONTEXT.md): canonical Bau project language.

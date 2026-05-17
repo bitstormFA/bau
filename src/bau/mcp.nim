@@ -399,6 +399,17 @@ proc toolsList(): JsonNode =
     }}
   })
   tools.add(%*{
+    "name": "bau_mcp_setup",
+    "description": "Register Bau MCP and local skills for coding agents",
+    "inputSchema": {"type": "object", "properties": {
+      "targets": {"type": "array", "items": {
+        "type": "string", "enum": ["codex", "claude", "copilot"]
+      }},
+      "force": {"type": "boolean", "default": false},
+      "dryRun": {"type": "boolean", "default": false}
+    }}
+  })
+  tools.add(%*{
     "name": "bau_new",
     "description": "Create a new Bau project directory",
     "inputSchema": {"type": "object", "required": ["path"], "properties": {
@@ -480,6 +491,9 @@ proc operationOptions(args: JsonNode): OperationOptions =
   result.docSkipExamples = args{"skipExamples"}.getBool(false)
   result.docIncludePrivate = args{"includePrivate"}.getBool(false)
   result.docNoIndex = args{"noIndex"}.getBool(false)
+  if args.hasKey("targets") and args["targets"].kind == JArray:
+    for item in args["targets"].getElems():
+      result.agentTargets.add(item.getStr())
 
 proc resourcesList(projectDir: string): JsonNode =
   discard projectDir
@@ -759,6 +773,9 @@ proc execTool(name: string; args: JsonNode;
 
   of "bau_shell_init":
     result = shellInitOperation(projectDir, operationOptions(args))
+
+  of "bau_mcp_setup":
+    result = agentSetupOperation(projectDir, operationOptions(args))
 
   else:
     result = toolError("unknown tool: " & name)

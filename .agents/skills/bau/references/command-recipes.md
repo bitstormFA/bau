@@ -148,6 +148,15 @@ bau compile-commands --profile release --features db --jobs 8
 
 ## MCP
 
+Bau project setup for agents:
+
+```sh
+bau mcp setup --all
+bau mcp setup --codex
+bau mcp setup --claude
+bau mcp setup --copilot
+```
+
 Claude Code:
 
 ```sh

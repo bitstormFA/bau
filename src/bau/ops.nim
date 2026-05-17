@@ -3,7 +3,8 @@
 import std/[algorithm, json, options, os, sets, strutils, tables, times]
 import bau/[affected, atlas, build, config, depscheck, features, fingerprint,
   init, lock, metadata, nimble, taskcache, util, workspace, configedit, docgen,
-  installer, ci_templates, packaging, tailor, taskgraph, testexec, toolchain]
+  installer, ci_templates, packaging, tailor, taskgraph, testexec, toolchain,
+  agentsetup]
 
 type
   OperationOptions* = object     ## Shared options accepted by CLI and MCP operations.
@@ -65,6 +66,7 @@ type
     testShowOutput*: string      ## Test output mode override.
     jobs*: int                   ## Maximum parallel jobs for operations that support it.
     jobsExplicit*: bool          ## True when jobs was provided explicitly.
+    agentTargets*: seq[string]   ## Agent hosts to configure for MCP setup.
 
   CompileCommandsMemberResult* = object ## Per-member compile commands summary.
     path*: string                       ## Workspace member path.
@@ -1379,5 +1381,19 @@ proc shellInitOperation*(projectDir: string;
   discard projectDir
   try:
     resultJson(shellInitResultNode(initShellPath(opts.shellName)))
+  except CatchableError as e:
+    errorJson(e.msg)
+
+proc agentSetupOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Write project-local MCP and skill setup for coding agents.
+  try:
+    let targets = normalizeAgentTargets(opts.agentTargets)
+    let setup = setupAgents(projectDir, AgentSetupOptions(
+      targets: targets,
+      force: opts.force,
+      dryRun: opts.dryRun))
+    let node = agentSetupResultJson(setup)
+    OperationResult(ok: node["ok"].getBool(), json: node)
   except CatchableError as e:
     errorJson(e.msg)

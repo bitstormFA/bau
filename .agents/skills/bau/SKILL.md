@@ -238,6 +238,19 @@ Bau MCP runs over stdio:
 bau mcp
 ```
 
+Project-local agent setup:
+
+```sh
+bau mcp setup --all
+bau mcp setup --codex
+bau mcp setup --claude
+bau mcp setup --copilot
+```
+
+Setup writes MCP registration and a Bau skill for the selected agent host. Use
+`--dry-run` to preview and `--force` to replace an existing divergent Bau entry
+or skill file.
+
 Claude Code project setup:
 
 ```sh

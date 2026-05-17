@@ -8,7 +8,16 @@ import bau/[util, command, mcp]
 
 proc main() =
   let rawArgs = commandLineParams()
-  if rawArgs.len > 0 and (rawArgs[0] == "--mcp" or rawArgs[0] == "mcp"):
+  if rawArgs.len > 0 and rawArgs[0] == "--mcp":
+    var projectDir = getCurrentDir()
+    try:
+      projectDir = findProjectRoot()
+    except:
+      discard
+    mcpServerLoop(projectDir)
+    return
+
+  if rawArgs.len == 1 and rawArgs[0] == "mcp":
     var projectDir = getCurrentDir()
     try:
       projectDir = findProjectRoot()

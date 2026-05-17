@@ -23,7 +23,7 @@ architecture behind the terminology, see [architecture.md](architecture.md).
 | Run changed work | `bau affected list --since origin/main`, `bau affected test --since origin/main` |
 | Cache a task | Declare `inputs` and `outputs`, then `bau task <name>`, `bau cache explain <name>` |
 | Prepare publication | `bau package --list --dry-run`, `bau publish --dry-run` |
-| Connect an AI tool | `bau mcp` |
+| Connect an AI tool | `bau mcp setup --all`, then `bau mcp` |
 
 ## The Mental Model
 
@@ -614,6 +614,20 @@ Start the MCP server:
 
 ```sh
 bau mcp
+```
+
+Register Bau with coding-agent hosts and add a local Bau skill:
+
+```sh
+bau mcp setup --all
+```
+
+Use one target when you only want files for a specific host:
+
+```sh
+bau mcp setup --codex
+bau mcp setup --claude
+bau mcp setup --copilot
 ```
 
 Example configuration shape for an MCP-capable tool:

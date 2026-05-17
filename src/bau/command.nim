@@ -38,6 +38,7 @@ type
     cmdExplain         ## Explain target freshness state.
     cmdPublish         ## Submit a package publication.
     cmdBump            ## Increment the project package version.
+    cmdMcp             ## Configure or run the MCP server.
     cmdShell           ## Open a shell with Bau environment.
     cmdShellInit       ## Add Bau's binary directory to the selected shell.
     cmdPlugin          ## Delegate to an external `bau-*` command.
@@ -103,6 +104,7 @@ type
     installDir*: string           ## Installation directory override.
     passthroughArgs*: seq[string] ## Arguments passed after `--`.
     initInfo*: ProjectInitInfo    ## Project initialization metadata.
+    agentTargets*: seq[string]    ## Agent hosts selected for MCP setup.
 
 proc defaultOptions*(): CliOptions =
   ## Return default CLI options before parsing user arguments.
@@ -160,6 +162,7 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
   of "explain": result.command = cmdExplain
   of "publish": result.command = cmdPublish
   of "bump", "version-bump", "bump-version": result.command = cmdBump
+  of "mcp": result.command = cmdMcp
   of "shell": result.command = cmdShell
   of "shell-init": result.command = cmdShellInit
   of "compile-commands": result.command = cmdCompileCommands
@@ -211,7 +214,7 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
     of "--quiet", "-q":
       result.quiet = true
     of "--help", "-h":
-      if result.command == cmdTask:
+      if result.command in {cmdTask, cmdMcp}:
         result.help = true
       else:
         result.command = cmdHelp
@@ -396,6 +399,26 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
         inc i
       else:
         result.args.add(p)
+    of "--codex":
+      if result.command == cmdMcp:
+        result.agentTargets.add("codex")
+      else:
+        result.args.add(p)
+    of "--claude":
+      if result.command == cmdMcp:
+        result.agentTargets.add("claude")
+      else:
+        result.args.add(p)
+    of "--copilot":
+      if result.command == cmdMcp:
+        result.agentTargets.add("copilot")
+      else:
+        result.args.add(p)
+    of "--all":
+      if result.command == cmdMcp:
+        result.agentTargets = @["codex", "claude", "copilot"]
+      else:
+        result.args.add(p)
     of "--":
       let tail = if i + 1 < params.len: params[(i + 1)..^1] else: @[]
       if result.command == cmdTest:
@@ -427,7 +450,7 @@ proc parseCliOptions*(params: seq[string] = commandLineParams()): CliOptions =
         result.taskName = p
       elif result.command in {cmdDeps, cmdQuery, cmdGraph, cmdTailor,
           cmdPackage, cmdMetadata, cmdEnv, cmdAffected, cmdCache, cmdDoctor,
-          cmdInstall, cmdUpdate, cmdUninstall, cmdShellInit}:
+          cmdInstall, cmdUpdate, cmdUninstall, cmdShellInit, cmdMcp}:
         result.args.add(p)
       elif result.command == cmdPlugin:
         result.args.add(p)
@@ -477,6 +500,7 @@ Commands:
   bau tailor --check|--write  Discover missing target declarations
   bau doctor                  Check configured toolchain and project health
   bau publish                 Publish package contents to Nimble-compatible registry
+  bau mcp setup               Register Bau MCP and local skills for agents
   bau clean                   Remove Bau Outputs
   bau init [name] [options]   Initialize in current directory
   bau new <path> [--lib]      Create a new project
@@ -531,6 +555,12 @@ Options:
   --include-private      Include non-exported symbols in generated docs
   --no-index             Do not generate Nimdoc search/index files
 
+MCP setup options:
+  --codex                Configure OpenAI Codex project files
+  --claude               Configure Claude Code project files
+  --copilot              Configure GitHub Copilot project files
+  --all                  Configure every supported agent target
+
 Init options:
   --name <name>          Project/package name
   --bin | --lib          Project kind
@@ -579,6 +609,7 @@ proc toOperationOptions(opts: CliOptions): OperationOptions =
   result.testNoMatrix = opts.testNoMatrix
   result.testNoRunner = opts.testNoRunner
   result.testShowOutput = opts.testShowOutput
+  result.agentTargets = opts.agentTargets
   result.docOutDir = opts.docOutDir
   result.docEntrypoints = opts.docEntrypoints
   result.docSkipExamples = opts.docSkipExamples
@@ -1493,6 +1524,63 @@ proc shellInitCommand*(opts: CliOptions) =
   if not op.ok:
     quit(1)
 
+proc printMcpCommandHelp*() =
+  ## Print help for the `mcp` command family.
+  echo """Usage:
+  bau mcp                  Start the stdio MCP server
+  bau mcp setup [options]  Register Bau MCP and local skills for agents
+
+Setup options:
+  --codex       Configure OpenAI Codex project files
+  --claude      Configure Claude Code project files
+  --copilot     Configure GitHub Copilot project files
+  --all         Configure every supported agent target (default)
+  --force, -f   Replace an existing divergent Bau entry or skill file
+  --dry-run, -n Show planned file changes without writing
+  --json        Print machine-readable setup output
+"""
+
+proc printAgentSetupResult(node: JsonNode; projectDir: string) =
+  for item in node["files"].getElems():
+    let path = relativePath(item["path"].getStr(), projectDir)
+    let label = item["agent"].getStr() & " " & item["kind"].getStr()
+    let action = item["action"].getStr()
+    let reason = item["reason"].getStr()
+    if action == "skipped":
+      warn(label & ": skipped " & path & " (" & reason & ")")
+    elif action == "failed":
+      error(label & ": failed " & path & " (" & reason & ")")
+    elif action == "unchanged":
+      info(label & ": unchanged " & path)
+    else:
+      success(label & ": " & action & " " & path)
+
+proc mcpCommand*(opts: CliOptions) =
+  ## Execute MCP helper commands.
+  if opts.help or opts.args.len == 0:
+    printMcpCommandHelp()
+    return
+
+  let action = opts.args[0]
+  case action
+  of "setup", "register", "install":
+    let projectDir = findProjectRoot()
+    let op = agentSetupOperation(projectDir, opts.toOperationOptions())
+    if opts.json or opts.format == "json":
+      echo pretty(op.json)
+    else:
+      if op.json.hasKey("files"):
+        printAgentSetupResult(op.json, projectDir)
+      else:
+        error(op.json{"error"}.getStr(op.output))
+      if not op.ok:
+        error("MCP setup failed")
+    if not op.ok:
+      quit(1)
+  else:
+    error("unknown mcp command: " & action)
+    quit(1)
+
 proc pluginCommand*(opts: CliOptions) =
   ## Execute an external `bau-*` command.
   let external = findExe("bau-" & opts.taskName)
@@ -2010,6 +2098,9 @@ proc dispatchCommand*(opts: CliOptions) =
 
   of cmdBump:
     bumpCommand(opts)
+
+  of cmdMcp:
+    mcpCommand(opts)
 
   of cmdShell:
     shellCommand(opts)

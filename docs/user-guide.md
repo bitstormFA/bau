@@ -661,6 +661,32 @@ The MCP server speaks JSON-RPC over standard input/output. It exposes Bau
 operations as tools and read-only resources. The important architectural rule is
 that MCP and CLI command surfaces should share the same **Operations**.
 
+To register the server and add a local Bau skill for a project, run:
+
+```sh
+bau mcp setup --all
+```
+
+Because agent hosts do not share one MCP registration file, setup can target
+specific hosts:
+
+```sh
+bau mcp setup --codex
+bau mcp setup --claude
+bau mcp setup --copilot
+```
+
+Setup writes project-local files:
+
+| Host | MCP config | Skill |
+|---|---|---|
+| Codex | `.codex/config.toml` | `.agents/skills/bau/SKILL.md` |
+| Claude Code | `.mcp.json` | `.claude/skills/bau/SKILL.md` |
+| GitHub Copilot | `.vscode/mcp.json` | `.github/skills/bau/SKILL.md` |
+
+Existing divergent `bau` entries or skill files are skipped unless `--force` is
+provided. Use `--dry-run` to preview file changes.
+
 Common MCP tools:
 
 | Area | Tools |
@@ -670,7 +696,7 @@ Common MCP tools:
 | Tasks and cache | `bau_task`, `bau_cache`, `bau_cache_explain` |
 | Introspection | `bau_metadata`, `bau_graph`, `bau_query`, `bau_affected`, `bau_explain`, `bau_env`, `bau_doctor` |
 | Project and publication | `bau_init`, `bau_new`, `bau_convert`, `bau_tailor`, `bau_package`, `bau_publish`, `bau_bump` |
-| Mutation | `bau_fmt`, `bau_compile_commands`, `bau_ci_template`, `bau_shell_init` |
+| Mutation | `bau_fmt`, `bau_compile_commands`, `bau_ci_template`, `bau_shell_init`, `bau_mcp_setup` |
 
 Read-only resources include:
 
@@ -752,6 +778,7 @@ status, and query output are introspection.
 | `bau compile-commands` | Generate `compile_commands.json` |
 | `bau env --json` | Print the resolved build environment |
 | `bau ci-template github|gitlab` | Write CI template files |
+| `bau mcp setup [--all|--codex|--claude|--copilot]` | Write agent MCP and skill setup files |
 
 ### Project and publication commands
 
