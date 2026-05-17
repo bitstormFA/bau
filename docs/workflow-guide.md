@@ -1,89 +1,53 @@
 # Bau Workflow Guide
 
-This guide explains Bau from the perspective of day-to-day Nim development
-workflows. The reference guide describes every command and configuration field;
-this document answers "what do I do next?" when you are creating a project,
-moving an existing Nimble package to Bau, changing code, updating dependencies,
-generating documentation, using MCP tools, and preparing a release.
+This guide is organized around the work you do with Bau: start a project,
+convert a Nimble package, build and test, manage dependencies, cache repeated
+work, operate in a workspace, connect tools through MCP, and prepare releases.
 
-All examples assume `bau` is available on `PATH`. If you built Bau locally, use
-the path to your binary, for example `build/dev/bau`, until you install it.
+For concepts and command reference, see [user-guide.md](user-guide.md). For
+canonical project language, see [../CONTEXT.md](../CONTEXT.md). For the
+architecture behind the terminology, see [architecture.md](architecture.md).
 
 ## Workflow Map
 
-| Task | Typical commands |
+| Goal | Typical commands |
 |---|---|
-| Create a new package | `bau new myapp`, `bau deps sync`, `bau test` |
-| Convert a Nimble package | `bau convert --dry-run`, `bau convert`, `bau deps sync`, `bau tailor --write`, `bau test` |
-| Work locally | `bau check`, `bau test`, `bau run -- args`, `bau build -p release` |
-| Work with changed files | `bau affected list --since origin/main`, `bau affected test --since origin/main` |
-| Add a dependency | `bau add pkg --version ">=1.0"`, `bau deps sync`, `bau deps verify`, `bau test` |
-| Update dependencies | `bau deps update`, `bau deps verify`, `bau check --all-targets`, `bau test` |
-| Generate API docs | `bau doc`, `bau doc --open`, `bau doc --out-dir site/api` |
-| Connect an AI coding tool | `bau mcp`, then configure Claude Code or VS Code Copilot as a stdio MCP server |
-| Prepare a release | `bau bump --patch`, `bau deps sync --locked`, `bau ci`, `bau doc`, `bau package --list --dry-run`, `bau publish --dry-run` |
-| Publish to Nimble | Remove local patches/path deps, then `bau publish` |
+| Create a binary project | `bau new myapp`, `bau deps sync`, `bau check`, `bau test` |
+| Create a library | `bau new mylib --lib`, `bau deps sync`, `bau test`, `bau doc --open` |
+| Convert from Nimble | `bau convert --dry-run`, `bau convert`, `bau deps sync`, `bau tailor --check`, `bau test` |
+| Daily local loop | `bau check`, `bau test`, `bau run -- args` |
+| Release-like build | `bau deps sync --locked`, `bau deps verify`, `bau build --profile release` |
+| Add dependency | `bau add pkg --version ">=1.0"`, `bau deps sync`, `bau deps verify`, `bau test` |
+| Work with features | `bau build --features db`, `bau test --features db` |
+| Inspect project state | `bau metadata --json`, `bau graph --format json`, `bau explain` |
+| Run changed work | `bau affected list --since origin/main`, `bau affected test --since origin/main` |
+| Cache a task | Declare `inputs` and `outputs`, then `bau task <name>`, `bau cache explain <name>` |
+| Prepare publication | `bau package --list --dry-run`, `bau publish --dry-run` |
+| Connect an AI tool | `bau mcp` |
 
 ## The Mental Model
 
-Bau keeps a Nim project reproducible by separating intent, resolved state, and
-outputs:
+Keep three things separate:
 
-- `bau.toml` is the source of truth you edit. It declares package metadata,
-  build targets, profiles, features, dependencies, docs, tasks, cache settings,
-  and policy.
-- `deps/` contains dependencies materialized by Atlas. Bau delegates fetching
-  and package resolution to Atlas, then inspects what is on disk.
-- `bau.lock` records the resolved dependency graph. It includes direct
-  requirements, source identity, exact versions or Git revisions, dependency
-  edges, checksums, workspace member metadata, and lock-time metadata.
-- `build/` contains compiled outputs, fingerprints, task cache entries, package
-  manifests, and other generated build artifacts.
-- `bau.local.toml` is for local-only overrides. Do not use it for requirements
-  other developers or CI must share.
+- **Project Manifest**: `bau.toml`, the intent you edit.
+- **Resolved State**: `bau.lock`, especially dependency resolution.
+- **Bau Outputs**: generated files such as binaries, docs, fingerprints, task
+  cache entries, and package manifest outputs.
 
-There are two reproducibility layers:
-
-- Dependency reproducibility comes from `bau.lock`. `bau deps sync` and
-  `bau deps update` rewrite the lock after successful materialization. In CI,
-  `bau deps sync --locked` fails if the lock is missing or stale, and
-  `bau deps sync --frozen` also avoids network access and verifies local
-  material against the lock.
-- Build reproducibility comes from fingerprints and task cache keys. Target
-  fingerprints include source contents, compiler flags, config files,
-  Bau-related environment, compiler version, profile, platform, toolchain, and
-  mtimes. Task cache keys include command text, inputs, outputs, selected
-  features, environment inputs, platform, and Nim version.
-
-The practical result is simple: commit `bau.toml` and `bau.lock`, keep generated
-outputs out of the source tree unless you intentionally publish them, and use
-`--locked` or `--frozen` in automation.
-
-## Install Bau Once
-
-From the Bau repository:
+In practice:
 
 ```sh
-nimble install parsetoml
-nim c --path:src -o:build/dev/bau src/bau.nim
+git add bau.toml bau.lock src tests
 ```
 
-Move `build/dev/bau` to a directory on `PATH`, or call it by path.
+Commit the manifest and lock together when dependency intent changes. Keep
+generated outputs out of source control unless you intentionally publish them.
+Treat `deps/` as generated project state: Bau builds and verifies against it,
+but it is not the source intent you edit by hand.
 
-In a project, check the local setup:
+## Start A New Project
 
-```sh
-bau doctor
-bau env --json
-```
-
-`bau doctor` verifies configured toolchain requirements. `bau env --json`
-prints the resolved profile, features, Nim path, and Atlas path that tools can
-consume.
-
-## Start a New Project
-
-For a new binary:
+For a binary:
 
 ```sh
 bau new myapp
@@ -104,9 +68,7 @@ bau test
 bau doc --open
 ```
 
-`bau new` creates a minimal project with `bau.toml`, `src/`, `tests/`, and
-development/release profiles. Review the generated `bau.toml` early, especially
-the metadata that downstream users and package registries will see:
+Review the generated manifest:
 
 ```toml
 [package]
@@ -131,7 +93,7 @@ flags = ["--opt:speed"]
 gc = "orc"
 ```
 
-For team projects, add explicit toolchain expectations:
+For a team project, add toolchain expectations early:
 
 ```toml
 [toolchain]
@@ -139,9 +101,10 @@ nim = ">=2.2"
 atlas = ">=0.8"
 ```
 
-Then commit the initial reproducible state:
+Then check and commit:
 
 ```sh
+bau doctor
 bau deps sync
 bau deps verify
 bau test
@@ -149,17 +112,20 @@ git add bau.toml bau.lock src tests
 git commit -m "Start Bau project"
 ```
 
-## Convert an Existing Nimble Project
+## Convert A Nimble Project
 
-Start from a clean Git working tree so the generated changes are easy to
-review:
+Start with a clean or understood worktree:
 
 ```sh
 git status --short
 bau convert --dry-run
 ```
 
-If the dry run looks reasonable, write `bau.toml`:
+The dry run shows the generated Project Manifest and conversion diagnostics.
+Bau converts deterministic Nimble metadata, literal tasks, and literal hooks; it
+does not execute dynamic NimScript.
+
+Write the manifest:
 
 ```sh
 bau convert
@@ -169,7 +135,7 @@ bau check --all-targets
 bau test
 ```
 
-If `bau tailor --check` reports missing executable targets, let Bau append them:
+If Target Discovery finds missing executables:
 
 ```sh
 bau tailor --write
@@ -177,43 +143,25 @@ bau check --all-targets
 bau test
 ```
 
-The converter is intentionally static. It converts deterministic Nimble
-metadata such as package fields, `srcDir`, `bin`, `namedBin`, `backend`,
-`requires`, feature-scoped `requires`, package include/exclude lists, literal
-tasks, and literal build/install hooks. It does not execute NimScript. If your
-`.nimble` file contains dynamic logic, Bau emits diagnostics and leaves the
-missing behavior for you to model explicitly with profiles, features, tasks, or
-build scripts.
+Plain `bau tailor` reports missing targets, `bau tailor --check` fails when any
+are missing, and `bau tailor --write` edits the Project Manifest.
 
-Common Nimble automation patterns map cleanly once they are made explicit:
-
-- A Nimble task that compiles a tool and forwards `commandLineParams()` can
-  become a Bau task with `acceptArgs = true` and `{args}`, or a runnable target
-  invoked with `bau run <target> -- ...`.
-- A project-level test runner can be declared with `[test].runner`, and a
-  debug/release/danger matrix can be declared with `[test].profiles`.
-- Multi-step Nimble tasks are usually clearer as several `[[tasks]]` entries
-  connected with `deps`.
-- A project command that conflicts with a Bau built-in can be restored with an
-  alias such as `lint = "task lint"` in `[aliases]`.
-
-A good migration review looks like this:
+Review the conversion:
 
 ```sh
 git diff -- bau.toml bau.lock
 bau metadata --json
-bau graph --format dot
+bau graph --format json
 bau package --list --dry-run
 bau publish --dry-run
 ```
 
-Use `bau publish --dry-run` even if you are not publishing yet. It prints the
-generated `.nimble` content, which is a useful compatibility check for packages
-that still need to appear in the Nimble ecosystem.
+Use `bau publish --dry-run` even when you are not publishing yet. It validates
+Package metadata and shows generated Nimble-compatible metadata.
 
-## Daily Development On The CLI
+## Daily Development
 
-After cloning a Bau project:
+After cloning:
 
 ```sh
 bau deps sync --locked
@@ -221,7 +169,7 @@ bau doctor
 bau test
 ```
 
-During a normal edit loop:
+During normal editing:
 
 ```sh
 bau check
@@ -229,11 +177,55 @@ bau test
 bau run -- --help
 ```
 
-For larger suites with a canonical runner or several build modes:
+`bau check`, `bau lint`, and `bau test` are validation operations. `bau fmt` is
+mutation because it rewrites source files. `bau build`, `bau run`, `bau doc`,
+and `bau task` are execution operations unless a task is only wrapping
+validation.
+
+For a specific profile:
+
+```sh
+bau build --profile release
+bau run --profile release -- --version
+```
+
+For all targets:
+
+```sh
+bau check --all-targets
+bau build --all-targets
+```
+
+When a rebuild surprises you:
+
+```sh
+bau explain
+bau explain --profile release
+```
+
+`bau explain` compares saved and fresh target fingerprints so you can see
+whether sources, manifest inputs, environment, flags, profile, platform, or
+toolchain changed.
+
+## Tests
+
+The simplest test command:
+
+```sh
+bau test
+```
+
+Filter by filename:
+
+```sh
+bau test config
+```
+
+Configure a Test Plan with a runner or matrix:
 
 ```toml
 [test]
-runner = "tests/all.nim"
+runner = "tests/tester.nim"
 profiles = ["dev", "release", "danger"]
 defaultProfile = "dev"
 fullProfiles = ["dev", "release", "danger"]
@@ -242,20 +234,35 @@ exclude = ["thelper.nim"]
 showOutput = "auto"
 ```
 
-Use `bau test --show-output=always` when you want every compiler and runner
-line streamed live. Use `bau test --fast` for the tight edit loop, `bau test
---dry-run` to inspect the planned profile/test invocations, and `bau test
---full` before handing work to CI. `bau ci` uses the full configured matrix when
-`fullProfiles` or `profiles` is present.
-
-For release-like local builds:
+Useful test options:
 
 ```sh
-bau build --profile release
-bau run --profile release -- --version
+bau test --no-matrix
+bau test --test-profile release
+bau test --full
+bau test --fast
+bau test --show-output always
+bau test --dry-run
 ```
 
-For feature-gated work:
+`--fast` is for the tight local loop. `--full` is the pre-merge or CI shape.
+The Test Plan is not a Task unless you wrap testing in a user-declared task.
+
+## Features And Optional Dependencies
+
+Declare optional dependency requirements:
+
+```toml
+[dependencies]
+sqlite = { version = ">=3.0", optional = true }
+
+[features]
+default = ["cli"]
+cli = []
+db = ["dep:sqlite"]
+```
+
+Use them:
 
 ```sh
 bau build --features db
@@ -264,246 +271,64 @@ bau build --no-default-features --features db
 bau build --all-features
 ```
 
-When you only want to run work affected by a branch:
-
-```sh
-bau affected list --since origin/main
-bau affected test --since origin/main
-bau affected check --since origin/main
-```
-
-When a rebuild happens and you expected a cache hit:
-
-```sh
-bau explain
-bau explain --json
-```
-
-When your editor or LSP needs exact compiler command lines:
-
-```sh
-bau compile-commands --profile dev
-bau compile-commands --profile release --features db --jobs 8
-```
-
-For a full local gate before opening a pull request:
-
-```sh
-bau fmt
-bau lint
-bau test
-bau ci
-```
-
-`bau ci` runs formatting, linting, and tests. In larger repositories you may
-prefer the explicit commands in CI so each step has separate logs.
-
-## Daily Development Through MCP
-
-Bau includes an MCP server. It exposes Bau operations as tools, so an AI tool
-can build, test, inspect dependencies, generate docs, and read project metadata
-without guessing shell commands.
-
-Start the server manually for a smoke test:
-
-```sh
-bau mcp
-```
-
-The command speaks MCP over standard input/output, so it will wait for a client.
-Stop it with `Ctrl+C` if you started it directly.
-
-### Claude Code
-
-Claude Code supports local stdio MCP servers. The current official Claude Code
-MCP documentation describes adding a stdio server with `claude mcp add` and
-checking server status with `/mcp`:
-<https://code.claude.com/docs/en/mcp>
-
-From the root of a Bau project:
-
-```sh
-claude mcp add --transport stdio --scope project bau -- bau mcp
-claude mcp list
-```
-
-Project scope writes a `.mcp.json` file that can be committed for the team. A
-minimal checked-in version looks like this:
-
-```json
-{
-  "mcpServers": {
-    "bau": {
-      "type": "stdio",
-      "command": "bau",
-      "args": ["mcp"]
-    }
-  }
-}
-```
-
-If `bau` is not on every developer's `PATH`, use an absolute command path or a
-small wrapper script that your team documents. Claude Code prompts before using
-project-scoped MCP servers from `.mcp.json`; run `/mcp` inside Claude Code to
-approve and inspect the connection.
-
-Useful Claude Code requests once connected:
-
-```text
-Use the bau tools to show project metadata and summarize the targets.
-Run the Bau affected analysis against origin/main, then test only affected work.
-Add jsony as a dependency, sync deps, and run the test suite.
-Generate Bau docs and report any missing module documentation warnings.
-```
-
-### GitHub Copilot In VS Code
-
-GitHub documents MCP support for Copilot Chat in VS Code, including manual
-configuration in `.vscode/mcp.json`, Agent mode, and the tools picker:
-<https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/extend-copilot-chat-with-mcp>
-
-VS Code's MCP configuration reference documents the stdio shape used below:
-<https://code.visualstudio.com/docs/copilot/reference/mcp-configuration>
-
-Create `.vscode/mcp.json` in the project:
-
-```json
-{
-  "servers": {
-    "bau": {
-      "type": "stdio",
-      "command": "bau",
-      "args": ["mcp"]
-    }
-  }
-}
-```
-
-Then:
-
-1. Open the repository in VS Code.
-2. Open `.vscode/mcp.json` and use the inline Start action, or run
-   `MCP: List Servers` from the command palette and start `bau`.
-3. Open Copilot Chat.
-4. Select Agent mode.
-5. Use the tools icon to confirm Bau tools are available.
-
-For Copilot Business or Enterprise users, your organization must allow MCP
-servers in policy before Copilot can use them. VS Code also asks you to trust a
-workspace MCP server when it starts.
-
-Useful Copilot prompts:
-
-```text
-Use the Bau MCP server to run bau_check and fix the reported compile errors.
-Use bau_query to explain why parsetoml is present, then summarize the dependency path.
-Run bau_doc with skipExamples=false and fix documentation failures.
-Use bau_compile_commands after changing feature flags.
-```
-
-### What The MCP Server Exposes
-
-Common tools include:
-
-- Build and validation: `bau_build`, `bau_run`, `bau_test`, `bau_check`,
-  `bau_doc`, `bau_fmt`, `bau_clean`, `bau_install`.
-- Dependencies: `bau_deps`, `bau_add`, `bau_remove`, `bau_deps_verify`.
-- Introspection: `bau_metadata`, `bau_graph`, `bau_query`, `bau_affected`,
-  `bau_explain`, `bau_cache_explain`, `bau_compile_commands`.
-- Project setup: `bau_init`, `bau_convert`.
-
-Read-only resources include `bau://config`, `bau://targets`, `bau://deps`,
-`bau://tasks`, and `bau://status`.
+Feature names become Nim defines such as `-d:bauFeature_db` and `-d:db`.
+Tasks and build scripts also receive `BAU_FEATURE_DB=1`.
 
 ## Dependency Workflows
 
-Bau dependencies move through three states:
-
-1. Declared in `[dependencies]` inside `bau.toml`.
-2. Materialized on disk in `deps/` by Atlas.
-3. Resolved and checksummed in `bau.lock` by Bau.
-
-This is why dependency workflows usually include both a config edit and a sync.
-
-### Add A Registry Dependency
+Add a registry dependency:
 
 ```sh
 bau add jsony --version ">=1.1.0"
 bau deps sync
 bau deps verify
 bau test
-git add bau.toml bau.lock
-git commit -m "Add jsony dependency"
+git diff -- bau.toml bau.lock
 ```
 
-### Add A Git Or Path Dependency
+Add a Git dependency:
 
 ```sh
 bau add mylib --git https://github.com/example/mylib --tag v1.2.0
 bau deps sync
-bau test
+bau deps verify
 ```
 
-For local development against a neighboring checkout:
+Add a local path dependency for development:
 
 ```sh
-bau add mylib --path ../mylib
+bau add localpkg --path ../localpkg
+bau deps sync
+```
+
+Use a patch when you need to test a local fix without changing the public
+dependency requirement:
+
+```sh
+bau deps patch parsetoml --path ../parsetoml
 bau deps sync
 bau test
 ```
 
-Path dependencies are convenient locally but cannot be reproduced by the Nimble
-registry. Replace them with registry or Git dependencies before publication.
-
-### Add An Optional Dependency
-
-Optional dependencies are not fetched unless a feature enables them:
+Before publishing, remove patches and local path dependencies:
 
 ```sh
-bau add sqlite --version ">=3.0" --optional
+bau deps verify
+bau publish --dry-run
 ```
 
-Then add a feature:
-
-```toml
-[features]
-default = []
-db = ["dep:sqlite"]
-```
-
-Work with the optional dependency enabled:
-
-```sh
-bau deps sync --features db
-bau build --features db
-bau test --features db
-```
-
-### Update All Dependencies
-
-Use a branch so lockfile changes are easy to review:
+Update dependencies:
 
 ```sh
 git switch -c deps/update
 bau deps update
-bau tree
 bau deps verify
 bau check --all-targets
 bau test
-bau package --list --dry-run
 git diff -- bau.lock
 ```
 
-If the lock changed but tests pass, commit both the source config and lock:
-
-```sh
-git add bau.toml bau.lock
-git commit -m "Update dependencies"
-```
-
-### Update One Materialized Git Dependency Precisely
-
-When you need an exact revision:
+Pin a materialized Git dependency exactly:
 
 ```sh
 bau deps update mylib --precise abc123def456
@@ -511,55 +336,38 @@ bau deps verify
 bau test
 ```
 
-`--precise` currently expects the dependency to already be materialized as a Git
-checkout under `deps/<name>`.
-
-### Patch A Dependency Temporarily
-
-Use `[patch]` when you need to test a local fix without changing the public
-dependency declaration:
+Inspect why a dependency exists:
 
 ```sh
-bau deps patch parsetoml --path ../parsetoml
-bau deps sync
-bau test
-bau query why parsetoml
+bau tree
+bau query why jsony
+bau query deps myapp
 ```
 
-Before publishing, remove patches and re-run validation:
+## Locked, Offline, And Frozen
 
-```sh
-bau deps sync
-bau deps verify
-bau publish --dry-run
-```
-
-A real `bau publish` rejects `[patch]` entries and local path dependencies.
-
-### Work Offline Or In CI
-
-For CI that is allowed to fetch dependencies but must not accept stale lock
-state:
+For CI that may fetch dependencies but must reject stale locks:
 
 ```sh
 bau deps sync --locked
 bau deps verify
-bau ci
 ```
 
-For a hermetic environment where dependencies are already present:
+For hermetic environments where dependency material must already exist:
 
 ```sh
 bau deps sync --frozen
 bau deps verify
-bau ci
 ```
 
 `--frozen` is shorthand for `--locked --offline`.
 
-### Vendor Dependencies
+Dependency sync and lock operations mutate dependency material or resolved
+state. In read-only CI stages, prefer `bau deps verify` after dependency
+material has already been prepared, or use `bau deps sync --frozen` only when
+the stage is allowed to validate existing material.
 
-If your deployment or compliance workflow needs a checked-in dependency copy:
+Vendoring copies dependency material and writes checksums:
 
 ```sh
 bau deps sync --locked
@@ -567,136 +375,194 @@ bau deps vendor
 bau deps verify
 ```
 
-`bau deps vendor` copies `deps/` to `vendor/` and writes
-`vendor/.bau-vendor-checksums` so accidental changes can be detected.
+## Tasks And Caching
 
-## Custom Tasks, Build Scripts, And Caching
-
-Use custom tasks for project automation that is not just "compile this Nim
-target": generating assets, producing a site, running benchmarks, packaging
-fixtures, or invoking external tools.
+Declare a task:
 
 ```toml
 [[tasks]]
 name = "site"
 description = "Build the documentation site"
-cmd = "nim r tools/build_site.nim"
-inputs = ["docs/**/*.md", "tools/build_site.nim"]
-outputs = ["site"]
+cmd = "nim r tools/site.nim"
+inputs = ["docs/**/*.md", "tools/site.nim"]
+outputs = ["build/site"]
 cache = true
 ```
 
-Run and inspect it:
+Run it:
 
 ```sh
 bau task site
-bau task --list
-bau task site --help
-bau cache explain site
-bau cache explain site --json
+bau task site --dry-run
+bau task site -- --draft
 ```
 
-Tasks that behave like small CLIs must opt in to arguments:
+Allow task arguments:
 
 ```toml
 [[tasks]]
-name = "fetch"
-description = "Fetch a model shard"
-cmd = "nim c -r tools/fetch.nim {argsWithSep}"
+name = "bench"
+cmd = "nim r tools/bench.nim"
 acceptArgs = true
 ```
 
-Run it with:
+Arguments after `bau task <name> --` are passed only to the invoked root task,
+not to dependency tasks. Prefer `BAU_TASK_ARG_0`, `BAU_TASK_ARG_1`, and
+`BAU_TASK_ARGS` inside scripts. Use `{args}` and `{argsWithSep}` only when a
+task is forwarding arguments to another command.
+
+Explain the task cache:
 
 ```sh
-bau task fetch -- cpu
+bau cache explain site
+bau cache explain site --json
+bau cache list
+bau cache clean
 ```
 
-The same arguments are also exposed as `BAU_TASK_ARGS`,
-`BAU_TASK_ARG_0`, `BAU_TASK_ARG_1`, and so on for shell commands.
+A Task Cache Entry restores declared outputs. Target compilation freshness uses
+Target Fingerprints instead; use `bau explain` for target freshness and
+`bau cache explain` for task output reuse.
 
-A cacheable task is skipped when its command, inputs, outputs, selected
-features, arguments, relevant environment, platform, and Nim version match an
-existing entry. If `[cache].remote` is configured, Bau can restore task outputs
-from a shared filesystem cache or HTTP cache after a local miss.
+Task Cache Entries apply only to tasks that run project commands with `cmd`;
+tasks that delegate to built-in operations use those operations' own freshness
+or validation behavior.
 
-Use build scripts when a pre-build step must influence the Nim compiler:
+Root task arguments are part of the Task Cache Entry identity, so different
+argument lists restore different cached outputs.
+Execution shape and declared inputs are Task Cache Entry identity; cache
+transport policy is not.
+Cache location and read/write settings do not change that identity; they only
+control where and whether Bau may restore or publish cached outputs.
+Remote cache reads participate in task output restoration. Remote cache writes
+are secondary side effects when cache writes are enabled.
+If declared outputs are newer than declared inputs, Bau may skip the task as
+locally fresh without restoring a Task Cache Entry.
+`bau task <name> --force` bypasses restoration and local freshness for that run
+without changing the Task Cache Entry identity.
+
+Shell tasks are ordinary execution by default. A task that delegates to a
+built-in operation inherits that operation category, so `command = "test"` is
+Validation and `command = "build"` is Execution.
+
+Task dependencies name other tasks only. If a workflow needs build or test as a
+dependency, declare an explicit wrapper task with `command = "build"` or
+`command = "test"` and depend on that task.
+Arguments after `bau task <name> --` are passed only to the invoked root task,
+not to dependency tasks. Prefer `BAU_TASK_ARG_0`, `BAU_TASK_ARG_1`, and
+`BAU_TASK_ARGS` inside scripts. Use `{args}` and `{argsWithSep}` only when a
+task is forwarding arguments to another command.
+
+Local task cache entries live inside the project output boundary. Remote cache
+entries live in the configured cache service or shared filesystem. Restoring a
+remote entry is part of task output reuse; writing one is a secondary
+external-service side effect.
+
+## Build Scripts
+
+Use project-scoped Build Scripts for generation that affects compilation:
 
 ```toml
 [[buildScripts]]
 name = "version"
 cmd = "nim r scripts/version.nims"
 inputs = ["scripts/version.nims", ".git/HEAD"]
-outputs = ["src/generated/version.nim"]
 ```
 
-Build scripts can emit directives such as:
+Scripts can print Build Directives:
 
 ```text
-bau::rerun-if-changed=path
-bau::rerun-if-env-changed=NAME
-bau::nim-flag=--passC:-DUSE_X
-bau::define=name=value
-bau::link-lib=sqlite3
 bau::generated-file=src/generated/version.nim
+bau::rerun-if-changed=.git/HEAD
+bau::rerun-if-env-changed=BUILD_VERSION
+bau::define=buildVersion=1.2.3
+bau::link-lib=sqlite3
+bau::nim-flag=--passC:-DUSE_X
 bau::warning=message
 bau::error=message
 ```
 
-The workflow is to declare inputs and outputs as specifically as possible, run
-the task once, then use `bau cache explain <task>` when a cache hit or miss is
-surprising.
+Prefer narrow directives such as `bau::define` and `bau::link-lib` when they
+match the intent. Use `bau::nim-flag` as an escape hatch for compiler options
+Bau does not model yet.
 
-## Documentation Workflow
+Write Build Directives to stdout. Use stderr for human diagnostics.
 
-Bau documentation generation wraps Nim's `nim doc` and applies the project's
-profiles, features, dependencies, and doc configuration.
+Unknown `bau::` directive names are invalid. Bau should fail loudly rather than
+silently ignore a misspelled build instruction. Supported directive names and
+meanings are part of Bau's public build-script contract.
+Malformed directives and directives with missing required values are invalid.
 
-Start with a docs section:
+Generated files are registered with `bau::generated-file`; task-style `outputs`
+belongs to cached Tasks, not Build Scripts.
+Environment freshness is registered with `bau::rerun-if-env-changed`;
+task-style `envInputs` belongs to cached Tasks, not Build Scripts.
+Relative paths in Build Directives are resolved from the Bau Project root, not
+from the script process `cwd`.
 
-```toml
-[docs]
-outDir = "docs/api"
-entrypoints = ["src/myapp.nim"]
-include = ["src/**/*.nim"]
-exclude = ["src/**/private/**", "src/internal/**"]
-runExamples = true
-sourceUrl = "https://github.com/example/myapp/blob/main"
-```
+Build Scripts are cached separately from Target Fingerprints. They rerun when
+their command, profile, selected features, inputs, generated files, or declared
+environment inputs change.
 
-Write top-level Nim doc comments in public modules, then run:
+That cached directive result is internal target-planning state, not a Task Cache
+Entry. `bau cache` remains about user-invoked Tasks and their declared outputs.
+
+Legacy Lifecycle Hooks run around actual build or install execution and do not
+participate in Target Fingerprints. Use Build Scripts for generation, compiler
+flags, generated files, or tracked build inputs.
+
+## Documentation
+
+Generate docs through Bau instead of raw `nim doc`:
 
 ```sh
 bau doc
 bau doc --open
-```
-
-While writing examples, keep `runExamples = true` so Nim validates runnable
-examples. If you need a faster edit loop for layout-only changes:
-
-```sh
-bau doc --skip-examples
-```
-
-For a release or hosted site:
-
-```sh
 bau doc --out-dir site/api
+bau doc --skip-examples
+bau doc --include-private
+```
+
+Configure docs:
+
+```toml
+[docs]
+outDir = "docs"
+entrypoints = ["src/myapp.nim"]
+include = ["src/**/*.nim"]
+exclude = ["src/**/private/**"]
+runExamples = true
+index = true
+sourceUrl = "https://github.com/example/myapp/blob/main/{path}#L{line}"
+```
+
+For public libraries, run:
+
+```sh
+bau test
+bau doc --open
 bau package --list --dry-run
 ```
 
-Bau writes a `.bau-docs-manifest` in the output directory so later doc
-generations can clean previously generated files safely. It also warns when a
-module has no top-level Nim doc comment, which is a useful pre-release quality
-signal.
+## Workspaces
 
-## Workspaces And Monorepos
+A workspace coordinates member Bau Projects:
 
-In a workspace, the root `bau.toml` can define members, default members,
-workspace dependencies, source providers, profiles, catalogs, and governance.
-Member projects keep their own package-specific config.
+```toml
+[workspace]
+members = ["pkg/core", "pkg/utils", "apps/cli"]
+defaultMembers = ["apps/cli"]
+exclude = ["pkg/deprecated"]
 
-A typical monorepo loop:
+[workspace.catalog]
+jsony = ">=1.1.0"
+parsetoml = ">=0.6.0"
+```
+
+Member projects keep their own manifests. The workspace root can provide shared
+defaults for dependencies, sources, profiles, catalogs, and governance.
+
+Typical workspace loop:
 
 ```sh
 bau deps sync --locked
@@ -707,70 +573,92 @@ bau affected test --since origin/main
 bau doc
 ```
 
-Use catalogs when several members should share one version decision:
-
-```toml
-[workspace.catalog]
-parsetoml = ">=0.6.0"
-jsony = ">=1.1.0"
-```
-
-Then member projects can reference the catalog instead of repeating a version:
+Catalog references keep versions central:
 
 ```toml
 [dependencies]
 jsony = "catalog:"
+parsetoml = "catalog:"
 ```
 
-The root `bau.lock` covers the selected workspace member graph, which makes
-cross-package updates reviewable in one place.
+The root lock covers the selected member graph, so cross-member dependency
+updates are reviewable in one place.
 
-## CI Workflow
+## Affected Work
 
-Use the same commands in CI that developers run locally. A conservative GitHub
-Actions shape for a project that already has Bau installed in the CI image
-looks like this:
-
-```yaml
-name: CI
-
-on: [push, pull_request]
-
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jiro4989/setup-nim-action@v1
-        with:
-          nim-version: stable
-      - name: Verify dependencies
-        run: bau deps sync --locked
-      - name: Enforce dependency policy
-        run: bau deps verify
-      - name: Check, format, lint, and test
-        run: bau ci
-      - name: Build release binary
-        run: bau build --profile release
-      - name: Generate docs
-        run: bau doc
-      - name: Validate package
-        run: bau package --list --dry-run
-```
-
-If Bau is not preinstalled, add an installation step appropriate for your
-project. For example, build Bau from a pinned source checkout or from your
-internal tool image before running the project commands.
-
-For CI without network access:
+List changed work:
 
 ```sh
-bau deps sync --frozen
-bau deps verify
-bau ci
+bau affected list --since origin/main
+bau affected list --since origin/main --json
 ```
 
-For large repositories, split the gate:
+Run only affected work:
+
+```sh
+bau affected check --since origin/main
+bau affected test --since origin/main
+bau affected build --since origin/main
+```
+
+Bau combines Git changes with Nim module scanning. Changes to the Project
+Manifest, lockfiles, dependencies, or vendor material intentionally take the
+conservative path and mark broad work as affected.
+
+`affected list` only reports the selection. `affected check` and
+`affected test` validate the selected work. `affected build` builds it.
+
+## MCP
+
+Start the MCP server:
+
+```sh
+bau mcp
+```
+
+Example configuration shape for an MCP-capable tool:
+
+```json
+{
+  "mcpServers": {
+    "bau": {
+      "command": "bau",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Useful prompts for a connected coding tool:
+
+```text
+Use Bau metadata to summarize the project targets and dependencies.
+Run Bau affected analysis since origin/main and test the affected work.
+Add jsony as a dependency, sync dependencies, and run the test suite.
+Generate compile_commands.json for the release profile with the db feature.
+```
+
+MCP exposes the same Operations as the CLI where the capabilities overlap, so
+tool automation should not become a separate build path.
+
+## CI
+
+A conservative CI sequence:
+
+```sh
+bau deps sync --locked
+bau deps verify
+bau doctor
+bau ci
+bau doc --skip-examples
+bau package --list --dry-run
+```
+
+`bau ci` is validation-only: it runs non-mutating validation gates and does not
+invoke `bau fmt`. Run `bau fmt` separately when you intentionally want to
+rewrite source formatting.
+
+For larger repositories:
 
 ```sh
 bau affected check --since origin/main
@@ -779,18 +667,27 @@ bau build --profile release --all-targets
 bau doc --skip-examples
 ```
 
-Use `bau metadata --json`, `bau graph --format json`, and
-`bau affected list --json` when CI needs machine-readable summaries.
+For offline CI:
+
+```sh
+bau deps sync --frozen
+bau deps verify
+bau ci
+```
+
+Generate CI template skeletons when helpful:
+
+```sh
+bau ci-template github
+bau ci-template gitlab
+```
 
 ## Deployment And Publication
 
-Deployment usually means "ship the release build somewhere"; publication means
-"publish a Nim package through Nimble-compatible metadata." Bau supports both
-flows.
+Deployment means shipping a built application artifact. Publication means
+submitting a Package and Package Contents to a registry-compatible channel.
 
-### Deploy An Application Binary
-
-Run a release preflight:
+Deploy an application binary:
 
 ```sh
 bau deps sync --locked
@@ -801,33 +698,14 @@ bau env --json
 bau metadata --json
 ```
 
-The release binary is written under `build/<profile>/` using the configured
-`[build].output` name. Deploy that binary with your normal packaging system,
-container image, system package, artifact upload, or `bau install --profile
-release` for local installs. `bau install` defaults to `~/.bau/bin` and can be
-redirected with `[install].dir` or `--install-dir`. Keep `bau.lock` with the
-release commit so the dependency graph can be reconstructed later.
+The binary is written under `build/<profile>/` using the configured output name.
+Ship it with your normal packaging system, container image, artifact upload, or
+`bau install --profile release` for local installs.
 
-For repeatable generated assets, make them Bau tasks with declared inputs and
-outputs, then run them before building:
+`bau install`, `bau update`, and `bau uninstall` mutate local installed
+artifacts. They are not Publication.
 
-```sh
-bau task assets
-bau build --profile release
-```
-
-### Publish A Library Or CLI Package
-
-Before publishing, remove local-only overrides:
-
-- No local path dependencies in `[dependencies]`.
-- No `[patch]` entries.
-- Registry-published libraries should use registry dependencies with version
-  constraints. Git dependencies are better suited to applications or internal
-  deployments unless you have a separate consumer story for them.
-- No uncommitted generated metadata surprises.
-
-Then run:
+Prepare a library or CLI package for publication:
 
 ```sh
 bau bump --patch
@@ -840,26 +718,33 @@ bau package --list --dry-run
 bau publish --dry-run
 ```
 
-`bau package --list --dry-run` shows the files that would be included.
-`bau publish --dry-run` validates package metadata and prints the generated
-`.nimble` content without publishing.
-Use `bau bump --major`, `bau bump --minor`, or `bau bump --patch` to update
-`[package].version`; an existing `<package>.nimble` file is updated at the same
-time.
+`bau package --list --dry-run` is validation with introspective output: it
+checks whether Package metadata and Package Contents are acceptable while
+showing the selected files.
+
+`bau publish --dry-run` validates a possible Publication. Real `bau publish`
+mutates external registry state.
+
+`bau bump` mutates Package version intent in the Project Manifest. It is not
+Publication and does not submit anything to a registry.
+
+Before a real `bau publish`:
+
+- Remove local path dependencies.
+- Remove `[patch]` entries.
+- Prefer registry dependency requirements for registry-published packages.
+- Check generated Nimble-compatible metadata in the dry run.
 
 When the dry run is clean:
 
 ```sh
-git tag v0.3.1
+git tag v0.4.3
 bau publish
 ```
 
-A real publish uses `nimble publish`. If the generated `.nimble` file does not
-exist, Bau writes it from `bau.toml` before invoking Nimble.
+## Troubleshooting
 
-## Troubleshooting Workflows
-
-If dependencies fail in CI:
+If dependency sync fails in CI:
 
 ```sh
 bau deps sync --locked
@@ -868,23 +753,11 @@ bau tree
 bau query why <dep>
 ```
 
-If offline builds fail:
-
-```sh
-bau deps sync --offline
-bau deps sync --frozen
-```
-
-The first command checks local material. The second also requires the lockfile
-to be current.
-
-If builds rerun unexpectedly:
+If a target rebuilds unexpectedly:
 
 ```sh
 bau explain
-bau explain --json
-bau clean
-bau build --verbose
+bau explain --profile release
 ```
 
 If a cached task reruns unexpectedly:
@@ -894,60 +767,21 @@ bau cache explain <task>
 bau cache explain <task> --json
 ```
 
-If docs fail:
+If editor diagnostics do not match Bau:
 
 ```sh
-bau doc --verbose
-bau doc --skip-examples
-bau doc --include-private
+bau compile-commands --profile dev
+bau compile-commands --profile release --features db
 ```
 
-Use `--skip-examples` to separate Nimdoc layout or discovery problems from
-runnable example failures. Use `--include-private` when a public entrypoint
-depends on internal modules that you want to inspect.
-
-If MCP tools do not appear:
+If project shape and docs feel out of sync:
 
 ```sh
-which bau
-bau mcp
-claude mcp list
+bau metadata --json
+bau graph --format json
+bau tailor --check
 ```
 
-For VS Code, run `MCP: List Servers`, start the Bau server, and check the MCP
-server output log. In both Claude Code and VS Code, project/workspace MCP
-servers require user trust before tools are available.
-
-## A Complete Example Branch
-
-This is a realistic feature branch that changes code, adds a dependency,
-updates documentation, and prepares a release candidate:
-
-```sh
-git switch -c feature/import-json
-
-bau add jsony --version ">=1.1.0"
-bau deps sync
-bau deps verify
-
-bau check
-bau test
-bau run -- --sample fixtures/example.json
-
-bau doc
-bau affected list --since origin/main
-bau affected test --since origin/main
-
-bau bump --minor
-bau build --profile release
-bau package --list --dry-run
-bau publish --dry-run
-
-git add bau.toml bau.lock src tests docs
-git commit -m "Add JSON import workflow"
-```
-
-The important pattern is not the exact command list; it is the order:
-declare intent, materialize dependencies, lock and verify, build and test,
-generate docs, validate package contents, then commit the config and lockfile
-together.
+The usual Bau loop is: declare intent in `bau.toml`, materialize dependencies,
+lock and verify resolved state, run build/test/docs operations, inspect outputs,
+then commit the manifest and lock together.

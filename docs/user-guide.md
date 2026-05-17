@@ -1,186 +1,165 @@
 # Bau User Guide
 
-Bau (Baumeister, German for "master builder") is a build system for the
-[Nim](https://nim-lang.org) programming language. It replaces `nimble`'s build
-orchestration with a single declarative configuration file (`bau.toml`),
-deterministic lockfiles, incremental compilation via content fingerprinting,
-remote task caching, feature flags, workspace support, and an embedded MCP
-server for AI tool integration.
+Bau is a build system for Nim projects. It uses a declarative **Project
+Manifest** (`bau.toml`) to describe a project, records dependency **Resolved
+State** in `bau.lock`, and produces **Bau Outputs** such as binaries, docs,
+metadata, cache entries, and package manifest outputs.
 
-This guide assumes you are a professional software engineer already familiar
-with Nim's compiler flags, package ecosystem, and the general shape of a Nim
-project.
+This guide explains the concepts, commands, and manifest fields you need to use
+Bau day to day. For task-oriented recipes, see the [workflow guide](workflow-guide.md).
+For canonical project language, see [../CONTEXT.md](../CONTEXT.md). For the
+architecture behind these terms, see [architecture.md](architecture.md).
 
-For task-oriented examples, see the [Bau Workflow Guide](workflow-guide.md).
+## Contents
 
----
+1. [Core Model](#core-model)
+2. [Install Bau](#install-bau)
+3. [Create Or Convert A Project](#create-or-convert-a-project)
+4. [Project Manifest](#project-manifest)
+5. [Build Model](#build-model)
+6. [Dependency Model](#dependency-model)
+7. [Automation Model](#automation-model)
+8. [Workspaces](#workspaces)
+9. [Introspection](#introspection)
+10. [Documentation And Publication](#documentation-and-publication)
+11. [MCP Server](#mcp-server)
+12. [Command Reference](#command-reference)
+13. [Project Manifest Reference](#project-manifest-reference)
 
-## Table of Contents
+## Core Model
 
-1. [Concepts](#concepts)
-2. [Installation](#installation)
-3. [Getting Started](#getting-started)
-4. [Migrating from nimble](#migrating-from-nimble)
-5. [The bau.toml File](#the-bautoml-file)
-6. [Build and Run](#build-and-run)
-7. [Dependency Management](#dependency-management)
-8. [Feature Flags](#feature-flags)
-9. [Profiles](#profiles)
-10. [Task Caching](#task-caching)
-11. [Build Scripts](#build-scripts)
-12. [Workspaces](#workspaces)
-13. [Affected Analysis](#affected-analysis)
-14. [Lockfile and Reproducibility](#lockfile-and-reproducibility)
-15. [Dependency Governance](#dependency-governance)
-16. [Documentation Generation](#documentation-generation)
-17. [Command Reference](#command-reference)
-18. [MCP Server](#mcp-server)
-19. [Configuration Reference](#configuration-reference)
+Bau separates the things a project declares from the things Bau resolves and
+generates.
 
----
+```text
+Project Manifest -> Resolved State -> Bau Outputs
+```
 
-## Concepts
+The **Project Manifest** is `bau.toml`. It is the user-authored intent for a
+**Bau Project**: package identity, targets, profiles, features, dependencies,
+tasks, docs, cache settings, toolchain requirements, and policy.
 
-### How Bau differs from nimble
+**Resolved State** is machine-written state derived from the manifest. The most
+important example is the **Dependency Lock** (`bau.lock`), which records the
+resolved dependency graph, exact versions or Git revisions, source identity,
+checksums, and workspace member metadata.
 
-`nimble` is primarily a package manager that also builds Nim code. It derives
-build settings from a `.nimble` file whose format mixes NimScript declarations
-with package metadata. Bau separates concerns:
+**Bau Outputs** are generated results: compiled artifacts, docs, metadata,
+task cache entries, fingerprints, package manifest outputs, and similar files under
+`build/` or configured output directories.
 
-| Concern | nimble | Bau |
+### How Bau differs from Nimble
+
+Nimble combines package metadata with executable NimScript. Bau uses a static
+TOML manifest and explicit operations.
+
+| Concern | Nimble | Bau |
 |---|---|---|
-| Package metadata | `.nimble` NimScript | `bau.toml` (TOML) |
-| Build targets | Implicit from `bin`/`srcDir` | Explicit `[build]` and `[[targets]]` |
-| Dependencies | `requires` statements | `[dependencies]` table |
-| Dependency resolution | Ad-hoc, no lockfile | Atlas + `bau.lock` v2 |
-| Profiles | NimScript conditionals | Named `[profile.<name>]` with inheritance |
-| Task execution | NimScript `task` blocks | `[[tasks]]` with cache and dependency graph |
-| Feature flags | Manual `-d:` flags | Declared `[features]` with resolution |
-| Reproducibility | None | Content-hashed fingerprints + lock checksums |
+| Project intent | `.nimble` NimScript | `bau.toml` Project Manifest |
+| Build shape | Implicit `bin` / `srcDir` and NimScript | Explicit Targets |
+| Compiler settings | NimScript conditionals | Named Profiles |
+| Optional capability selection | Manual `-d:` flags | Declared Features |
+| Dependency fetching | Nimble behavior | Atlas materialization |
+| Dependency reproducibility | No project lock by default | `bau.lock` Dependency Lock |
+| Workflow automation | Nimble tasks/hooks | Tasks, Build Scripts, Lifecycle Hooks |
+| Tool integration | CLI-oriented | Shared Operations for CLI and MCP |
 
-Bau delegates package fetching to [Atlas](https://github.com/nim-lang/atlas),
-Nim's official package manager. It focuses on what Atlas does not do: build
-orchestration, task scheduling, caching, policy enforcement, and workspace
-management.
+Bau does not execute the manifest to discover project intent. Dynamic behavior
+is modeled explicitly with profiles, features, tasks, and build scripts.
 
-### Architecture at a glance
+## Install Bau
 
-```
-bau.toml          bau.lock         build scripts
-    │                │                  │
-    ▼                ▼                  ▼
-┌─────────────────────────────────────────┐
-│              Operation Layer (ops.nim)  │
-├─────────────────────────────────────────┤
-│  Build  │ Deps │ Cache │ Affected │ Doc │
-├─────────────────────────────────────────┤
-│              Config (config.nim)        │
-└─────────────────────────────────────────┘
-         │                    │
-         ▼                    ▼
-    CLI (stdio)         MCP (JSON-RPC)
-```
+Prerequisites:
 
-Every command — whether invoked via CLI or the MCP server — goes through the
-same operation layer. This means an AI agent using the MCP server runs the
-exact same code paths as a human at the terminal.
+- Nim `>= 2.2`
+- `parsetoml`
+- Atlas for dependency synchronization
 
-### Fingerprints and incremental builds
-
-Bau computes a **9-component fingerprint** for each build target:
-
-| Component | What it captures |
-|---|---|
-| `sourceHash` | SHA-256 of every `.nim` file's full content |
-| `flagsHash` | All compiler flags concatenated |
-| `configHash` | Contents of `bau.toml`, `bau.local.toml`, global config |
-| `envHash` | `BAU_*`, `PATH`, `NIM`, `ATLAS` environment variables |
-| `compilerHash` | Nim version + OS/arch triple |
-| `mtimeHash` | Modification timestamps of all source files |
-| `profile` | The profile name |
-| `platform` / `toolchain` | OS-arch triple and `"nim-<version>"` strings |
-
-A rebuild is triggered only when at least one component differs from the stored
-fingerprint. This is more precise than Make-style mtime checks: two checkouts
-of the same commit on different machines produce identical fingerprints
-(assuming the same Nim version), making Bau's cache safe to share across CI
-runners.
-
-### Task caching vs. target fingerprinting
-
-Bau has **two separate caching systems** for different use cases:
-
-1. **Target fingerprinting** (build.nim + fingerprint.nim): Optimized for Nim
-   compilation. Hashes source content, flags, config, environment, and
-   toolchain. A match means "the compiler would produce the same binary."
-
-2. **Task caching** (taskcache.nim + taskgraph.nim): Generic content-addressed
-   cache for arbitrary shell commands. Hashes input file contents, command
-   strings, environment variables, platform, and Nim version. Supports local
-   disk and HTTP remote backends.
-
-They share cache directory and remote settings from `[cache]` but store entries
-in separate subdirectories.
-
----
-
-## Installation
-
-**Prerequisites:** Nim >= 2.2 and `parsetoml`.
+Build Bau from this repository:
 
 ```sh
 nimble install parsetoml
 nim c --path:src -o:build/dev/bau src/bau.nim
 ```
 
-Move `build/dev/bau` to a directory on your `$PATH`. Once Bau is available,
-`bau shell-init` can add `~/.bau/bin` to your shell startup file for binaries
-installed by `bau install`.
+Move `build/dev/bau` onto your `PATH`, or call it by path until you install it.
 
-A bootstrap script is also available if you don't have nimble:
+Check a project:
 
 ```sh
-./bootstrap.sh
+bau doctor
+bau env --json
 ```
 
----
+`bau doctor` verifies configured toolchain requirements. `bau env --json`
+prints the resolved build environment: selected profile, features, paths, tool
+locations, and relevant environment variables. External service configuration
+such as registry sources and remote cache URLs remains manifest data, not build
+environment.
 
-## Getting Started
+Toolchain requirements are external tools such as Nim and Atlas. Package
+libraries such as `parsetoml` are Dependency Requirements, not Toolchain
+Requirements.
 
-### Creating a project
+## Create Or Convert A Project
+
+Create a binary project:
 
 ```sh
-# Initialize in the current directory (interactive prompts)
-bau init
-
-# Create a new binary project in a subdirectory
 bau new myapp
+cd myapp
+bau deps sync
+bau check
+bau test
+bau run
+```
 
-# Create a new library
+Create a library project:
+
+```sh
 bau new mylib --lib
+cd mylib
+bau deps sync
+bau test
+bau doc --open
+```
 
-# Non-interactive initialization with all metadata
+Initialize the current directory:
+
+```sh
+bau init
 bau init myapp --bin --version 0.1.0 --description "A Nim app" --license MIT
 ```
 
-`bau init` scaffolds:
-- `bau.toml` with package metadata, build config, and dev/release profiles
-- `src/<name>.nim` (binary) or `src/<name>.nim` with `src/<name>/` package (library)
-- `tests/t<name>.nim`
-- Default dev and release profiles
-
-### Building and running
+Convert an existing Nimble project:
 
 ```sh
-bau build               # debug build (profile: dev)
-bau build -p release    # optimized build
-bau run                 # build and run
-bau run -- --flag val   # pass arguments to the binary
-bau test                # build and run tests
-bau test config         # run only tests matching "config"
+bau convert --dry-run
+bau convert
+bau deps sync
+bau tailor --check
+bau check --all-targets
+bau test
 ```
 
-### The basic bau.toml
+**Nimble Conversion** is static. Bau translates deterministic Nimble metadata,
+literal tasks, and literal hooks. It does not execute NimScript control flow.
+
+**Target Discovery** is separate:
+
+```sh
+bau tailor
+bau tailor --check
+bau tailor --write
+```
+
+`bau tailor` reports undeclared entrypoints, `bau tailor --check` validates that
+none are missing, and `bau tailor --write` mutates the Project Manifest by
+adding missing target declarations.
+
+## Project Manifest
+
+A minimal manifest:
 
 ```toml
 [package]
@@ -201,295 +180,153 @@ flags = ["--debugInfo:on"]
 gc = "orc"
 
 [profile.release]
-flags = ["--opt:speed"]
+flags = ["--opt:speed", "--passC:-O3"]
 gc = "orc"
 ```
 
----
+The manifest can also declare dependencies, features, targets, tasks, build
+scripts, docs, workspaces, cache settings, install defaults, governance policy,
+toolchain requirements, sources, patches, catalogs, and aliases.
 
-## Migrating from nimble
+Bau resolves Project Manifest inputs in this order, with later layers overriding
+earlier ones:
 
-Use `bau convert` at the root of an existing Nimble package:
+1. Global defaults from the Bau config directory.
+2. Workspace-level defaults.
+3. Project `bau.toml`.
+4. Local overrides from `bau.local.toml`.
+5. `BAU_` environment settings for selected development defaults.
+
+Use `bau.local.toml` only for local machine preferences. Do not rely on it for
+requirements that CI or other developers must share.
+
+## Build Model
+
+Bau builds a **Target** under a **Profile** with selected **Features**.
+
+- A **Target** is the artifact Bau can produce or run.
+- A **Profile** is a named compilation policy.
+- A **Feature** is a named optional capability that may activate other features
+  or optional dependency requirements.
+
+Build examples:
 
 ```sh
-bau convert              # read the only .nimble file in the current directory
-bau convert path/to/pkg  # convert a package directory
-bau convert pkg.nimble   # convert a specific file
-bau convert --dry-run    # print generated TOML without writing bau.toml
-bau convert --json       # machine-readable conversion report
-bau convert --force      # overwrite an existing bau.toml
+bau build
+bau build cli
+bau build --profile release
+bau build --features db
+bau build --no-default-features --features db
+bau build --all-features
+bau run -- --help
+bau run cli -- --version
 ```
-
-The converter does not execute NimScript. It statically converts the parts of a
-`.nimble` file that are deterministic package metadata: package name, version,
-author/authors, description, license, `srcDir`, `bin`, `namedBin`, `backend`,
-`requires`, feature-scoped `requires`, package include/exclude lists, literal
-`task` commands, and literal `before build`, `after build`, and `after install`
-hooks.
-
-Nimble files can contain arbitrary NimScript control flow. Bau skips dynamic
-blocks rather than guessing, emits diagnostics, and leaves reviewable TOML. A
-typical migration loop is:
-
-```sh
-bau convert --dry-run
-bau convert
-bau deps sync
-bau check --all-targets
-bau tailor --write
-bau test
-```
-
-After conversion, review any diagnostics, then use `bau tailor --write` to add
-extra executable targets discovered from source files that were not declared in
-the original `.nimble` metadata.
-
----
-
-## The bau.toml File
-
-Bau reads configuration from multiple sources, merged in order of precedence
-(lowest to highest):
-
-1. Global defaults from `~/.config/bau/config.toml` (shared across all projects)
-2. Workspace-level defaults (if the project is a workspace member)
-3. Project-level `bau.toml`
-4. Local overrides from `bau.local.toml` (not committed to version control)
-5. Environment variables with the `BAU_` prefix
-
-This layering means you can define your personal compiler flags in
-`~/.config/bau/config.toml` without polluting the project's committed
-configuration, or override dependencies during local development via
-`bau.local.toml`.
-
-### Sections
-
-A `bau.toml` can contain these sections:
-
-| Section | Purpose |
-|---|---|
-| `[package]` | Name, version, description, license, edition |
-| `[build]` | Default build target configuration |
-| `[[targets]]` | Additional named build targets |
-| `[test]` | Test runner, discovery, matrix, and output settings |
-| `[profile.<name>]` | Named compiler profiles with inheritance |
-| `[dependencies]` | Direct dependencies |
-| `[features]` | Feature flag declarations |
-| `[docs]` | Documentation generation settings |
-| `[cache]` | Local and remote cache configuration |
-| `[install]` | Binary installation destination |
-| `[governance]` | Dependency allow/block lists and age policy |
-| `[toolchain]` | Required tool versions |
-| `[[tasks]]` | Custom task definitions |
-| `[aliases]` | Project command aliases |
-| `[[buildScripts]]` | Pre-build scripts that emit directives |
-| `[patch]` | Dependency overrides (local paths, pins) |
-| `[source.<name>]` | Dependency source configuration |
-| `[catalog]` / `[workspace.catalog]` | Centralized version catalogs |
-| `[workspace]` | Multi-project workspace definition |
-
----
-
-## Build and Run
-
-### The build model
-
-Bau builds **targets**. A target is either the default target defined in
-`[build]` or a named target in `[[targets]]`. Each target resolves to a single
-call to the Nim compiler.
-
-During compilation, Bau:
-
-1. Resolves the target plan (source files, output path, profile, compiler flags)
-2. Runs build scripts (if any) and collects their emitted directives
-3. Computes the fingerprint and compares it to the stored fingerprint
-4. If the fingerprint matches and the binary exists, the build is skipped
-5. Otherwise, invokes `nim <backend> <flags> --out:<binary> <main>`
-6. Saves the new fingerprint
-
-Build scripts run **before** the fingerprint check, so they always execute.
-However, build scripts have their own caching layer — a script is skipped if
-its cache key (command + inputs + environment) matches and all declared
-generated files still exist with correct hashes.
 
 ### Targets
 
-The default target comes from `[build]`:
-
-```toml
-[build]
-name = "myapp"        # optional CLI name for the default target
-kind = "bin"           # "bin" or "lib"
-source = "src"         # source directory
-main = "src/myapp.nim" # entry point
-output = "myapp"       # output binary name
-includeDefault = false # include [build] when explicit targets exist
-```
-
-Additional targets are declared with `[[targets]]`:
+The default target is declared in `[build]`. Additional targets use
+`[[targets]]`:
 
 ```toml
 [[targets]]
-name = "cli"
+name = "admin"
 kind = "bin"
-main = "src/cli.nim"
-output = "myapp-cli"
+main = "src/admin.nim"
 profile = "release"
-requiredFeatures = ["cli"]
-
-[[targets]]
-name = "bench"
-kind = "bin"
-main = "benchmarks/bench.nim"
-source = "benchmarks"
-paths = ["src"]
-profile = "release"
-requiredFeatures = ["bench"]
+requiredFeatures = ["db"]
 ```
 
-Targets can override the output binary name, source root, extra import paths,
-profile, and required feature flags. Targets with unmet required features are
-silently skipped during `bau build --all-targets`.
+`requiredFeatures` prevents a target from being built when its feature
+preconditions are missing.
 
-### Build commands
+### Profiles
 
-```sh
-bau build                # build default target (dev profile)
-bau build cli            # build the "cli" target
-bau build --profile release
-bau build --features db
-bau build --all-targets  # build every configured target
-bau build --jobs 8       # parallel compilation (passed as --parallelBuild:8 to Nim)
-bau build --verbose      # show the full Nim command line
-bau build --timings      # show build timing information
-bau build --watch        # watch files and rebuild on changes (uses inotify on Linux)
-```
-
-### Running
-
-```sh
-bau run                        # build and run default target
-bau run cli                    # build and run the "cli" target
-bau run -- --input file.txt    # arguments after -- go to the binary
-bau run --profile release
-```
-
-### Installing
-
-```sh
-bau install                         # install the default binary
-bau install cli                     # install the "cli" target
-bau install --profile release
-bau install --all-targets           # install every binary target
-bau install --update                # update an already installed binary
-bau update cli                      # same update action as bau install --update cli
-bau uninstall cli                   # remove an installed binary
-bau install --install-dir ~/.local/bin
-bau shell-init                      # add ~/.bau/bin to your shell startup file
-bau shell-init fish                 # configure a specific shell
-```
-
-By default, Bau installs binaries to `~/.bau/bin`. Set `[install].dir` or pass
-`--install-dir` to use a different destination. Relative install directories
-are resolved from the project root.
-
-### Testing
-
-```sh
-bau test                  # build and run all tests
-bau test "config"         # filter test files by name
-bau test --changed        # only tests affected by current changes
-bau test --profile test   # run only the test profile
-bau test --fast           # changed tests, one local profile, no matrix
-bau test --no-matrix      # run one profile instead of the configured matrix
-bau test --full           # run the full configured test matrix
-bau test --dry-run        # print planned profile/test invocations only
-bau test --jobs 8         # parallelize direct test file invocations
-bau test --show-output=always
-```
-
-Bau discovers tests by convention: if `tests/tester.nim` exists, it runs that
-file as the test runner. Otherwise it enumerates `tests/t*.nim` and runs each
-file separately. If a `test` profile is defined in `bau.toml`, it is used
-automatically.
-
-`--profile` overrides the configured test matrix for that invocation. Use
-`--full` to force the configured full matrix, or `--no-matrix` to keep local
-iteration to one profile. `--fast` is shorthand for changed tests with one local
-profile. When Bau runs individual test files, `--jobs` bounds how many test
-files compile and run at once. Explicit `--jobs N` and `--no-runner` both make
-Bau discover `tests/t*.nim` files directly instead of using a configured runner.
-
-Projects can declare the canonical runner and matrix:
+Profiles group compiler settings:
 
 ```toml
-[test]
-runner = "tests/all.nim"
-profiles = ["dev", "release", "danger"]
-defaultProfile = "dev"
-fullProfiles = ["dev", "release", "danger"]
-recursive = true
-exclude = ["thelper.nim"]
-showOutput = "auto"
+[profile.dev]
+flags = ["--debugInfo:on"]
+gc = "orc"
+
+[profile.release]
+flags = ["--opt:speed", "--passC:-O3"]
+gc = "orc"
+define = { release = "" }
+
+[profile.test]
+extends = "dev"
+flags = ["--define:testing"]
 ```
 
-When `defaultProfile` is set, plain `bau test` uses that single profile for the
-local edit loop and `bau ci` uses `fullProfiles` or `profiles`.
+Profiles can inherit with `extends`. If a requested profile is not defined, Bau
+uses an empty profile with normal defaults.
 
-`showOutput` accepts `auto`, `always`, or `never`. In `auto` mode Bau streams
-configured runners live and captures small individual test files.
+Compiler backend is build intent. It may come from `[build]`, a target, or a
+profile override, and it resolves into the target plan rather than the Build
+Environment.
 
-### Checking
+### Features
 
-```sh
-bau check                  # type-check default target (no binary produced)
-bau check --all-targets    # type-check all configured targets
+Features resolve transitively:
+
+```toml
+[dependencies]
+sqlite = { version = ">=3.0", optional = true }
+analytics = { git = "https://example.com/analytics", optional = true }
+
+[features]
+default = ["cli"]
+cli = []
+db = ["dep:sqlite"]
+analytics = ["dep:analytics", "db"]
 ```
 
-### Formatting and linting
+Each enabled feature emits a namespaced Nim define and a bare define:
 
-```sh
-bau fmt                    # format all .nim files in src/ via nimpretty
-bau lint                   # check style with --styleCheck:error
-bau ci                     # fmt + lint + test, fails fast
+```text
+-d:bauFeature_db
+-d:db
 ```
 
-### Cleaning
+Enabled features are also exposed to tasks and build scripts as
+`BAU_FEATURE_<NAME>=1`.
 
-```sh
-bau clean                  # remove build/ directory
+### Target Fingerprints
+
+A **Target Fingerprint** records the freshness identity of a target build. It
+includes source content, selected manifest/local/global inputs, relevant
+environment inputs, compiler flags, profile, platform, and toolchain identity.
+
+A matching fingerprint means Bau expects the same compilation result and can
+skip rebuilding the target. Use `bau explain` when a target rebuilds
+unexpectedly or stays fresh when you expected it to rebuild.
+
+## Dependency Model
+
+Dependencies have three distinct states:
+
+```text
+Dependency Requirement -> Dependency Material -> Dependency Lock
 ```
 
----
+- A **Dependency Requirement** is declared in `[dependencies]`.
+- **Dependency Material** is local package content fetched or linked by Atlas.
+- A **Dependency Lock** is the resolved graph recorded in `bau.lock`.
 
-## Dependency Management
+Bau delegates fetching and package resolution to Atlas, then inspects the
+materialized result and writes a reproducible lock.
 
-### How dependencies are resolved
-
-Bau uses a three-layer dependency model:
-
-1. **Declared** — What you write in `bau.toml`'s `[dependencies]` section.
-   These are your intent: "I need parsetoml >= 0.6.0."
-
-2. **Materialized** — What Atlas fetches onto disk in `deps/<name>/`.
-   These are the concrete files on your filesystem.
-
-3. **Resolved** — What `bau.lock` records: exact versions, git revisions,
-   content checksums, and the full transitive dependency graph. The lock is the
-   reproducible snapshot.
-
-Bau never does its own package resolution. It delegates to Atlas for fetching,
-and wraps Atlas's output in a lockfile with content-addressed integrity
-verification.
+Dependency Material is generated project state. It lives inside the project
+boundary, but it is not source intent.
 
 ### Declaring dependencies
 
-Simple registry dependencies:
+Registry dependencies:
 
 ```toml
 [dependencies]
 parsetoml = ">=0.6.0"
-jsony = ">=1.0"
+jsony = ">=1.1.0"
 ```
 
 Git dependencies:
@@ -508,1009 +345,344 @@ Local path dependencies:
 myutil = { path = "../myutil" }
 ```
 
-Optional dependencies (not fetched unless a feature enables them):
+Optional dependencies are activated by features:
 
 ```toml
 [dependencies]
 sqlite = { version = ">=3.0", optional = true }
-analytics = { git = "https://...", optional = true }
+
+[features]
+db = ["dep:sqlite"]
 ```
 
-### Source providers
+### Sync, lock, and verify
 
-Sources configure *where* a dependency is fetched from, independently of the
-dependency declaration. This is useful for private registries, mirrors, or
-vendored replacements:
+```sh
+bau deps sync
+bau deps lock
+bau deps sync --locked
+bau deps sync --offline
+bau deps sync --frozen
+bau deps verify
+```
+
+`--locked` requires `bau.lock` to be present and current. `--offline` avoids
+network access and checks local material. `--frozen` is both.
+
+Commit `bau.lock` for applications. For libraries, committing the lock is
+recommended when you want contributors and CI to use the same dependency graph.
+
+### Sources and patches
+
+A **Dependency Source** changes where a dependency is fetched from without
+changing the intended package identity:
 
 ```toml
-[source."parsetoml"]
-registry = "https://my-registry.example.com/nimble"
+[source."internal"]
+registry = "https://registry.example.com/nimble"
 
-[source."internal-lib"]
-git = "https://git.internal.company.com/internal-lib"
-
-[source."vendored-lib"]
-directory = "vendor/vendored-lib"
-
-[source."mirror"]
-replaceWith = "primary"   # indirection: "mirror" resolves to "primary"
+[dependencies]
+internal_lib = { version = ">=1.0", registry = "internal" }
 ```
 
-Source replacement via `replaceWith` supports chaining with cycle detection. A
-source that resolves to another source will follow the chain until a concrete
-source (registry, git, path, vendor) is found.
-
-The `[patch]` section is separate from `[source]` and serves a different
-purpose: it changes the **content** of a dependency (e.g., overriding a
-registry package with a local development path) rather than changing where a
-source is fetched from:
+A **Dependency Patch** replaces dependency content:
 
 ```toml
 [patch]
-parsetoml = { path = "../parsetoml" }   # use local checkout instead of registry
+parsetoml = { path = "../parsetoml" }
 ```
 
-### Syncing dependencies
+Use sources for mirrors or alternate locations. Use patches for local fixes and
+experiments. Remove patches and local path dependencies before publication.
 
-```sh
-bau deps                        # fetch and materialize all enabled dependencies
-bau deps sync                   # explicit form of the above
-bau deps sync --locked          # fail if bau.lock is missing or stale
-bau deps sync --offline         # no network; verify local material matches lock
-bau deps sync --frozen          # --locked + --offline
-```
+### Governance policy
 
-`bau deps` iterates over every enabled dependency and invokes Atlas:
-- Git deps: `atlas use <url>#<rev|tag|branch>`
-- Path deps: `atlas link <path>`
-- Registry deps: `atlas use <name>` (Atlas resolves version constraints)
-
-Optional dependencies are skipped unless a feature flag with `dep:<name>` is
-active. This means optional deps are not fetched by default — you must enable
-the corresponding feature.
-
-### Adding and removing dependencies
-
-```sh
-bau add parsetoml                                   # registry dep, no version constraint
-bau add parsetoml --version ">=0.6.0"               # with version
-bau add mylib --git https://github.com/u/mylib --tag v1.0
-bau add mylib --git https://github.com/u/mylib --branch main
-bau add mylib --git https://github.com/u/mylib --rev abc123
-bau add localpkg --path ../localpkg                  # local path
-bau add sqlite --optional                            # optional dependency
-bau add mypkg --registry my-registry                 # specific registry
-
-bau remove parsetoml                                 # remove from bau.toml
-```
-
-These commands edit `bau.toml` directly — they parse the existing file, add or
-remove lines in the `[dependencies]` section, validate the resulting TOML, and
-write back. They do not regenerate or reformat the rest of the file.
-
-### Updating dependencies
-
-```sh
-bau deps update parsetoml --precise abc123def   # pin to exact git revision
-```
-
-After updating, `bau deps lock` to rewrite the lockfile with the new revision.
-
-### Dependency tree and inspection
-
-```sh
-bau tree                    # display the full dependency tree
-bau outdated                # show packages with newer versions available
-bau query deps myapp        # list all dependencies for a target
-bau query why parsetoml     # explain why parsetoml is in the dependency graph
-```
-
-### Vendoring
-
-```sh
-bau deps vendor    # copy deps/ to vendor/ and write vendor/.bau-vendor-checksums
-```
-
-Vendoring creates a self-contained copy of all dependencies that can be
-committed to version control. The checksum file enables `bau deps verify` to
-detect accidental modifications to vendored code.
-
----
-
-## Feature Flags
-
-Feature flags enable conditional compilation and optional dependency activation.
-They are declared in `[features]`:
+Governance policies are enforced by `bau deps verify`:
 
 ```toml
-[features]
-default = ["docs", "cli"]     # features enabled by default
-docs = []                     # standalone feature
-db = ["dep:sqlite"]           # enables the optional sqlite dependency
-cli = ["db"]                  # cli implies db
-analytics = ["dep:analytics", "db"]  # analytics implies db and enables analytics dep
+[governance]
+blocked = ["badpkg"]
+trusted = ["parsetoml", "jsony"]
+minimumReleaseAgeHours = 24
 ```
 
-### Resolution
+The **Governance Policy** does not declare dependencies; it decides whether
+resolved dependency state is acceptable. `blocked` is a deny-list. `trusted`
+becomes an allow-list when non-empty.
+`minimumReleaseAgeHours` uses the lock entry's preserved `lockedAt` timestamp
+for non-path dependencies.
 
-When you run `bau build --features analytics`, Bau resolves the feature
-closure:
+## Automation Model
 
-1. Seed: `default` features (unless `--no-default-features`)
-2. Plus: explicitly requested features (`analytics`)
-3. Resolve transitively: `analytics` → `db` and `dep:analytics`, `db` →
-   `dep:sqlite`, `cli` (from default) → `db` (already visited)
-4. Result: features `docs`, `cli`, `db`, `analytics` are enabled; deps `sqlite`
-   and `analytics` are enabled.
+Bau has three automation concepts:
 
-### Compiler integration
+- A **Task** is a named workflow step.
+- A **Build Script** is a pre-compilation workflow that may generate files or
+  emit directives affecting target compilation.
+- A **Lifecycle Hook** is legacy timing behavior retained for compatibility
+  around actual build or install execution.
 
-Each enabled feature emits **two** Nim defines:
+Testing uses a **Test Plan**, not a Task. A task may delegate to `bau test`,
+but the selected runner, test files, profiles, filters, and execution options
+belong to the test operation.
 
-```
--d:bauFeature_docs        # namespaced, for Bau's own use
--d:docs                   # bare, for your code to check with when defined(docs)
-```
-
-Feature names are normalized: non-identifier characters become `_`. So a
-feature named `my-feature` becomes `-d:bauFeature_my_feature` and
-`-d:my_feature`.
-
-Additionally, each enabled feature sets an environment variable for build
-scripts: `BAU_FEATURE_<UPPERCASED_NAME>=1`.
-
-### Usage
-
-```sh
-bau build --features db,analytics         # enable specific features
-bau build --all-features                  # enable everything except "default"
-bau build --no-default-features           # disable the default set
-bau build --no-default-features --features db   # only "db" and its dependencies
-```
-
----
-
-## Profiles
-
-Profiles group compiler settings. They support inheritance via `extends`:
+### Tasks
 
 ```toml
-[profile.dev]
-flags = ["--debugInfo:on", "--linedir:on"]
-gc = "orc"
-defines = { debug = "" }
-
-[profile.release]
-flags = ["--opt:speed", "--passC:-O3", "--passL:-flto"]
-gc = "orc"
-defines = { release = "" }
-
-[profile.test]
-extends = "dev"
-flags = ["--define:testing"]
-
-[profile.danger]
-extends = "release"
-flags = ["-d:danger"]
+[[tasks]]
+name = "site"
+cmd = "nim r tools/site.nim"
+inputs = ["docs/**/*.md", "tools/site.nim"]
+outputs = ["build/site"]
+cache = true
 ```
 
-Inheritance is resolved depth-first: `test` inherits all of `dev`'s settings,
-then adds its own.
-
-### Built-in profiles
-
-`dev`, `release`, and `test` are conventional. Bau does not enforce their
-presence — if you define only `debug` and `optimized`, those work fine.
-`bau test` automatically uses the `test` profile if one is defined.
-
-### Usage
+Run tasks:
 
 ```sh
-bau build --profile release
-bau build -p dev
-bau test -p test
+bau task --list
+bau task site
+bau task site -- --draft
+bau task site --dry-run
+bau task site --keep-going
 ```
 
----
+Task dependencies run in topological order with cycle detection. When a `cmd`
+task declares inputs and outputs, Bau can write a **Task Cache Entry** and
+restore outputs later.
 
-## Task Caching
+Task Cache Entries apply only to tasks that run project commands with `cmd`;
+tasks that delegate to built-in operations use those operations' own freshness
+or validation behavior.
 
-### How it works
+Root task arguments are part of the Task Cache Entry identity, so different
+argument lists restore different cached outputs.
+Execution shape and declared inputs are Task Cache Entry identity; cache
+transport policy is not.
+Cache location and read/write settings do not change that identity; they only
+control where and whether Bau may restore or publish cached outputs.
+Remote cache reads participate in task output restoration. Remote cache writes
+are secondary side effects when cache writes are enabled.
+If declared outputs are newer than declared inputs, Bau may skip the task as
+locally fresh without restoring a Task Cache Entry.
+`bau task <name> --force` bypasses restoration and local freshness for that run
+without changing the Task Cache Entry identity.
 
-Bau caches the outputs of custom tasks and build scripts. A task is cacheable
-when it declares both `inputs` and `outputs`, or explicitly sets `cache = true`.
+Shell tasks are ordinary execution by default. A task that delegates to a
+built-in operation inherits that operation category, so `command = "test"` is
+Validation and `command = "build"` is Execution.
 
-The cache key is a SHA-256 hash of:
+Task dependencies name other tasks only. If a workflow needs build or test as a
+dependency, declare an explicit wrapper task with `command = "build"` or
+`command = "test"` and depend on that task.
 
-- Task command and name
-- Profile, platform, Nim version
-- Working directory
-- Shell type
-- Enabled features
-- Content hashes of all input files
-- Current values of declared environment variables
-- Cache read/write settings
+Arguments after `bau task <name> --` are passed only to the invoked root task,
+not to dependency tasks.
+Prefer `BAU_TASK_ARG_0`, `BAU_TASK_ARG_1`, and `BAU_TASK_ARGS` inside scripts.
+Use `{args}` and `{argsWithSep}` only when a task is forwarding arguments to
+another command.
 
-When a task runs and the key matches a stored entry, Bau restores the outputs
-from cache and skips execution entirely. This means a task that generates
-documentation or compiles assets only re-runs when its inputs actually change.
+Local task cache entries are Bau Outputs. Remote task cache entries are external
+service state that Bau can read or write.
 
-### Configuration
+Build-script directive caching is internal target-planning state. It is separate
+from Task Cache Entries and does not restore task outputs.
 
-```toml
-[cache]
-dir = "build/.bau/cache"              # local cache directory
-read = true                           # read from cache (default: true)
-write = true                          # write to cache (default: true)
-remote = "file:///shared/bau-cache"   # shared filesystem cache
-# remote = "https://cache.internal/bau"  # HTTP remote cache
-```
-
-### Local cache
-
-Entries are stored at `<cacheDir>/tasks/<taskName>/<sha256key>/`:
-- `manifest.json` — key, task name, output paths
-- `files/<relativePath>` — copies of each output file
-
-Writes use a staging directory and atomic rename, so a crashed process never
-leaves a partial cache entry. Restores validate the manifest key and task name
-before copying files back.
-
-### Remote cache
-
-The remote protocol is HTTP-based:
-
-- **Write**: `PUT /tasks/<taskName>/<key>.json` with a JSON body containing
-  `version`, `task`, `key`, `outputs`, and `files` (base64-encoded content with
-  SHA-256 hashes).
-- **Read**: `GET /tasks/<taskName>/<key>.json`
-- **Probe**: `HEAD /tasks/<taskName>/<key>.json` (for `cache explain`)
-
-`file://` URLs are handled identically but read/write to the local filesystem
-at the specified path, making them suitable for NFS-mounted shared caches in CI
-environments.
-
-File-level security is enforced on restore: outputs are validated to stay
-within declared output directories, and symlinks are never overwritten
-(mitigating symlink-based cache poisoning attacks).
-
-### Cache commands
+Inspect task caching:
 
 ```sh
-bau cache list                          # list all cache entries
-bau cache explain docs                  # show cache key, local/remote hit status
-bau cache explain docs --json           # machine-readable cache diagnosis
-bau cache clean                         # remove all cache entries
+bau cache list
+bau cache explain site
+bau cache explain site --json
+bau cache clean
 ```
 
----
+### Build scripts
 
-## Build Scripts
-
-Build scripts run **before** compilation and can influence the build by
-emitting directives on stdout. They are the equivalent of Cargo's `build.rs` or
-Meson's `run_command()`.
-
-### Declaration
+Build scripts are project-scoped workflows that run before target compilation:
 
 ```toml
 [[buildScripts]]
 name = "version"
 cmd = "nim r scripts/version.nims"
 inputs = ["scripts/version.nims", ".git/HEAD"]
-outputs = ["src/generated/version.nim"]
-
-[[buildScripts]]
-name = "assets"
-cmd = "python tools/embed_assets.py"
-inputs = ["assets/**", "tools/embed_assets.py"]
-outputs = ["src/generated/assets.nim"]
-envInputs = ["BUILD_ID"]
 ```
 
-### Directives
+They can print **Build Directives**:
 
-Build scripts communicate with Bau by printing lines with the `bau::` prefix:
-
-| Directive | Effect |
-|---|---|
-| `bau::rerun-if-changed=<path>` | Add a file whose change invalidates cache |
-| `bau::rerun-if-env-changed=<VAR>` | Add an env var whose change invalidates cache |
-| `bau::nim-flag=--passC:-DUSE_X` | Append a Nim compiler flag |
-| `bau::define=name=value` | Add a `-d:name=value` define |
-| `bau::link-lib=sqlite3` | Link a system library (`--passL:-lsqlite3`) |
-| `bau::generated-file=<path>` | Declare a file the script generates |
-| `bau::warning=<message>` | Emit a build warning |
-| `bau::error=<message>` | Emit a build error (halts the build) |
-
-Example NimScript (`scripts/version.nims`):
-
-```nim
-import std/[os, strutils]
-
-let hash = gorgeEx("git rev-parse --short HEAD")[0].strip()
-let version = readFile("bau.toml")
-  .splitLines()
-  .filterIt(it.startsWith("version ="))
-  .mapIt(it.split("=")[1].strip().replace("\"", ""))[0]
-
-echo "bau::generated-file=src/generated/version.nim"
-echo "bau::rerun-if-changed=.git/HEAD"
-
-writeFile("src/generated/version.nim", """
-const AppVersion* = "$1"
-const GitHash* = "$2"
-""".format(version, hash))
+```text
+bau::rerun-if-changed=path
+bau::rerun-if-env-changed=NAME
+bau::define=name=value
+bau::link-lib=sqlite3
+bau::nim-flag=--passC:-DUSE_X
+bau::generated-file=src/generated/version.nim
+bau::warning=message
+bau::error=message
 ```
 
-### Caching
+Prefer narrow directives such as `bau::define` and `bau::link-lib` when they
+match the intent. Use `bau::nim-flag` as an escape hatch for compiler options
+Bau does not model yet.
 
-Build scripts have their own cache, separate from the target fingerprint. The
-cache key includes the script command, all declared inputs (content-hashed),
-and all declared environment variables (current values). When the key matches
-AND all previously declared generated files still exist with matching hashes,
-the script is skipped.
+Write Build Directives to stdout. Use stderr for human diagnostics.
 
-This means `build.rs`-style code generation is only re-invoked when its inputs
-change, not on every build.
+Unknown `bau::` directive names are invalid. Bau should fail loudly rather than
+silently ignore a misspelled build instruction. Supported directive names and
+meanings are part of Bau's public build-script contract.
+Malformed directives and directives with missing required values are invalid.
 
----
+Generated files are registered with `bau::generated-file`; task-style `outputs`
+belongs to cached Tasks, not Build Scripts.
+Environment freshness is registered with `bau::rerun-if-env-changed`;
+task-style `envInputs` belongs to cached Tasks, not Build Scripts.
+Relative paths in Build Directives are resolved from the Bau Project root, not
+from the script process `cwd`.
+
+Use build scripts for new build-influencing behavior. Lifecycle hooks exist for
+Nimble compatibility.
 
 ## Workspaces
 
-Workspaces support monorepos with multiple interdependent Nim packages.
-
-### Configuration
+A **Workspace** is a coordination root. It selects and configures
+**Workspace Members**, and each member is a **Bau Project**.
 
 ```toml
 [workspace]
-members = ["pkg/core", "pkg/utils", "pkg/client", "apps/cli", "apps/server"]
-defaultMembers = ["apps/cli"]      # only these are built by default
+members = ["pkg/core", "pkg/utils", "apps/cli"]
+defaultMembers = ["apps/cli"]
 exclude = ["pkg/deprecated"]
 
 [workspace.catalog]
-parsetoml = ">=0.6.0"              # shared version across all members
-jsony = ">=1.0"
-```
-
-Each member directory contains its own `bau.toml`. Workspace-level defaults
-(dependencies, sources, profiles, governance, catalogs) are merged into each
-member's config. A member can override workspace defaults by declaring its own
-entry for the same key.
-
-### Workspace behavior
-
-- **Lockfile**: One root `bau.lock` covers the entire workspace. It records
-  which workspace member declared each dependency.
-- **Default vs. all members**: `bau build` builds only `defaultMembers`.
-  `bau affected list` scans all members. Use `bau build --workspace-all` to
-  build everything.
-- **Affected analysis**: Git changes at the workspace root are scoped to each
-  member. A change in `pkg/core/` only affects members that import `pkg/core`.
-
-### Catalog
-
-Catalogs centralize version constraints. Instead of repeating `parsetoml =
-">=0.6.0"` in every member, declare it once in the workspace catalog and
-reference it from members:
-
-```toml
-# workspace root bau.toml
-[workspace.catalog]
+jsony = ">=1.1.0"
 parsetoml = ">=0.6.0"
-
-# member bau.toml
-[dependencies]
-parsetoml = "catalog:"              # uses version from workspace default catalog
-jsony = "catalog:stable"            # uses version from [workspace.catalogs.stable]
 ```
 
----
+Workspace defaults can include dependencies, sources, profiles, catalogs, and
+governance. Member projects keep their own manifests and can override shared
+defaults.
 
-## Affected Analysis
+The workspace root uses one root `bau.lock` for the selected member graph. Bau
+reuses the selected member set for build, dependency sync/verify, metadata,
+graph/query output, affected checks, compile command generation, docs, and
+tailor.
 
-`bau affected` uses Git to determine what changed and what needs to be rebuilt
-or retested.
+## Introspection
 
-### How it works
-
-1. **Change detection**: Runs `git diff --name-only <ref>` to get changed files.
-2. **Module scanning**: Scans all project `.nim` files to build an import graph.
-   Uses both a static parser (fast, catches local `import`/`include`
-   statements) and `nim genDepend` (slow but complete, catches dependencies
-   resolved through `--path:` search paths).
-3. **Transitive propagation**: Starting from changed `.nim` files, performs BFS
-   through the reverse import graph to find all modules that transitively
-   import or include a changed module.
-4. **Classification**: Maps affected modules to targets (whose `main` file is
-   affected), tests (whose test file is affected), and tasks (whose `inputs`
-   glob patterns match changed files).
-
-### Conservative triggers
-
-When certain files change, Bau takes the conservative path and marks
-**everything** as affected:
-
-- `bau.toml`, `bau.local.toml`, `nim.cfg`, `config.nims`, `*.nimble`: all
-  targets and tests are affected.
-- `bau.lock`, `deps/**`, `vendor/**`: all targets are affected (a dependency
-  change could affect any module).
-
-### Usage
+**Introspection** operations expose project structure, state, or planned work
+without performing validation, execution, or mutation.
 
 ```sh
-bau affected list                        # what changed since HEAD?
-bau affected list --since origin/main    # what changed vs. main branch?
-bau affected list --since HEAD~3         # what changed in the last 3 commits?
+bau metadata --json
+bau graph --format dot
+bau graph --format json
+bau query deps <target>
+bau query why <dependency>
 bau affected list --since origin/main --json
-
-bau affected build                       # build only affected targets
-bau affected test                        # test only affected tests
-bau affected check                       # check only affected targets
+bau explain
+bau cache explain <task> --json
+bau env --json
 ```
 
-### Tailor: discovering missing targets
+`bau affected` uses Git changes plus Nim module scanning to classify affected
+targets, tests, and tasks. Conservative inputs such as `bau.toml`, `bau.lock`,
+`deps/**`, and `vendor/**` mark broad work as affected.
 
-`bau tailor` scans your Nim source files and finds modules with `isMainModule`
-that aren't declared as targets:
+`bau affected list` is introspection. `bau affected check` and
+`bau affected test` are validation. `bau affected build` is execution.
+
+`bau doc` is not introspection; it is execution because it runs Nim doc and
+writes documentation outputs.
+
+`bau compile-commands` is not introspection in its current form; it is mutation
+because it writes `compile_commands.json`.
+
+## Documentation And Publication
+
+Generate Nim API documentation through Bau so profiles, features, search paths,
+and docs settings are applied:
 
 ```sh
-bau tailor            # print discovered targets
-bau tailor --check    # exit non-zero if targets are missing (for CI)
-bau tailor --check --json
-bau tailor --write    # append missing targets to bau.toml
+bau doc
+bau doc --open
+bau doc --out-dir site/api
+bau doc --skip-examples
+bau doc --include-private
+bau doc --no-index
 ```
 
----
+Publication has three concepts:
 
-## Lockfile and Reproducibility
+- **Package**: publishable Nim identity and metadata.
+- **Package Contents**: selected files prepared for distribution.
+- **Publication**: submitting the package and contents to a registry-compatible
+  channel.
 
-### The bau.lock format
-
-`bau.lock` is a TOML file (version 2) that records the fully resolved
-dependency graph:
-
-```toml
-# bau.lock - @generated by bau, do not edit
-version = 2
-resolver = "atlas-bridge"
-requirementsHash = "sha256:abc123..."
-workspaceMembers = ["."]
-
-[[rootDependency]]
-name = "parsetoml"
-requirement = ">=0.6.0"
-source = "registry+nimble://default"
-optional = false
-enabledBy = []
-workspaceMember = "."
-
-[[package]]
-name = "parsetoml"
-version = "0.6.1"
-source = "registry+nimble://parsetoml"
-revision = "abc123def456..."
-checksum = "sha256:xyz789..."
-path = "deps/parsetoml"
-direct = true
-materialized = true
-lockedAt = 1700000000
-dependencies = ["jsony|>=1.0|jsony 1.2.0|false"]
-```
-
-Key properties:
-
-- **`requirementsHash`**: A hash of all workspace members, dependency
-  declarations, source entries, and feature entries. If this hash doesn't match
-  the current config, the lock is stale.
-- **`checksum`**: Content hash of the package's on-disk files. Computed by
-  walking all non-`.git`, non-build files, sorting them, and hashing
-  `relpath:sha256\n` entries.
-- **`lockedAt`**: Unix timestamp of when this exact revision+checksum was first
-  seen. Preserved across lockfile rewrites when the package hasn't changed.
-- **`materialized`**: Whether the package's source code is present on disk.
-  Non-materialized packages cause `--locked` and `--frozen` to fail.
-
-### Lockfile operations
+Inspect package contents:
 
 ```sh
-bau deps lock                              # generate or update bau.lock
-bau deps lock --features db,analytics      # lock with specific features enabled
-bau deps verify                            # check lock freshness and integrity
-bau deps sync --locked                     # require lock is present and current
-bau deps sync --frozen                     # --locked --offline
+bau package --list --dry-run
 ```
 
-### Integrity verification
+This is validation with introspective output: it can fail if Package metadata or
+Package Contents are not acceptable.
 
-`bau deps verify` checks:
-
-1. Lock file exists and parses correctly (version 2)
-2. `requirementsHash` matches the current config (lock is not stale)
-3. Every non-optional direct dependency appears in the lock
-4. Every materialized package's on-disk checksum matches the lock
-5. Every materialized Git package's revision matches the lock
-
-### When to commit bau.lock
-
-Always commit `bau.lock` for applications. For libraries, committing it is
-recommended but not required — it ensures contributors and CI use the same
-dependency versions. Without a committed lock, each checkout may resolve
-different versions.
-
----
-
-## Dependency Governance
-
-Governance policies are enforced by `bau deps verify` and configured in
-`[governance]`:
-
-```toml
-[governance]
-blocked = ["malicious_pkg", "known_vulnerable"]
-trusted = ["parsetoml", "jsony", "sqlite"]
-minimumReleaseAgeHours = 24
-```
-
-### Blocked dependencies
-
-`blocked` is a deny-list. Any dependency named in this list causes verification
-to fail. Use it to prevent known-problematic packages from entering the
-dependency graph, even transitively.
-
-### Trusted dependencies
-
-`trusted` is an allow-list. When non-empty, **every** dependency must appear in
-this list. This is "zero-trust" mode: only explicitly reviewed and approved
-packages are permitted.
-
-### Minimum release age
-
-`minimumReleaseAgeHours` prevents supply-chain attacks from newly published
-package versions. The policy uses each package's `lockedAt` timestamp from
-`bau.lock` — which is only updated when the package's content actually changes
-(same revision + checksum preserves the old timestamp).
-
-For non-path dependencies, Bau verifies that `now - lockedAt >=
-minimumReleaseAgeHours * 3600`. Path dependencies are exempt (they are local code).
-
-Example: if `parsetoml` 0.6.1 was first locked 12 hours ago and
-`minimumReleaseAgeHours` is 24, verification fails with a message indicating
-how many hours remain.
-
----
-
-## Documentation Generation
-
-Bau generates API documentation using Nim's built-in `nim doc` tool,
-orchestrated through the `[docs]` configuration section.
-
-### Configuration
-
-```toml
-[docs]
-outDir = "docs/api"
-entrypoints = ["src/myapp.nim"]
-include = ["src/**/*.nim"]
-exclude = ["src/**/private/**", "src/internal/**"]
-flags = ["--docCmd:skip"]           # extra nimdoc flags
-project = true                      # pass Nimdoc --project
-index = true                        # generate theindex.html
-runExamples = true                   # compile and run code examples
-includePrivate = false               # include non-public modules
-sourceUrl = "https://github.com/user/myapp/blob/main"
-```
-
-### Module discovery
-
-Bau discovers modules to document by:
-
-1. Starting from configured `entrypoints` (or defaults: build main, package
-   root, target mains)
-2. Applying `include` glob patterns (default: all `.nim` files in `src/`)
-3. Filtering by `exclude` glob patterns (default: `private/`, `internal/` paths)
-4. Deduplicating by absolute path
-
-Conventional `private/` and `internal/` directories are skipped by default,
-following Nim ecosystem conventions.
-
-### Usage
+Prepare publication:
 
 ```sh
-bau doc                                   # generate docs to [docs].outDir
-bau doc --open                            # open in browser after generation
-bau doc --out-dir site/api               # custom output directory
-bau doc --skip-examples                   # don't compile/run doc examples
-bau doc --include-private                 # include private modules
-bau doc --no-index                        # skip theindex.html generation
-bau doc --entry src/main.nim --entry src/cli.nim   # explicit entrypoints
+bau bump --patch
+bau deps sync --locked
+bau deps verify
+bau check --all-targets
+bau test
+bau doc
+bau publish --dry-run
 ```
 
-### Workspace documentation
-
-In a workspace, `bau doc` runs documentation generation for each member and
-produces a combined JSON report with per-member metadata, diagnostics, and
-generated file lists.
-
----
-
-## Command Reference
-
-### Global options
-
-These work with every command:
-
-| Flag | Description |
-|---|---|
-| `--profile`, `-p <name>` | Build profile (default: `dev`) |
-| `--jobs`, `-j <n>` | Parallel jobs; `bau test` uses this for direct test files |
-| `--verbose`, `-v` | Verbose output (prints full Nim command lines) |
-| `--quiet`, `-q` | Minimal output (warnings and errors only) |
-| `--color <mode>` | `auto`, `always`, or `never` |
-| `--force`, `-f` | Force overwrite or bypass cache where supported |
-| `--dry-run`, `-n` | Show what would happen without executing |
-| `--keep-going` | Continue independent tasks after a dependency fails |
-| `--features <a,b>` | Enable specific feature flags |
-| `--all-features` | Enable all declared features |
-| `--no-default-features` | Do not enable the default feature set |
-| `--json` | Output in JSON format |
-| `--format <mode>` | Output format: `dot`, `json` |
-| `--format-version <n>` | Pin JSON schema version |
-| `--changed` | Operate only on changed files |
-| `--watch`, `-w` | Watch files and rebuild on changes |
-| `--timings` | Show per-step timing |
-| `--locked` | Require up-to-date lockfile |
-| `--offline` | No network operations |
-| `--frozen` | `--locked --offline` |
-| `--install-dir <dir>` | Override `[install].dir` for install/update/uninstall |
-| `--update` | Update instead of install for `bau install` |
-| `--remove` | Remove instead of install for `bau install` |
-
-### `bau build [target]`
-
-Compile the project. Without a target name, builds the default target from
-`[build]`. In a workspace, builds the default members.
-
-### `bau run [target] [-- args]`
-
-Build and run. Arguments after `--` are passed to the binary.
-
-### `bau install [target]`
-
-Build and install a binary target. Without a target name, installs the default
-`[build]` target. `--all-targets` installs every configured binary target.
-Use `--install-dir <dir>` to override `[install].dir` for this invocation.
-
-`bau install` fails if the destination binary already exists. Use
-`bau install --update`, `bau update`, or `--force` when replacing an existing
-binary is intentional.
-
-### `bau update [target]`
-
-Build and replace an installed binary target. This is equivalent to
-`bau install --update [target]` and fails if the binary is not already installed,
-unless `--force` is passed.
-
-### `bau uninstall [target]`
-
-Remove an installed binary target. This is equivalent to
-`bau install --remove [target]`. Use `--all-targets` to remove every configured
-binary target.
-
-### `bau test [filter]`
-
-Build and run tests. Optional filter string matches test file names.
-`--changed` runs only tests affected by current changes. `--show-output` can
-be `auto`, `always`, or `never`. `--dry-run` prints the planned profile/test
-invocations without compiling or running. `--timings` reports compile, run, and
-total time for each profile/test invocation plus the slowest entries.
-
-`--profile <name>` and `--test-profile <name>` run only that profile, even when
-`[test].profiles` is configured. `--no-matrix` uses `[test].defaultProfile`, a
-`test` profile, or the CLI/default profile. `--full` uses
-`[test].fullProfiles` when present, then `[test].profiles`.
-
-### `bau check`
-
-Type-check with `nim check`. Does not produce binaries. `--all-targets` checks
-every configured target.
-
-### `bau doc`
-
-Generate API documentation. See [Documentation Generation](#documentation-generation).
-
-### `bau fmt`
-
-Format all `.nim` files in `src/` with `nimpretty`.
-
-### `bau lint`
-
-Check code style with `nim check --styleCheck:error`.
-
-### `bau ci`
-
-Run `fmt`, `lint`, and `test` sequentially. Fails on the first error.
-
-### `bau clean`
-
-Remove `build/`.
-
-### `bau shell`
-
-Open a shell with build environment variables set (project dir, profile,
-features, search paths). Useful for running Nim commands manually with the same
-environment Bau uses.
-
-### `bau shell-init [shell]`
-
-Write a guarded startup snippet for the selected shell so `~/.bau/bin` is added
-only when the shell's `PATH` does not already contain it. Files already
-mentioning `.bau/bin` are left unchanged. Without an argument, Bau uses
-`$SHELL`; supported shells are `bash`, `zsh`, `fish`, and `sh`.
-
-### `bau deps [sync]`
-
-Fetch and materialize all enabled dependencies via Atlas. Add `--locked` to
-require an up-to-date lockfile, `--offline` to skip network access, or
-`--frozen` for both.
-
-### `bau deps lock`
-
-Write `bau.lock` with the resolved dependency graph. Scans materialized
-dependencies, extracts metadata from `.nimble` files and Atlas bridge data,
-computes checksums, and writes the lock as TOML.
-
-### `bau deps update <dep> --precise <rev>`
-
-Check out an exact Git revision for a materialized dependency.
-
-### `bau deps verify`
-
-Enforce dependency policies: blocked/trusted lists, lockfile freshness,
-checksums, and minimum release age.
-
-### `bau deps vendor`
-
-Copy `deps/` to `vendor/` with a checksum manifest.
-
-### `bau deps patch <dep> --path <path>`
-
-Add a `[patch]` entry overriding a dependency with a local path.
-
-### `bau add <dep> [options]`
-
-Add a dependency to `bau.toml`. Supports `--version`, `--git`, `--tag`,
-`--branch`, `--rev`, `--path`, `--registry`, `--optional`.
-
-### `bau remove <dep>`
-
-Remove a dependency from `bau.toml`.
-
-### `bau outdated`
-
-Show dependencies with newer versions available.
-
-### `bau tree`
-
-Display the dependency tree.
-
-### `bau metadata`
-
-Print resolved project metadata (package info, dependencies, profiles, targets,
-tasks, features). Use `--json` for machine-readable output.
-
-### `bau graph`
-
-Print dependency or target graph. `--format dot` for Graphviz, `--format json`
-for structured output.
-
-### `bau query deps <target>`
-
-List all dependencies for a target (resolved from lockfile then config).
-
-### `bau query why <dep>`
-
-Explain why a specific dependency is in the graph — which direct dependency or
-feature pulled it in, and whether it is optional.
-
-### `bau affected list`
-
-List changed files and affected targets, tests, and tasks since a Git ref
-(default: `HEAD`). Use `--since <ref>` for a different base.
-
-### `bau affected build`
-
-Build only targets whose main file or dependencies changed.
-
-### `bau affected test`
-
-Test only test files whose module or its dependencies changed.
-
-### `bau affected check`
-
-Check only targets affected by changes.
-
-### `bau tailor`
-
-Scan Nim sources for modules with `isMainModule` that are not declared as
-targets. `--check` exits non-zero if any are found. `--write` appends them to
-`bau.toml`.
-
-### `bau cache list`
-
-List all cache entries across all tasks.
-
-### `bau cache explain <task>`
-
-Show the cache key, local hit/miss status, remote hit/miss/error status, and
-restored output paths. Use `--json` for machine-readable output.
-
-### `bau cache clean`
-
-Remove all task cache entries.
-
-### `bau package --list`
-
-List files that would be included in a Nimble package. Use `--dry-run` for
-validation without publishing.
-
-### `bau bump <major|minor|patch>`
-
-Increment `[package].version` using SemVer rules. `major` increments the first
-component and resets minor/patch, `minor` increments the second component and
-resets patch, and `patch` increments the third component. The selector can also
-be passed as `--major`, `--minor`, or `--patch`. If `<package>.nimble` exists,
-Bau updates its top-level `version =` assignment too. Use `--dry-run` to print
-the planned change without writing.
-
-### `bau publish`
-
-Publish to the Nimble registry. `--dry-run` performs full local validation and
-prints the generated `.nimble` file content without network access.
-
-### `bau compile-commands`
-
-Generate `compile_commands.json` for LSP editors. Honors profile, feature, and
-job settings. The output is target-aware: it includes compilation commands for
-every source file under `src/` and `tests/` with the correct profile flags and
-search paths.
-
-### `bau doctor`
-
-Check the configured toolchain. Verifies that required tools (Nim, Atlas) are
-installed and meet minimum version constraints from `[toolchain]`.
-
-### `bau env`
-
-Print the resolved build environment (search paths, profile flags, feature
-defines). Use `--json` for machine-readable output.
-
-### `bau task [--list|<name>]`
-
-Run a custom task defined in `[[tasks]]`. The task's dependencies are executed
-first (in topological order). Cache is checked before execution.
-
-Use `bau task --list` for discovery, `bau task <name> --help` for task
-metadata, and `bau task <name> -- args...` for tasks that opt in with
-`acceptArgs = true`.
-
-### `bau init [name]`
-
-Initialize `bau.toml` in the current directory. Supports `--bin`, `--lib`,
-`--name`, `--version`, `--description`, `--license`, `--edition`.
-
-### `bau new <path>`
-
-Create a new project directory with `bau.toml` and source scaffold. Use
-`--lib` for a library project.
-
-### `bau convert [path|file]`
-
-Convert an existing `.nimble` project to `bau.toml`. With no argument, Bau
-converts the only `.nimble` file in the current directory. Pass a directory or a
-specific `.nimble` file for explicit selection. `--dry-run` prints generated
-TOML without writing, `--json` prints the conversion report, and `--force`
-overwrites an existing `bau.toml`.
-
-### `bau explain`
-
-Show what changed since the last build by comparing stored and fresh
-fingerprints across all 9 dimensions.
-
-### `bau version`
-
-Print the Bau version.
-
-### Plugins
-
-Any executable named `bau-<name>` on `$PATH` is discovered as a `bau <name>`
-subcommand. For example, an executable called `bau-deploy` becomes `bau deploy`.
-
-### Custom tasks
-
-Define tasks in `bau.toml`:
-
-```toml
-[[tasks]]
-name = "bench"
-cmd = "nim r -d:release benchmarks/bench.nim"
-description = "Run benchmarks"
-deps = ["build"]                    # run "build" task first
-inputs = ["benchmarks/bench.nim"]
-outputs = ["build/bench-results.json"]
-cache = true
-cwd = "."
-shell = "bash"
-envInputs = ["ITERATIONS"]
-acceptArgs = true
-requiredFeatures = ["bench"]
-tags = ["performance"]
-```
-
-Task arguments are disabled by default. When `acceptArgs = true`, arguments
-after `--` are exposed through `{args}`, `BAU_TASK_ARGS`, and numbered
-environment variables. `{argsWithSep}` expands to `-- <args>` only when args
-are present; the common `-- {args}` form also drops the separator when no args
-were passed:
-
-```toml
-[[tasks]]
-name = "fetch"
-cmd = "nim c -r tools/fetch.nim {argsWithSep}"
-acceptArgs = true
-```
-
-Tasks can also delegate to built-in Bau commands with a profile:
-
-```toml
-[[tasks]]
-name = "asan"
-command = "test"
-profile = "asan"
-```
-
-Tasks support:
-- `deps` — other task names that must complete first (topological order with
-  cycle detection)
-- `inputs` / `outputs` — file globs for caching and dependency tracking
-- `cache` — force-enable caching even without inputs/outputs
-- `cwd` — working directory override
-- `shell` — shell to use (defaults to system shell on POSIX, cmd on Windows)
-- `envInputs` — environment variables whose values become part of the cache key
-- `acceptArgs` — allow `bau task <name> -- args...`
-- `command` / `profile` — run a built-in Bau command such as `test`
-- `requiredFeatures` — feature flags needed for this task
-- `tags` — arbitrary labels for filtering
-
-The task system uses depth-first traversal with cycle detection via a visiting
-set. Failed dependencies propagate upward (preventing dependents from running),
-unless `--keep-going` is set, in which case independent sibling tasks continue.
-
----
+A real `bau publish` uses Nimble-compatible metadata and rejects local path
+dependencies and `[patch]` entries.
+`bau publish --dry-run` is validation. Real `bau publish` mutates external
+registry state.
+
+Install, update, and uninstall are local mutation operations over built target
+artifacts. They are not Publication.
 
 ## MCP Server
 
-Bau includes an embedded MCP (Model Context Protocol) server that exposes build
-operations to AI agents. It communicates over stdin/stdout using JSON-RPC 2.0
-with `Content-Length` framing, per the MCP specification (protocol version
-`2024-11-05`).
-
-### Starting the server
+Bau includes an MCP server for compatible AI tools:
 
 ```sh
 bau mcp
-# or equivalently:
+# or:
 bau --mcp
 ```
 
-The server runs an event loop that reads JSON-RPC requests from stdin, executes
-the corresponding Bau operation via the same `ops.nim` layer used by the CLI,
-and writes JSON-RPC responses to stdout.
+The MCP server speaks JSON-RPC over standard input/output. It exposes Bau
+operations as tools and read-only resources. The important architectural rule is
+that MCP and CLI command surfaces should share the same **Operations**.
 
-### Configuring with Claude Code
+Common MCP tools:
 
-Add to your Claude Code MCP configuration (`~/.claude/settings.json` or
-`.claude/settings.local.json`):
+| Area | Tools |
+|---|---|
+| Build and validation | `bau_build`, `bau_run`, `bau_test`, `bau_check`, `bau_lint`, `bau_ci`, `bau_doc`, `bau_clean`, `bau_install` |
+| Dependencies | `bau_deps`, `bau_add`, `bau_remove`, `bau_deps_verify`, `bau_tree`, `bau_outdated` |
+| Tasks and cache | `bau_task`, `bau_cache`, `bau_cache_explain` |
+| Introspection | `bau_metadata`, `bau_graph`, `bau_query`, `bau_affected`, `bau_explain`, `bau_env`, `bau_doctor` |
+| Project and publication | `bau_init`, `bau_new`, `bau_convert`, `bau_tailor`, `bau_package`, `bau_publish`, `bau_bump` |
+| Mutation | `bau_fmt`, `bau_compile_commands`, `bau_ci_template`, `bau_shell_init` |
+
+Read-only resources include:
+
+```text
+bau://manifest
+bau://targets
+bau://deps
+bau://tasks
+bau://status
+```
+
+Example MCP configuration shape:
 
 ```json
 {
@@ -1523,370 +695,361 @@ Add to your Claude Code MCP configuration (`~/.claude/settings.json` or
 }
 ```
 
-The server discovers the project root from the working directory, so it should
-be launched from your project directory.
+## Command Reference
 
-### Tools
+For side-effect categories, see
+[Current Command Classification](architecture.md#current-command-classification).
 
-The MCP server exposes 20 tools. Every tool maps 1:1 to a Bau CLI command via
-the operation layer. They produce the same JSON output as `bau <command>
---json`.
+### Core commands
 
-#### Build tools
-
-| Tool | CLI Equivalent | Key Parameters |
-|---|---|---|
-| `bau_build` | `bau build` | `profile`, `verbose` |
-| `bau_run` | `bau run` | `profile`, `args` (string array) |
-| `bau_test` | `bau test` | `filter` |
-| `bau_check` | `bau check` | (none) |
-| `bau_clean` | `bau clean` | (none) |
-| `bau_doc` | `bau doc` | `profile`, `outDir`, `entrypoints`, `skipExamples`, `includePrivate`, `noIndex` |
-| `bau_install` | `bau install`/`bau update`/`bau uninstall` | `action`, `target`, `profile`, `installDir`, `allTargets`, `force`, `dryRun` |
-| `bau_fmt` | `bau fmt` | (none) |
-
-#### Dependency tools
-
-| Tool | CLI Equivalent | Key Parameters |
-|---|---|---|
-| `bau_deps` | `bau deps` | `update` (default: false) |
-| `bau_add` | `bau add` | `name` (required), `version`, `git`, `tag`, `branch`, `rev`, `path`, `registry`, `optional` |
-| `bau_remove` | `bau remove` | `name` (required) |
-| `bau_deps_verify` | `bau deps verify` | (none) |
-
-#### Introspection tools
-
-| Tool | CLI Equivalent | Key Parameters |
-|---|---|---|
-| `bau_metadata` | `bau metadata --json` | (none) |
-| `bau_graph` | `bau graph --format json` | (none) |
-| `bau_query` | `bau query` | `kind` (`"deps"` or `"why"`), `name` |
-| `bau_affected` | `bau affected list --json` | `since` (default: `"HEAD"`) |
-| `bau_explain` | `bau explain` | `profile` |
-| `bau_cache_explain` | `bau cache explain --json` | `task` (required), `profile` |
-| `bau_compile_commands` | `bau compile-commands` | `profile`, `features`, `allFeatures`, `noDefaultFeatures`, `jobs` |
-
-#### Scaffolding
-
-| Tool | CLI Equivalent | Key Parameters |
-|---|---|---|
-| `bau_init` | `bau init` | `name` (required), `kind` (`"bin"` or `"lib"`), `dir` |
-| `bau_convert` | `bau convert` | `path`, `dryRun` (default: true), `force` |
-
-### Resources
-
-Resources use the `bau://` URI scheme and return JSON. They provide read-only
-access to project state:
-
-| URI | Description |
+| Command | Purpose |
 |---|---|
-| `bau://config` | Merged effective configuration (all layers combined) |
-| `bau://targets` | Build targets with profiles, source files, and feature requirements |
-| `bau://deps` | Full dependency tree with versions, sources, patches, and resolved status |
-| `bau://tasks` | Custom tasks and build scripts with their configurations |
-| `bau://status` | Per-target build status (dirty/clean fingerprints) |
+| `bau build [target]` | Compile the default target or a named target |
+| `bau run [target] [-- args]` | Build and run a binary target |
+| `bau test [filter]` | Validate the project against a Test Plan |
+| `bau check` | Validate configured targets with `nim check` |
+| `bau doc` | Generate API documentation |
+| `bau clean` | Remove Bau Outputs under `build/` |
+| `bau fmt` | Rewrite Nim source files with `nimpretty` |
+| `bau lint` | Validate style rules |
+| `bau ci` | Run the validation sequence without rewriting source files |
 
-### Protocol examples
+The intended validation counterpart to `bau fmt` is a future check-only
+formatting mode, such as `bau fmt --check`.
 
-**Build the project:**
-```json
-→ {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "tools/call",
-    "params": {
-      "name": "bau_build",
-      "arguments": { "profile": "release" }
-    }
-  }
+### Dependency commands
 
-← {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-      "content": [{ "type": "text", "text": "{\"ok\":true,\"output\":\"...\"}" }]
-    }
-  }
-```
+| Command | Purpose |
+|---|---|
+| `bau deps [sync]` | Materialize enabled dependencies with Atlas |
+| `bau deps lock` | Write `bau.lock` from materialized dependency state |
+| `bau deps update [dep]` | Update dependencies |
+| `bau deps update <dep> --precise <rev>` | Pin a materialized Git dependency to an exact revision |
+| `bau deps verify` | Verify lock freshness, checksums, and governance policy |
+| `bau deps vendor` | Copy dependency material to `vendor/` with checksums |
+| `bau deps patch <dep> --path <path>` | Add a local dependency patch |
+| `bau add <dep>` | Add a dependency requirement to the manifest |
+| `bau remove <dep>` | Remove a dependency requirement |
+| `bau tree` | Print the dependency tree |
+| `bau outdated` | Show outdated dependencies |
 
-**Read dependency tree:**
-```json
-→ {
-    "jsonrpc": "2.0",
-    "id": 2,
-    "method": "resources/read",
-    "params": { "uri": "bau://deps" }
-  }
+Dependency sync, lock, update, vendor, patch, add, and remove operations are
+mutation. Dependency verification is validation. Dependency tree, outdated
+status, and query output are introspection.
 
-← {
-    "jsonrpc": "2.0",
-    "id": 2,
-    "result": {
-      "contents": [{
-        "uri": "bau://deps",
-        "mimeType": "application/json",
-        "text": "{\"dependencies\":[...],\"tree\":{...}}"
-      }]
-    }
-  }
-```
+### Introspection and automation commands
 
-**Add a dependency:**
-```json
-→ {
-    "jsonrpc": "2.0",
-    "id": 3,
-    "method": "tools/call",
-    "params": {
-      "name": "bau_add",
-      "arguments": {
-        "name": "parsetoml",
-        "version": ">=0.6.0"
-      }
-    }
-  }
-```
+| Command | Purpose |
+|---|---|
+| `bau metadata --json` | Print project metadata |
+| `bau graph --format dot|json` | Print the task, target, feature, and dependency graph |
+| `bau query deps <name>` | List dependencies for a target, task, or package |
+| `bau query why <dep>` | Explain why a dependency is present |
+| `bau affected [list|build|test|check]` | Inspect or run affected work |
+| `bau explain` | Explain target freshness differences |
+| `bau cache [list|clean|explain]` | Inspect or clean task cache entries |
+| `bau task [--list|<name>]` | List or run tasks |
+| `bau compile-commands` | Generate `compile_commands.json` |
+| `bau env --json` | Print the resolved build environment |
+| `bau ci-template github|gitlab` | Write CI template files |
 
-**Check what changed:**
-```json
-→ {
-    "jsonrpc": "2.0",
-    "id": 4,
-    "method": "tools/call",
-    "params": {
-      "name": "bau_affected",
-      "arguments": { "since": "origin/main" }
-    }
-  }
-```
+### Project and publication commands
 
-### Error handling
+| Command | Purpose |
+|---|---|
+| `bau init [name]` | Initialize the current directory |
+| `bau new <path>` | Create a new project |
+| `bau convert [path|file]` | Convert a Nimble project |
+| `bau tailor --check|--write` | Discover missing target declarations |
+| `bau package --list` | Validate and list package contents |
+| `bau package` | Generate package manifest output |
+| `bau bump --major|--minor|--patch` | Increment package version |
+| `bau publish` | Publish through Nimble-compatible metadata |
+| `bau install [target]` | Copy a built target artifact into an install directory |
+| `bau update [target]` | Replace an installed target artifact |
+| `bau uninstall [target]` | Remove an installed target artifact |
+| `bau shell` | Open a shell with Bau build environment variables |
+| `bau shell-init [shell]` | Add `~/.bau/bin` to shell startup files |
+| `bau doctor` | Check toolchain and project health |
+| `bau version` | Print Bau version |
+| `bau help` | Print CLI help |
 
-Operation errors are reported with `isError: true` in the result (not as
-JSON-RPC errors). Protocol-level errors (unknown method, invalid parameters)
-use standard JSON-RPC error codes. Notifications (methods starting with
-`notifications/`) are silently acknowledged.
+External `bau-*` commands are command-surface extensions. Their side effects are
+defined by the delegated command, not by Bau's core Operation categories.
 
-### Architecture note
+### Common options
 
-The MCP server and CLI share the same `ops.nim` operation layer. The only
-difference is I/O encoding: the CLI formats `OperationResult` for human
-readability, while the MCP server returns `OperationResult.json` directly. This
-means there is no semantic difference between `bau build` and calling
-`bau_build` via MCP — they execute identical code paths.
+| Option | Purpose |
+|---|---|
+| `--profile`, `-p <name>` | Select build profile |
+| `--jobs`, `-j <n>` | Set parallel build jobs |
+| `--verbose`, `-v` | Print nested command details |
+| `--quiet`, `-q` | Suppress nonessential Bau output |
+| `--watch`, `-w` | Watch and rerun where supported |
+| `--timings` | Show timing information |
+| `--color auto|always|never` | Control colored output |
+| `--force`, `-f` | Force overwrite or bypass cached state where supported |
+| `--dry-run`, `-n` | Plan without writing or executing where supported |
+| `--all-targets` | Operate on all configured targets where supported |
+| `--features <a,b>` | Enable feature flags |
+| `--all-features` | Enable every declared feature except `default` |
+| `--no-default-features` | Disable default features |
+| `--locked` | Require a current lockfile |
+| `--offline` | Avoid dependency network operations |
+| `--frozen` | Equivalent to `--locked --offline` |
+| `--since <git-ref>` | Select Git comparison point for affected work |
+| `--json` | Print JSON where supported |
+| `--format <mode>` | Select text, dot, or JSON output where supported |
 
----
+`--watch` repeats the selected operation when supported and inherits that
+operation's side-effect category.
 
-## Configuration Reference
+## Project Manifest Reference
 
 ### `[package]`
 
 | Field | Type | Description |
 |---|---|---|
-| `name` | string | Package name (used for binary output and nimble compatibility) |
-| `version` | string | Semantic version |
-| `description` | string | Short description |
-| `license` | string | SPDX license identifier |
-| `edition` | string | Bau configuration edition (e.g., `"2026"`) |
+| `name` | string | Publishable package name and default output name |
+| `version` | string | Package version |
+| `description` | string | Package summary |
+| `authors` | string[] | Package authors |
+| `license` | string | License identifier |
+| `edition` | string | Bau manifest edition |
+| `repository` | string | Source repository URL |
+| `homepage` | string | Project homepage URL |
+| `include` | string[] | Extra package file patterns to include |
+| `exclude` | string[] | Package file patterns to exclude |
 
 ### `[build]`
 
 | Field | Type | Description |
 |---|---|---|
 | `name` | string | Optional CLI name for the default target |
-| `kind` | string | `"bin"` or `"lib"` |
-| `source` | string | Source directory (default: `"src"`) |
-| `main` | string | Entry point `.nim` file |
-| `output` | string | Output binary name (default: package name) |
-| `includeDefault` | bool | Include `[build]` when explicit targets exist |
+| `kind` | string | `bin`, `lib`, or `test` |
+| `source` | string | Source directory, default `src` |
+| `main` | string | Main Nim source file |
+| `output` | string | Output artifact name |
+| `nim` | string | Explicit Nim compiler command |
+| `backend` | string | Compiler backend such as `c`, `cpp`, or `js` |
+| `includeDefault` | bool | Include the default build when explicit targets exist |
 
 ### `[[targets]]`
 
 | Field | Type | Description |
 |---|---|---|
-| `name` | string | Target name (used in `bau build <name>`) |
-| `kind` | string | `"bin"` or `"lib"` |
-| `main` | string | Entry point file path |
-| `output` | string | Output binary name when different from `name` |
-| `source` | string | Source root override for this target |
-| `paths` | string[] | Extra Nim import paths for this target |
-| `profile` | string | Profile override (default: uses global profile) |
-| `requiredFeatures` | string[] | Features that must be enabled for this target |
-| `tags` | string[] | Arbitrary tags for filtering |
-
-### `[test]`
-
-| Field | Type | Description |
-|---|---|---|
-| `runner` | string | Explicit test runner file, e.g. `"tests/all.nim"` |
-| `profiles` | string[] | Profile matrix for `bau test` |
-| `defaultProfile` | string | Single profile for local `bau test` and `--no-matrix` |
-| `fullProfiles` | string[] | Full matrix for `bau test --full` and `bau ci` |
-| `recursive` | bool | Recursively discover `tests/t*.nim` files |
-| `exclude` | string[] | Test filenames or relative paths to skip |
-| `showOutput` | string | `auto`, `always`, or `never` |
+| `name` | string | Target name |
+| `kind` | string | `bin`, `lib`, or `test` |
+| `main` | string | Entry point file |
+| `output` | string | Output artifact name |
+| `source` | string | Source root override |
+| `paths` | string[] | Extra Nim import paths |
+| `profile` | string | Target-specific profile |
+| `requiredFeatures` | string[] | Required enabled features |
+| `tags` | string[] | Labels used by commands such as affected analysis |
 
 ### `[profile.<name>]`
 
 | Field | Type | Description |
 |---|---|---|
-| `extends` | string | Parent profile name (recursive inheritance) |
+| `extends` | string | Parent profile |
 | `flags` | string[] | Nim compiler flags |
-| `gc` | string | Garbage collector: `"orc"`, `"refc"`, `"arc"`, `"none"` |
-| `defines` | table | Preprocessor defines (`-d:key=value`) |
-| `nim` | string | Nim version constraint for this profile |
+| `gc` | string | Memory management strategy |
+| `define` | table | Nim defines converted to `-d:` flags |
+| `backend` | string | Profile-specific backend override |
 
 ### `[dependencies]`
 
-Each key is a package name. Values can be:
-
-- **String**: Version constraint (e.g., `">=1.0.0"`)
-- **Inline table**: `{ version = ">=1.0", optional = true, git = "..." }`
+Each key is a dependency name. A value may be a version string or an inline
+table.
 
 | Field | Type | Description |
 |---|---|---|
-| `version` | string | Version constraint |
+| `version` | string | Version requirement |
 | `git` | string | Git repository URL |
 | `tag` | string | Git tag |
 | `branch` | string | Git branch |
 | `rev` | string | Exact Git revision |
-| `path` | string | Local filesystem path |
-| `registry` | string | Registry name |
-| `optional` | bool | Only enabled when a feature activates it |
-
-### `[[tasks]]`
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | string | Task name (used in `bau task <name>`) |
-| `cmd` | string | Shell command or NimScript path |
-| `command` | string | Built-in Bau command to run instead of `cmd` |
-| `description` | string | Human-readable description |
-| `deps` | string[] | Prerequisite task names |
-| `inputs` | string[] | File glob patterns for caching and change detection |
-| `outputs` | string[] | File paths the task produces |
-| `cwd` | string | Working directory override |
-| `shell` | string | Shell override (e.g., `"bash"`, `"fish"`) |
-| `profile` | string | Profile used when `command` is set |
-| `envInputs` | string[] | Env vars whose values are part of the cache key |
-| `cache` | bool | Force-enable caching (default: auto-detected from inputs/outputs) |
-| `acceptArgs` | bool | Allow `bau task <name> -- args...` |
-| `requiredFeatures` | string[] | Features needed for this task |
-| `tags` | string[] | Arbitrary tags |
-
-### `[aliases]`
-
-Each key is a project command alias and each value is the command line Bau
-should expand before parsing the remaining CLI arguments:
-
-```toml
-[aliases]
-lint = "task lint"
-ci = "task ci"
-```
-
-### `[[buildScripts]]`
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | string | Script name (for logging and cache identity) |
-| `cmd` | string | Command to execute |
-| `deps` | string[] | Script dependencies (not task deps — currently unused) |
-| `inputs` | string[] | Files the script reads |
-| `outputs` | string[] | Files the script generates |
-| `envInputs` | string[] | Env vars that affect the script's output |
+| `path` | string | Local dependency path |
+| `registry` | string | Named dependency source |
+| `optional` | bool | Enabled only by features |
 
 ### `[features]`
 
 | Field | Type | Description |
 |---|---|---|
-| `default` | string[] | Features enabled by default |
-| `<name>` | string[] | Items this feature enables: other features, `"dep:<name>"`, or bare dep names |
+| `default` | string[] | Features enabled unless `--no-default-features` is used |
+| `<name>` | string[] | Features, bare dependency names, or `dep:<name>` entries enabled by this feature |
+
+### `[[tasks]]`
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Task name |
+| `cmd` | string | Shell command, URL, or NimScript path |
+| `command` | string | Built-in Bau operation such as `build` or `test` |
+| `description` | string | Human-readable summary |
+| `deps` | string[] | Prerequisite task names |
+| `inputs` | string[] | Input file patterns |
+| `outputs` | string[] | Produced output paths for cached `cmd` tasks |
+| `cwd` | string | Working directory |
+| `env` | table | Environment variables set for the task |
+| `envInputs` | string[] | Environment variables included in Task Cache Entry identity |
+| `watch` | string[] | Paths watched by long-running workflows |
+| `shell` | string | Shell override |
+| `profile` | string | Profile for built-in task commands |
+| `cache` | bool | Force-enable task caching |
+| `acceptArgs` | bool | Expose root-task arguments after `--` |
+| `requiredFeatures` | string[] | Required enabled features |
+| `tags` | string[] | Labels |
+
+### `[[buildScripts]]`
+
+Build scripts use a smaller command shape than tasks: `name`, `cmd`, `inputs`,
+`cwd`, `env`, `shell`, `requiredFeatures`, and `tags`. Use
+`bau::generated-file` to register generated files and
+`bau::rerun-if-env-changed` to register environment inputs. Build Directives are
+read from stdout; stderr is for human diagnostics. Malformed directives and
+directives with missing required values are invalid. Relative paths in Build
+Directives are resolved from the Bau Project root. Prefer narrow directives over
+`bau::nim-flag` when Bau models the intent.
+
+### `[scripts]`
+
+Legacy lifecycle hooks:
+
+| Field | Type | Description |
+|---|---|---|
+| `preBuild` | string | Command run before compilation |
+| `postBuild` | string | Command run after compilation |
+| `postInstall` | string | Command run after install |
+
+Lifecycle hooks do not participate in target freshness. Use Build Scripts for
+generation, compiler flags, generated files, or tracked build inputs.
+
+### `[test]`
+
+| Field | Type | Description |
+|---|---|---|
+| `runner` | string | Explicit test runner |
+| `profiles` | string[] | Profiles included in the Test Plan matrix |
+| `defaultProfile` | string | Local default test profile |
+| `fullProfiles` | string[] | Full matrix for `bau test --full` and CI |
+| `recursive` | bool | Recursively discover `tests/t*.nim` |
+| `exclude` | string[] | Tests to skip |
+| `showOutput` | string | `auto`, `always`, or `never` |
 
 ### `[docs]`
 
 | Field | Type | Description |
 |---|---|---|
-| `outDir` | string | Output directory (default: `"docs"`) |
-| `entrypoints` | string[] | Entry module files for documentation |
-| `include` | string[] | Glob patterns for module inclusion |
-| `exclude` | string[] | Glob patterns for module exclusion |
-| `flags` | string[] | Extra nimdoc flags |
-| `project` | bool | Pass Nimdoc's `--project` flag |
-| `index` | bool | Generate index/search files |
-| `runExamples` | bool | Compile and run doc code examples |
-| `includePrivate` | bool | Include non-public modules |
-| `sourceUrl` | string | Repository source URL for "See source" links |
+| `outDir` | string | Documentation output directory |
+| `docRoot` | string | Nim doc root setting |
+| `entrypoints` | string[] | Documentation entrypoint files |
+| `include` | string[] | Additional source patterns |
+| `exclude` | string[] | Source patterns to skip |
+| `flags` | string[] | Extra Nim doc flags |
+| `project` | bool | Use Nim doc project mode |
+| `index` | bool | Generate Bau docs index |
+| `runExamples` | bool | Compile runnable examples |
+| `includePrivate` | bool | Include private symbols |
+| `sourceUrl` | string | Source-link URL template |
 
 ### `[cache]`
 
 | Field | Type | Description |
 |---|---|---|
-| `dir` | string | Local cache directory |
-| `read` | bool | Read from cache (default: `true`) |
-| `write` | bool | Write to cache (default: `true`) |
-| `remote` | string | Remote cache URL (`file://` or `https://`) |
+| `dir` | string | Local cache directory without changing task cache identity |
+| `remote` | string | Remote cache URL or path without changing task cache identity |
+| `read` | bool | Allow cache reads without changing task cache identity |
+| `write` | bool | Allow cache writes without changing task cache identity |
 
 ### `[install]`
 
 | Field | Type | Description |
 |---|---|---|
-| `dir` | string | Directory for `bau install`, `bau update`, and `bau uninstall` |
+| `dir` | string | Install/update/uninstall destination |
 
-When `dir` is not set, Bau uses `~/.bau/bin`.
+When unset, Bau uses `~/.bau/bin`.
+
+### `[toolchain]`
+
+| Field | Type | Description |
+|---|---|---|
+| `nim` | string | Nim version requirement |
+| `atlas` | string | Atlas version requirement |
 
 ### `[governance]`
 
 | Field | Type | Description |
 |---|---|---|
 | `blocked` | string[] | Forbidden dependency names |
-| `trusted` | string[] | Allowlisted dependency names (when set, only these are allowed) |
-| `minimumReleaseAgeHours` | int | Minimum age in hours before a resolved version is accepted |
+| `trusted` | string[] | Allowed dependency names when non-empty |
+| `minimumReleaseAgeHours` | int | Minimum age for resolved non-path packages |
 
-### `[toolchain]`
+### `[source.<name>]`
 
 | Field | Type | Description |
 |---|---|---|
-| `nim` | string | Minimum Nim version (e.g., `">=2.2"`) |
-| `atlas` | string | Minimum Atlas version (e.g., `">=0.8"`) |
+| `registry` | string | Registry URL or registry name |
+| `directory` | string | Vendor directory |
+| `localRegistry` | string | Local registry mirror |
+| `git` | string | Git source |
+| `replaceWith` | string | Another source name to resolve through |
 
 ### `[patch]`
 
-Each key is a dependency name, value is a partial `DepInfo` table or string:
+Each key is a dependency name. Values use the same shape as dependency inline
+tables.
 
 ```toml
 [patch]
 parsetoml = { path = "../parsetoml" }
 ```
 
-### `[source.<name>]`
+### `[catalog]`, `[catalogs.<name>]`, and workspace catalogs
 
-| Field | Type | Description |
-|---|---|---|
-| `registry` | string | Registry URL |
-| `directory` | string | Vendor directory path |
-| `localRegistry` | string | Local registry mirror path |
-| `git` | string | Git repository URL |
-| `replaceWith` | string | Name of another source to use instead (supports chaining) |
-
-### `[catalog]` / `[workspace.catalog.<name>]`
-
-Version catalogs for centralized version management:
+Catalogs centralize dependency versions:
 
 ```toml
 [catalog]
 parsetoml = ">=0.6.0"
 
-[workspace.catalogs.stable]
-parsetoml = "0.6.1"
+[catalogs.stable]
+jsony = "1.1.0"
 ```
 
-Referenced from dependencies as `"catalog:"` or `"catalog:stable"`.
+Reference catalog versions with:
+
+```toml
+[dependencies]
+parsetoml = "catalog:"
+jsony = "catalog:stable"
+```
+
+Workspaces can also define `[workspace.catalog]` and
+`[workspace.catalogs.<name>]`.
+
+A **Version Catalog** supplies a reusable version requirement. It is not a
+Dependency Source and it is not a Dependency Lock.
 
 ### `[workspace]`
 
 | Field | Type | Description |
 |---|---|---|
-| `members` | string[] | Member project paths |
-| `defaultMembers` | string[] | Subset built by default |
-| `exclude` | string[] | Paths to exclude |
+| `members` | string[] | Member project paths or patterns |
+| `defaultMembers` | string[] | Selected members for default workspace operations |
+| `exclude` | string[] | Member paths or patterns to ignore |
+
+Workspace roots may also define shared `package`, `dependencies`, `source`,
+`profile`, `catalog`, and `governance` defaults for members.
+
+### `[aliases]`
+
+Aliases expand before command parsing:
+
+```toml
+[aliases]
+lint-all = "task lint"
+release-check = "test --full"
+```

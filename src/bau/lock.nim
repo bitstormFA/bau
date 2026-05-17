@@ -5,69 +5,69 @@ import parsetoml
 import bau/[util, config]
 
 type
-  SourceKind* = enum ## Dependency source category encoded into lock metadata.
+  SourceKind* = enum        ## Dependency source category encoded into lock metadata.
     skRegistry = "registry" ## Registry source such as Nimble.
-    skGit = "git" ## Git source.
-    skPath = "path" ## Local path dependency.
-    skVendor = "vendor" ## Vendor directory source.
-    skMirror = "mirror" ## Local registry or mirror source.
+    skGit = "git"           ## Git source.
+    skPath = "path"         ## Local path dependency.
+    skVendor = "vendor"     ## Vendor directory source.
+    skMirror = "mirror"     ## Local registry or mirror source.
 
   SourceId* = object ## Stable source identity used in lock entries.
-    uri*: string ## Canonical URI including source kind prefix.
+    uri*: string     ## Canonical URI including source kind prefix.
 
   PackageId* = object ## Identity of one resolved package.
-    name*: string ## Package name.
-    version*: string ## Resolved package version.
-    source*: string ## Canonical source URI.
+    name*: string     ## Package name.
+    version*: string  ## Resolved package version.
+    source*: string   ## Canonical source URI.
 
-  DependencyReq* = object ## Root dependency requirement captured in a lockfile.
-    name*: string ## Dependency name from configuration.
-    requirement*: string ## Version requirement, if any.
-    source*: string ## Canonical source URI.
-    registry*: string ## Configured source or registry name.
-    url*: string ## Git URL, if configured.
-    path*: string ## Local path, if configured.
-    tag*: string ## Git tag, if configured.
-    branch*: string ## Git branch, if configured.
-    rev*: string ## Exact Git revision, if configured.
-    optional*: bool ## Whether the dependency is optional.
-    enabledBy*: seq[string] ## Features that can enable this dependency.
+  DependencyReq* = object    ## Root dependency requirement captured in a lockfile.
+    name*: string            ## Dependency name from configuration.
+    requirement*: string     ## Version requirement, if any.
+    source*: string          ## Canonical source URI.
+    registry*: string        ## Configured source or registry name.
+    url*: string             ## Git URL, if configured.
+    path*: string            ## Local path, if configured.
+    tag*: string             ## Git tag, if configured.
+    branch*: string          ## Git branch, if configured.
+    rev*: string             ## Exact Git revision, if configured.
+    optional*: bool          ## Whether the dependency is optional.
+    enabledBy*: seq[string]  ## Features that can enable this dependency.
     workspaceMember*: string ## Workspace member that declared the requirement.
 
   DependencyEdge* = object ## Dependency edge from one package to another.
-    name*: string ## Required dependency name.
-    requirement*: string ## Required version expression.
-    package*: string ## Resolved package key, when known.
-    optional*: bool ## Whether the edge is optional.
+    name*: string          ## Required dependency name.
+    requirement*: string   ## Required version expression.
+    package*: string       ## Resolved package key, when known.
+    optional*: bool        ## Whether the edge is optional.
 
-  ResolvedPackage* = object ## Fully or partially resolved package lock entry.
-    id*: PackageId ## Package identity.
+  ResolvedPackage* = object            ## Fully or partially resolved package lock entry.
+    id*: PackageId                     ## Package identity.
     dependencies*: seq[DependencyEdge] ## Dependencies declared by the package.
-    revision*: string ## Git revision, when available.
-    checksum*: string ## Content checksum for materialized package files.
-    path*: string ## Workspace-relative materialized path.
-    direct*: bool ## True when declared directly by a workspace member.
-    optional*: bool ## True when all direct requirements are optional.
-    enabledBy*: seq[string] ## Features that enable this package.
-    materialized*: bool ## True when package files were present locally.
+    revision*: string                  ## Git revision, when available.
+    checksum*: string                  ## Content checksum for materialized package files.
+    path*: string                      ## Workspace-relative materialized path.
+    direct*: bool                      ## True when declared directly by a workspace member.
+    optional*: bool                    ## True when all direct requirements are optional.
+    enabledBy*: seq[string]            ## Features that enable this package.
+    materialized*: bool                ## True when package files were present locally.
     lockedAt*: int ## Unix timestamp when the materialized package was locked.
 
   ResolveGraph* = object ## In-memory dependency graph before lockfile emission.
-    resolver*: string ## Resolver implementation name.
-    requirementsHash*: string ## Hash of root dependency requirements.
-    workspaceMembers*: seq[string] ## Workspace members included in the graph.
+    resolver*: string                     ## Resolver implementation name.
+    requirementsHash*: string             ## Hash of root dependency requirements.
+    workspaceMembers*: seq[string]        ## Workspace members included in the graph.
     rootDependencies*: seq[DependencyReq] ## Direct requirements from projects.
     packages*: OrderedTable[string, ResolvedPackage] ## Resolved packages keyed by identity string.
 
-  LockFile* = object ## Parsed or generated Bau lockfile content.
-    version*: int ## Lockfile format version.
-    resolver*: string ## Resolver implementation that produced the lock.
-    requirementsHash*: string ## Hash of root dependency requirements.
+  LockFile* = object               ## Parsed or generated Bau lockfile content.
+    version*: int                  ## Lockfile format version.
+    resolver*: string              ## Resolver implementation that produced the lock.
+    requirementsHash*: string      ## Hash of root dependency requirements.
     workspaceMembers*: seq[string] ## Workspace members covered by the lock.
     rootDependencies*: seq[DependencyReq] ## Direct requirements captured in the lock.
     packages*: OrderedTable[string, ResolvedPackage] ## Locked packages keyed by identity string.
 
-  LockDiagnosticKind* = enum ## Machine-readable lock validation issue kind.
+  LockDiagnosticKind* = enum        ## Machine-readable lock validation issue kind.
     ldkMissingLock = "missing-lock" ## Lockfile is absent.
     ldkInvalidLock = "invalid-lock" ## Lockfile cannot be parsed or has wrong version.
     ldkStaleRequirements = "stale-requirements" ## Configuration no longer matches lock requirements.
@@ -77,27 +77,27 @@ type
     ldkRevisionMismatch = "revision-mismatch" ## Materialized Git revision differs from the lock.
     ldkUnmaterialized = "unmaterialized" ## Required direct dependency was not materialized.
 
-  LockDiagnostic* = object ## One lock validation diagnostic.
+  LockDiagnostic* = object    ## One lock validation diagnostic.
     kind*: LockDiagnosticKind ## Stable diagnostic kind.
-    packageName*: string ## Related package name, when applicable.
-    path*: string ## Related file or directory path.
-    message*: string ## Human-readable diagnostic message.
+    packageName*: string      ## Related package name, when applicable.
+    path*: string             ## Related file or directory path.
+    message*: string          ## Human-readable diagnostic message.
 
-  LockValidationReport* = object ## Result of validating a Bau lockfile.
-    ok*: bool ## True when no diagnostics were produced.
-    messages*: seq[string] ## Human-readable diagnostic messages.
+  LockValidationReport* = object      ## Result of validating a Bau lockfile.
+    ok*: bool                         ## True when no diagnostics were produced.
+    messages*: seq[string]            ## Human-readable diagnostic messages.
     diagnostics*: seq[LockDiagnostic] ## Structured diagnostics.
 
   SourceProvider* = object ## Resolved source definition used to identify packages.
-    name*: string ## Source name from configuration.
-    kind*: SourceKind ## Source category.
-    uri*: string ## Canonical source URI.
+    name*: string        ## Source name from configuration.
+    kind*: SourceKind    ## Source category.
+    uri*: string         ## Canonical source URI.
     replaceWith*: string ## Replacement source name, if configured.
 
   LockProject* = object ## Workspace project included in lock generation.
-    path*: string ## Project path relative to the workspace root.
+    path*: string       ## Project path relative to the workspace root.
     projectDir*: string ## Absolute project directory.
-    cfg*: BauConfig ## Effective project configuration.
+    cfg*: BauConfig     ## Effective project configuration.
 
   AtlasBridgeEntry = object
     dir: string
@@ -107,7 +107,7 @@ type
 
 const
   LockFileName* = "bau.lock" ## Filename used for Bau dependency locks.
-  LockFileVersion* = 2 ## Current lockfile format version.
+  LockFileVersion* = 2       ## Current lockfile format version.
   DefaultResolver* = "atlas-bridge" ## Default resolver identifier written to locks.
 
 proc initLockFile*(): LockFile =

@@ -5,7 +5,7 @@ import bau/[config, features, lock]
 
 type
   DependencyCheck* = object ## Dependency-policy or offline-readiness check result.
-    ok*: bool ## True when no policy, lock, or materialization errors were found.
+    ok*: bool              ## True when no policy, lock, or materialization errors were found.
     messages*: seq[string] ## Human-readable check details and failures.
 
 proc checkBlockedDeps(cfg: BauConfig; check: var DependencyCheck) =

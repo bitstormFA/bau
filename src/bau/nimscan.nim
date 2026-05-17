@@ -4,16 +4,16 @@ import std/[algorithm, options, os, strutils, tables]
 import bau/[config, util]
 
 type
-  NimModuleInfo* = object ## Lightweight facts extracted from a Nim source file.
-    path*: string ## Project-relative module path.
-    moduleName*: string ## Filename stem used as the module name.
-    imports*: seq[string] ## Non-stdlib modules imported by the file.
+  NimModuleInfo* = object  ## Lightweight facts extracted from a Nim source file.
+    path*: string          ## Project-relative module path.
+    moduleName*: string    ## Filename stem used as the module name.
+    imports*: seq[string]  ## Non-stdlib modules imported by the file.
     includes*: seq[string] ## Non-stdlib modules included by the file.
-    isMainModule*: bool ## True when the file references `isMainModule`.
+    isMainModule*: bool    ## True when the file references `isMainModule`.
 
   NimDependencyEdge* = object ## Compiler-reported dependency edge.
-    importer*: string ## Module that imports or depends on another module.
-    imported*: string ## Module imported by `importer`.
+    importer*: string         ## Module that imports or depends on another module.
+    imported*: string         ## Module imported by `importer`.
 
 proc isStdlibModule(name: string): bool =
   case name

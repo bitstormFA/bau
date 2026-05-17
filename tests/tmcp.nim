@@ -90,8 +90,21 @@ bin = @["mcpdemo"]
   doAssert "bau_deps_verify" in names
   doAssert "bau_install" in names
   doAssert "bau_convert" in names
-  doAssert "bau_lint" notin names
-  doAssert "bau_ci" notin names
+  doAssert "bau_lint" in names
+  doAssert "bau_ci" in names
+  doAssert "bau_task" in names
+  doAssert "bau_cache" in names
+  doAssert "bau_tree" in names
+  doAssert "bau_outdated" in names
+  doAssert "bau_tailor" in names
+  doAssert "bau_package" in names
+  doAssert "bau_publish" in names
+  doAssert "bau_bump" in names
+  doAssert "bau_ci_template" in names
+  doAssert "bau_env" in names
+  doAssert "bau_doctor" in names
+  doAssert "bau_shell_init" in names
+  doAssert "bau_new" in names
 
   let metadata = callTool(tmp, "bau_metadata", newJObject())
   doAssert metadata["package"]["name"].getStr() == "mcpdemo"
@@ -110,6 +123,12 @@ bin = @["mcpdemo"]
   doAssert cache["task"].getStr() == "docs"
   doAssert cache["keyInputs"].getElems().anyIt(it.getStr().startsWith("task:docs"))
 
+  let taskList = callTool(tmp, "bau_task", %*{"list": true})
+  doAssert taskList["tasks"].getElems().anyIt(it["name"].getStr() == "docs")
+
+  let cacheList = callTool(tmp, "bau_cache", %*{"action": "list"})
+  doAssert cacheList.hasKey("entries")
+
   let compileCommands = callTool(tmp, "bau_compile_commands", %*{
     "profile": "dev",
     "features": []
@@ -120,6 +139,12 @@ bin = @["mcpdemo"]
   let check = callTool(tmp, "bau_check", %*{"profile": "dev"})
   doAssert check["ok"].getBool()
 
+  let lint = callTool(tmp, "bau_lint", newJObject())
+  doAssert lint["ok"].getBool()
+
+  let ci = callTool(tmp, "bau_ci", newJObject())
+  doAssert ci["ok"].getBool()
+
   let install = callTool(tmp, "bau_install", %*{
     "dryRun": true,
     "installDir": "bin"
@@ -129,6 +154,43 @@ bin = @["mcpdemo"]
 
   let explain = callTool(tmp, "bau_explain", %*{"profile": "dev"})
   doAssert explain.hasKey("cached")
+
+  let tree = callTool(tmp, "bau_tree", newJObject())
+  doAssert tree.hasKey("dependencies")
+
+  let outdated = callTool(tmp, "bau_outdated", newJObject())
+  doAssert outdated.hasKey("dependencies")
+
+  let tailored = callTool(tmp, "bau_tailor", newJObject())
+  doAssert tailored["ok"].getBool()
+
+  let packaged = callTool(tmp, "bau_package", %*{"dryRun": true})
+  doAssert packaged["ok"].getBool()
+  doAssert packaged["files"].getElems().len > 0
+
+  let publish = callTool(tmp, "bau_publish", %*{"dryRun": true})
+  doAssert publish["dryRun"].getBool()
+  doAssert publish["nimble"].getStr().contains("version")
+
+  let bumped = callTool(tmp, "bau_bump", %*{"kind": "patch", "dryRun": true})
+  doAssert bumped["oldVersion"].getStr() == "0.1.0"
+  doAssert bumped["newVersion"].getStr() == "0.1.1"
+
+  let env = callTool(tmp, "bau_env", newJObject())
+  doAssert env["projectDir"].getStr() == tmp
+
+  let doctor = callTool(tmp, "bau_doctor", newJObject())
+  doAssert doctor["ok"].getBool()
+
+  let ciTemplate = callTool(tmp, "bau_ci_template", %*{"kind": "github"})
+  doAssert fileExists(ciTemplate["path"].getStr())
+
+  let newProject = callTool(tmp, "bau_new", %*{
+    "path": tmp / "created",
+    "kind": "lib"
+  })
+  doAssert newProject["status"].getStr() == "initialized"
+  doAssert fileExists(tmp / "created" / "bau.toml")
 
   let verify = callTool(tmp, "bau_deps_verify", newJObject())
   doAssert not verify["ok"].getBool()
@@ -244,3 +306,13 @@ outputs = ["docs"]
   doAssert deps["dependencies"].hasKey("local")
   doAssert deps["dependencies"]["local"]["path"].getStr() == "vendor/local"
   doAssert deps["dependencies"]["local"]["optional"].getBool()
+
+  let manifestResponse = parseJson(handleRequest($(%*{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "resources/read",
+    "params": {"uri": "bau://manifest"}
+  }), tmp))
+  doAssert not manifestResponse.hasKey("error")
+  let manifest = parseJson(manifestResponse["result"]["contents"][0]["text"].getStr())
+  doAssert manifest["package"]["name"].getStr() == "demo"

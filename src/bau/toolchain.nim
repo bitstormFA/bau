@@ -5,7 +5,7 @@ import bau/[config, util]
 
 type
   ToolchainCheck* = object ## Result of checking configured external tools.
-    ok*: bool ## True when every required tool is present and compatible.
+    ok*: bool              ## True when every required tool is present and compatible.
     messages*: seq[string] ## Human-readable detections or failure messages.
 
 proc parseVersionParts(value: string): seq[int] =

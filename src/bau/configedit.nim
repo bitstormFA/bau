@@ -5,31 +5,31 @@ import bau/[config, util]
 
 type
   DependencyEdit* = object ## Editable dependency specification for config updates.
-    name*: string ## Dependency name.
-    version*: string ## Registry version requirement.
-    git*: string ## Git URL.
-    tag*: string ## Git tag.
-    branch*: string ## Git branch.
-    rev*: string ## Exact Git revision.
-    path*: string ## Local path dependency.
+    name*: string     ## Dependency name.
+    version*: string  ## Registry version requirement.
+    git*: string      ## Git URL.
+    tag*: string      ## Git tag.
+    branch*: string   ## Git branch.
+    rev*: string      ## Exact Git revision.
+    path*: string     ## Local path dependency.
     registry*: string ## Named registry source.
-    optional*: bool ## Whether the dependency is feature-gated.
+    optional*: bool   ## Whether the dependency is feature-gated.
 
   DependencyEditResult* = object ## Result of editing raw TOML content.
-    content*: string ## Updated TOML content.
-    changed*: bool ## True when content was modified.
+    content*: string             ## Updated TOML content.
+    changed*: bool               ## True when content was modified.
 
   VersionBumpKind* = enum ## SemVer component to increment.
-    vbMajor = "major" ## Increment major and reset minor/patch.
-    vbMinor = "minor" ## Increment minor and reset patch.
-    vbPatch = "patch" ## Increment patch.
+    vbMajor = "major"     ## Increment major and reset minor/patch.
+    vbMinor = "minor"     ## Increment minor and reset patch.
+    vbPatch = "patch"     ## Increment patch.
 
   VersionBumpResult* = object ## Result of bumping package version metadata.
-    oldVersion*: string ## Version before the bump.
-    newVersion*: string ## Version after the bump.
-    nimblePath*: string ## Updated `.nimble` file path, when one existed.
-    configChanged*: bool ## True when `bau.toml` content changed.
-    nimbleChanged*: bool ## True when `.nimble` content changed.
+    oldVersion*: string       ## Version before the bump.
+    newVersion*: string       ## Version after the bump.
+    nimblePath*: string       ## Updated `.nimble` file path, when one existed.
+    configChanged*: bool      ## True when `bau.toml` content changed.
+    nimbleChanged*: bool      ## True when `.nimble` content changed.
 
 proc initDependencyEdit*(name: string): DependencyEdit =
   ## Initialize an edit for a dependency name.

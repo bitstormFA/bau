@@ -42,10 +42,10 @@ type
     totalMs*: int64              ## Compile plus run milliseconds.
     passed*: bool                ## True when compile and run both succeeded.
 
-  TestRunResult* = object ## Aggregate test result counters.
-    planned*: int         ## Number of planned profile/file invocations.
-    passed*: int          ## Number of passed profile/file invocations.
-    failed*: int          ## Number of failed profile/file invocations.
+  TestRunResult* = object               ## Aggregate test result counters.
+    planned*: int                       ## Number of planned profile/file invocations.
+    passed*: int                        ## Number of passed profile/file invocations.
+    failed*: int                        ## Number of failed profile/file invocations.
     timings*: seq[TestInvocationTiming] ## Per-invocation timing details.
 
   TestInvocation = object
@@ -237,7 +237,8 @@ proc binaryExt(): string =
   else:
     ""
 
-proc addUnique(files: var seq[string]; seen: var HashSet[string]; path: string) =
+proc addUnique(files: var seq[string]; seen: var HashSet[string];
+    path: string) =
   let clean = absolutePath(path)
   if not seen.contains(clean):
     seen.incl(clean)
@@ -521,9 +522,9 @@ proc printTimings(timings: openArray[TestInvocationTiming]) =
       " ms, total " & $item.totalMs & " ms"
 
   var profileTotals = initTable[string, tuple[
-    count: int,
-    compileMs: int64,
-    runMs: int64,
+    count: int;
+    compileMs: int64;
+    runMs: int64;
     totalMs: int64
   ]]()
   for item in timings:

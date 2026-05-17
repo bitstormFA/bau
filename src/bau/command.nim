@@ -2,10 +2,9 @@
 
 import std/[algorithm, os, osproc, strutils, options, sets, tables, times,
   monotimes, json]
-import bau/[argv, util, config, init, build, atlas, nimble,
-  ci_templates, lock, metadata, packaging, tailor, taskgraph, features,
-  affected, depscheck, taskcache, testexec, toolchain, workspace, ops,
-  configedit, installer]
+import bau/[argv, util, config, init, build, atlas, nimble, lock, metadata,
+  tailor, taskgraph, features, affected, depscheck, taskcache, testexec,
+  workspace, ops, configedit]
 when defined(linux):
   import posix/inotify
   import std/posix except Time
@@ -21,7 +20,7 @@ type
     cmdInstall         ## Install a built binary.
     cmdUpdate          ## Update an installed binary.
     cmdUninstall       ## Remove an installed binary.
-    cmdClean           ## Remove build artifacts.
+    cmdClean           ## Remove Bau Outputs.
     cmdDeps            ## Manage dependencies.
     cmdAdd             ## Add a dependency.
     cmdRemove          ## Remove a dependency.
@@ -36,12 +35,12 @@ type
     cmdCi              ## Run the local CI sequence.
     cmdOutdated        ## Report dependency status.
     cmdTree            ## Print dependency tree output.
-    cmdExplain         ## Explain build cache state.
-    cmdPublish         ## Publish package metadata.
+    cmdExplain         ## Explain target freshness state.
+    cmdPublish         ## Submit a package publication.
     cmdBump            ## Increment the project package version.
     cmdShell           ## Open a shell with Bau environment.
     cmdShellInit       ## Add Bau's binary directory to the selected shell.
-    cmdPlugin          ## Delegate to an external `bau-*` plugin.
+    cmdPlugin          ## Delegate to an external `bau-*` command.
     cmdCompileCommands ## Generate compile command databases.
     cmdCiTemplate      ## Generate CI templates.
     cmdMetadata        ## Print project metadata.
@@ -453,7 +452,7 @@ Commands:
   bau uninstall [target]      Remove an installed binary target
   bau fmt                     Format Nim source files
   bau lint                    Check code style
-  bau ci                      Run fmt + lint + test
+  bau ci                      Run lint + test validation
   bau deps [update]           Sync or update dependencies
   bau deps lock               Write v2 resolved-graph bau.lock
   bau deps sync --locked      Sync only if bau.lock is current
@@ -473,12 +472,12 @@ Commands:
   bau remove <dep>            Remove a dependency
   bau cache [list|clean|explain]
                               Inspect or clean task output cache
-  bau package --list          List files included in a package
+  bau package --list          List package contents
   bau bump --patch            Increment [package].version
   bau tailor --check|--write  Discover missing target declarations
   bau doctor                  Check configured toolchain and project health
-  bau publish                 Publish to nimble registry
-  bau clean                   Remove build artifacts
+  bau publish                 Publish package contents to Nimble-compatible registry
+  bau clean                   Remove Bau Outputs
   bau init [name] [options]   Initialize in current directory
   bau new <path> [--lib]      Create a new project
   bau convert [path|file]     Convert an existing .nimble project to bau.toml
@@ -523,7 +522,7 @@ Options:
   --install-dir <dir>    Override [install].dir for install/update/uninstall
   --update               Update instead of install for bau install
   --remove               Remove instead of install for bau install
-  --list                 List package files
+  --list                 List package contents
   --write                Write discovered tailor changes
   --open                 Open docs in browser (for doc command)
   --out-dir <dir>        Override documentation output directory
@@ -540,7 +539,7 @@ Init options:
   --license <license>    Package license
   --edition <edition>    Nim edition value
 
-Plugins:
+External commands:
   bau-* commands on PATH are discovered as bau subcommands.
 """
 
@@ -563,8 +562,23 @@ proc toOperationOptions(opts: CliOptions): OperationOptions =
   result.allTargets = opts.allTargets
   result.force = opts.force
   result.dryRun = opts.dryRun
+  result.keepGoing = opts.keepGoing
+  result.offline = opts.offline
+  result.locked = opts.locked
+  result.jobs = opts.jobs
+  result.jobsExplicit = opts.jobsExplicit
   result.formatVersion = opts.formatVersion
   result.installDir = opts.installDir
+  result.targetName = if opts.args.len > 0: opts.args[0] else: ""
+  result.filter = if opts.args.len > 0: opts.args[0] else: ""
+  result.runArgs = opts.passthroughArgs
+  result.taskArgs = opts.passthroughArgs
+  result.testChanged = opts.changed
+  result.testFull = opts.testFull
+  result.testFast = opts.testFast
+  result.testNoMatrix = opts.testNoMatrix
+  result.testNoRunner = opts.testNoRunner
+  result.testShowOutput = opts.testShowOutput
   result.docOutDir = opts.docOutDir
   result.docEntrypoints = opts.docEntrypoints
   result.docSkipExamples = opts.docSkipExamples
@@ -635,8 +649,9 @@ Options:
 
 Task args:
   Tasks only accept args when acceptArgs = true is set in bau.toml.
-  Args are available as {args}, BAU_TASK_ARGS, and BAU_TASK_ARG_0, ...
-  Use {argsWithSep} to expand to "-- <args>" only when args are present.
+  Prefer BAU_TASK_ARG_0, BAU_TASK_ARG_1, ... and BAU_TASK_ARGS inside scripts.
+  Use {args} only when forwarding args to another command.
+  Use {argsWithSep} to forward "-- <args>" only when args are present.
 """
 
 proc findTask(cfg: BauConfig; name: string): Option[TaskInfo] =
@@ -736,69 +751,36 @@ proc fmtCommand*(opts: CliOptions) =
 proc lintCommand*(opts: CliOptions) =
   ## Execute the `lint` command.
   let projectDir = findProjectRoot()
-  let cfg = parseBauConfigFile(projectDir / ConfigFileName)
-  let sourceDir = if cfg.build.source.len > 0: cfg.build.source else: "src"
-  let absSource = absolutePath(projectDir) / sourceDir
-  var issues = 0
-  if dirExists(absSource):
-    info("checking style of Nim sources...")
-    var lintArgs = @["check", "--styleCheck:error", "--hints:off", "--path:" & absSource]
-    let depsDir = projectDir / "deps"
-    if dirExists(depsDir):
-      for kind, path in walkDir(depsDir):
-        if kind == pcDir:
-          lintArgs.add("--path:" & path)
-    for f in walkDirRec(absSource, yieldFilter = {pcFile}):
-      if not f.endsWith(".nim"):
-        continue
-      var fileArgs = lintArgs
-      fileArgs.add(f)
-      let (exitCode, output) = runCmd(detectNimCompiler(), fileArgs)
-      if exitCode != 0:
-        issues += 1
-        error(f & " has style issues")
-        if output.len > 0:
-          echo output
-      else:
-        if opts.verbose:
-          success("style ok: " & f.extractFilename)
-  if issues > 0:
-    error($issues & " file(s) with style issues")
+  let op = lintOperation(projectDir, opts.toOperationOptions())
+  if opts.json or opts.format == "json":
+    echo pretty(op.json)
+  elif op.ok:
+    success("lint OK")
+  else:
+    for issue in op.json["issues"].getElems():
+      error(issue["file"].getStr() & " has style issues")
+      let output = issue["output"].getStr()
+      if output.len > 0:
+        echo output
+    error($op.json["issues"].len & " file(s) with style issues")
+  if not op.ok:
     quit(1)
-  success("lint OK")
 
 proc ciCommand*(opts: CliOptions) =
   ## Execute Bau's local CI sequence.
-  info("===> CI: fmt")
-  fmtCommand(opts)
-  info("===> CI: lint")
-  lintCommand(opts)
-  info("===> CI: test")
   let projectDir = findProjectRoot()
-  let cfg = loadEffectiveConfig(projectDir)
-  if not dirExists(projectDir / "tests") and cfg.test.runner.len == 0:
-    warn("no tests directory found")
-    return
-  let testResult = runTests(cfg, projectDir, TestRunOptions(
-    profile: opts.profile,
-    profileExplicit: opts.profileExplicit,
-    since: opts.since,
-    showOutput: effectiveTestOutputMode(cfg, opts.testShowOutput),
-    verbose: opts.verbose,
-    dryRun: opts.dryRun,
-    jobs: opts.jobs,
-    jobsExplicit: opts.jobsExplicit,
-    timings: opts.timings,
-    full: true,
-    featureSelection: selectedFeatures(opts, cfg)))
-  if opts.dryRun:
-    return
-  echo ""
-  info("test results: " & $testResult.passed & " passed, " &
-    $testResult.failed & " failed")
-  if testResult.failed > 0:
+  let op = ciOperation(projectDir, opts.toOperationOptions())
+  if opts.json or opts.format == "json":
+    echo pretty(op.json)
+  elif op.ok:
+    let tests = op.json["checks"]["test"]
+    info("test results: " & $tests["passed"].getInt() & " passed, " &
+      $tests["failed"].getInt() & " failed")
+    success("CI passed")
+  else:
+    error("CI failed")
+  if not op.ok:
     quit(1)
-  success("CI passed")
 
 proc toLockProjects(projects: openArray[WorkspaceProject]): seq[LockProject] =
   for project in projects:
@@ -1078,20 +1060,23 @@ proc queryCommand*(opts: CliOptions) =
 proc packageCommand*(opts: CliOptions) =
   ## Execute package inspection and manifest generation.
   let projectDir = findProjectRoot()
-  let cfg = loadEffectiveConfig(projectDir)
-  verifyPackage(projectDir, cfg)
-  let files = collectPackageFiles(projectDir, cfg)
-  if opts.list or opts.dryRun:
-    for f in files:
-      echo f
-  if opts.dryRun:
-    success("package dry-run OK")
-  elif not opts.list:
-    let outDir = projectDir / BuildDirName / "package"
-    let manifestPath = outDir / (cfg.package.name & "-" & cfg.package.version &
-      ".manifest")
-    saveFile(manifestPath, packageManifest(projectDir, cfg))
-    success("wrote package manifest " & manifestPath)
+  var opOpts = opts.toOperationOptions()
+  opOpts.list = opts.list
+  let op = packageOperation(projectDir, opOpts)
+  if opts.json or opts.format == "json":
+    echo pretty(op.json)
+  elif op.ok:
+    if opts.list or opts.dryRun:
+      for f in op.json["files"].getElems():
+        echo f.getStr()
+    if opts.dryRun:
+      success("package dry-run OK")
+    elif not opts.list:
+      success("wrote package manifest " & op.json["manifestPath"].getStr())
+  else:
+    error(op.json{"error"}.getStr(op.output))
+  if not op.ok:
+    quit(1)
 
 proc installActionForCommand(opts: CliOptions): string =
   case opts.command
@@ -1162,73 +1147,48 @@ proc installCommand*(opts: CliOptions) =
 proc tailorCommand*(opts: CliOptions) =
   ## Execute target-discovery and config-tailoring commands.
   let projectDir = findProjectRoot()
-  if isWorkspaceRoot(projectDir):
-    var members = newJArray()
-    var reports: seq[string]
-    var missing = 0
-    for project in loadWorkspaceProjects(projectDir):
-      let tailored = discoverTargets(project.cfg, project.projectDir)
-      missing += tailored.missingTargets.len
-      reports.add(project.path & ":\n" & tailorReport(tailored))
-      members.add(%*{
-        "path": project.path,
-        "name": project.name,
-        "tailor": tailorJson(tailored)
-      })
-      if opts.write:
-        appendTailoredTargets(project.projectDir, tailored)
-    let node = %*{
-      "workspace": true,
-      "root": projectDir,
-      "members": members,
-      "ok": missing == 0
-    }
-    if opts.json or opts.format == "json":
-      echo pretty(node)
-    else:
-      for report in reports:
-        echo report
-    if opts.write and missing > 0:
-      success("updated workspace member target declarations")
-    elif missing > 0:
-      quit(1)
-    return
-
-  let cfg = loadEffectiveConfig(projectDir)
-  let tailored = discoverTargets(cfg, projectDir)
+  var opOpts = opts.toOperationOptions()
+  opOpts.write = opts.write
+  let op = tailorOperation(projectDir, opOpts)
   if opts.json or opts.format == "json":
-    echo pretty(tailorJson(tailored))
+    echo pretty(op.json)
+  elif op.json{"workspace"}.getBool(false):
+    for member in op.json["members"].getElems():
+      echo member["path"].getStr() & ":"
+      let missing = member["tailor"]["missingTargets"].getElems()
+      if missing.len == 0:
+        echo "tailor: no missing targets"
+      else:
+        echo "tailor: missing target declarations"
+        for target in missing:
+          echo "  " & target["name"].getStr() & " -> " &
+            target["main"].getStr()
   else:
+    var tailored = TailorResult()
+    for target in op.json["missingTargets"].getElems():
+      tailored.missingTargets.add(TargetInfo(
+        name: target["name"].getStr(),
+        kind: bkBin,
+        main: target["main"].getStr(),
+        profile: target["profile"].getStr()))
     echo tailorReport(tailored)
   if opts.write:
-    appendTailoredTargets(projectDir, tailored)
-    if tailored.missingTargets.len > 0:
-      success("updated " & ConfigFileName)
-  elif tailored.missingTargets.len > 0:
+    success("updated target declarations")
+  elif not op.ok:
     quit(1)
 
 proc envCommand*(opts: CliOptions) =
   ## Execute the environment-reporting command.
   let projectDir = try: findProjectRoot() except: getCurrentDir()
-  let cfg = try: loadEffectiveConfig(projectDir) except: initBauConfig()
-  let featureSelection = selectedFeatures(opts, cfg)
-  let node = %*{
-    "projectDir": projectDir,
-    "profile": opts.profile,
-    "features": featureSelection.enabled,
-    "nim": detectNimCompiler(),
-    "atlas": (try: detectAtlas() except CatchableError: ""),
-    "declared": {
-      "nim": cfg.toolchain.nim,
-      "atlas": cfg.toolchain.atlas
-    }
-  }
+  let op = envOperation(projectDir, opts.toOperationOptions())
+  let node = op.json
   if opts.json or opts.format == "json":
     echo pretty(node)
   else:
-    echo "BAU_PROJECT_DIR=" & projectDir
+    echo "BAU_PROJECT_DIR=" & node["projectDir"].getStr()
     echo "BAU_PROFILE=" & opts.profile
-    for name in featureSelection.enabled:
+    for feature in node["features"].getElems():
+      let name = feature.getStr()
       echo "BAU_FEATURE_" & normalizeFeatureDefine(name).toUpperAscii() & "=1"
     echo "NIM=" & node["nim"].getStr()
     if node["atlas"].getStr().len > 0:
@@ -1302,26 +1262,29 @@ proc affectedCommand*(opts: CliOptions) =
 proc cacheCommand*(opts: CliOptions) =
   ## Execute task-cache inspection and cleanup commands.
   let projectDir = findProjectRoot()
-  let cfg = loadEffectiveConfig(projectDir)
   let action = if opts.args.len > 0: opts.args[0] else: "list"
+  var opOpts = opts.toOperationOptions()
+  opOpts.cacheAction = action
   case action
   of "list":
-    let entries = listTaskCacheEntries(projectDir, cfg)
+    let op = cacheOperation(projectDir, opOpts)
     if opts.json or opts.format == "json":
-      echo pretty(%entries)
+      echo pretty(op.json)
     else:
-      for entry in entries:
-        echo entry
+      for entry in op.json["entries"].getElems():
+        echo entry.getStr()
   of "clean":
-    cleanTaskCache(projectDir, cfg)
-    success("task cache cleaned")
+    let op = cacheOperation(projectDir, opOpts)
+    if opts.json or opts.format == "json":
+      echo pretty(op.json)
+    elif op.ok:
+      success("task cache cleaned")
   of "explain":
     if opts.args.len < 2:
       error("usage: bau cache explain <task>")
       quit(1)
-    var opOpts = opts.toOperationOptions()
     opOpts.taskName = opts.args[1]
-    let op = cacheExplainOperation(projectDir, opOpts)
+    let op = cacheOperation(projectDir, opOpts)
     if not op.ok:
       error("task not found: " & opts.args[1])
       quit(1)
@@ -1345,79 +1308,48 @@ proc cacheCommand*(opts: CliOptions) =
 proc doctorCommand*(opts: CliOptions) =
   ## Execute toolchain and project health checks.
   let projectDir = try: findProjectRoot() except: getCurrentDir()
-  let cfg = try: loadEffectiveConfig(projectDir) except: initBauConfig()
-  let check = checkToolchain(cfg)
-  for msg in check.messages:
-    if check.ok:
-      info(msg)
-    else:
-      error(msg)
-  if not check.ok:
+  let op = doctorOperation(projectDir, opts.toOperationOptions())
+  if opts.json or opts.format == "json":
+    echo pretty(op.json)
+  else:
+    for msg in op.json["messages"].getElems():
+      let text = msg.getStr()
+      if op.ok:
+        info(text)
+      else:
+        error(text)
+  if not op.ok:
     quit(1)
-  success("doctor OK")
+  if not (opts.json or opts.format == "json"):
+    success("doctor OK")
 
 proc outdatedCommand*(opts: CliOptions) =
   ## Execute dependency status reporting.
   let projectDir = findProjectRoot()
-  if isWorkspaceRoot(projectDir):
-    let projects = loadWorkspaceProjects(projectDir)
-    if opts.json or opts.format == "json":
-      var members = newJArray()
-      for project in projects:
-        members.add(%*{
-          "path": project.path,
-          "name": project.name,
-          "status": dependencyStatusJson(project.cfg, project.projectDir)
-        })
-      echo pretty(%*{"workspace": true, "root": projectDir,
-        "kind": "dependencyStatus", "members": members})
-    else:
-      for project in projects:
-        echo project.path & ":"
-        stdout.write(dependencyStatusText(project.cfg, project.projectDir))
-    return
-
-  let cfg = loadEffectiveConfig(projectDir)
-  if opts.json or opts.format == "json":
-    echo pretty(dependencyStatusJson(cfg, projectDir))
-    return
-
-  stdout.write(dependencyStatusText(cfg, projectDir))
-  if atlasInitialized(projectDir):
-    info("checking outdated dependencies...")
-    let (exitCode, output) = runAtlas(["outdated"], projectDir, opts.verbose)
-    if output.strip().len > 0:
-      echo output
-    if exitCode == 0 and output.strip().len == 0:
-      success("all dependencies up to date")
-    elif exitCode != 0:
-      quit(exitCode)
+  let op = dependencyStatusOperation(projectDir, opts.toOperationOptions())
+  if opts.json or opts.format == "json" or op.json{"workspace"}.getBool(false):
+    echo pretty(op.json)
+  else:
+    let cfg = loadEffectiveConfig(projectDir)
+    stdout.write(dependencyStatusText(cfg, projectDir))
+    if atlasInitialized(projectDir):
+      info("checking outdated dependencies...")
+      let (exitCode, output) = runAtlas(["outdated"], projectDir, opts.verbose)
+      if output.strip().len > 0:
+        echo output
+      if exitCode == 0 and output.strip().len == 0:
+        success("all dependencies up to date")
+      elif exitCode != 0:
+        quit(exitCode)
 
 proc treeCommand*(opts: CliOptions) =
   ## Execute dependency tree reporting.
   let projectDir = findProjectRoot()
-  if isWorkspaceRoot(projectDir):
-    let projects = loadWorkspaceProjects(projectDir)
-    if opts.json or opts.format == "json":
-      var members = newJArray()
-      for project in projects:
-        members.add(%*{
-          "path": project.path,
-          "name": project.name,
-          "tree": dependencyTreeJson(project.cfg, project.projectDir)
-        })
-      echo pretty(%*{"workspace": true, "root": projectDir,
-        "kind": "dependencyTree", "members": members})
-    else:
-      for project in projects:
-        echo project.path & ":"
-        stdout.write(dependencyTreeText(project.cfg, project.projectDir))
-    return
-
-  let cfg = loadEffectiveConfig(projectDir)
-  if opts.json or opts.format == "json":
-    echo pretty(dependencyTreeJson(cfg, projectDir))
+  let op = dependencyTreeOperation(projectDir, opts.toOperationOptions())
+  if opts.json or opts.format == "json" or op.json{"workspace"}.getBool(false):
+    echo pretty(op.json)
   else:
+    let cfg = loadEffectiveConfig(projectDir)
     stdout.write(dependencyTreeText(cfg, projectDir))
 
 proc printCompareLine(comparison: JsonNode; key, label: string) =
@@ -1429,7 +1361,7 @@ proc printExplainText(node: JsonNode) =
     echo pretty(node)
     return
 
-  info("build cache info for: " & node["target"].getStr() & " (" &
+  info("target freshness info for: " & node["target"].getStr() & " (" &
     node["profile"].getStr() & ")")
   if not node["cached"].getBool():
     error(node{"message"}.getStr("no cached fingerprint"))
@@ -1439,8 +1371,8 @@ proc printExplainText(node: JsonNode) =
   let comparison = node["comparison"]
   comparison.printCompareLine("source", "source")
   comparison.printCompareLine("flags", "flags")
-  comparison.printCompareLine("config", "config")
-  comparison.printCompareLine("env", "env")
+  comparison.printCompareLine("config", "manifest inputs")
+  comparison.printCompareLine("env", "environment")
   comparison.printCompareLine("compiler", "compiler")
   comparison.printCompareLine("profile", "profile")
   comparison.printCompareLine("mtime", "mtime")
@@ -1471,32 +1403,21 @@ proc explainCommand*(opts: CliOptions) =
 proc publishCommand*(opts: CliOptions) =
   ## Execute package publishing or publish dry-run inspection.
   let projectDir = findProjectRoot()
-  if not fileExists(projectDir / ConfigFileName):
-    error("no bau.toml found")
-    quit(1)
-  let cfg = parseBauConfigFile(projectDir / ConfigFileName)
-  verifyPackage(projectDir, cfg)
-  if hasLocalPublishOverrides(cfg) and not opts.dryRun:
-    error("publish cannot use local path dependencies or [patch]; run --dry-run to inspect")
-    quit(1)
-  if opts.dryRun:
+  let op = publishOperation(projectDir, opts.toOperationOptions())
+  if opts.json or opts.format == "json":
+    echo pretty(op.json)
+  elif op.ok and opts.dryRun:
     success("publish dry-run OK")
-    for f in collectPackageFiles(projectDir, cfg):
-      echo f
+    for f in op.json["files"].getElems():
+      echo f.getStr()
     echo ""
-    echo nimbleContent(cfg)
-    return
-
-  let nimbleCmd = findExe("nimble")
-  if nimbleCmd.len == 0:
-    error("nimble not found — install it to publish")
+    echo op.json["nimble"].getStr()
+  elif op.ok:
+    success("published")
+  else:
+    error(op.json{"error"}.getStr(op.output))
+  if not op.ok:
     quit(1)
-  if not fileExists(projectDir / (cfg.package.name & ".nimble")):
-    let nimblePath = projectDir / (cfg.package.name & ".nimble")
-    saveFile(nimblePath, nimbleContent(cfg))
-    success("generated " & cfg.package.name & ".nimble from bau.toml")
-  info("publishing with nimble...")
-  runCmdLive(nimbleCmd, ["publish"])
 
 proc bumpCommand*(opts: CliOptions) =
   ## Increment the project package version in Bau metadata.
@@ -1506,17 +1427,24 @@ proc bumpCommand*(opts: CliOptions) =
 
   let projectDir = findProjectRoot()
   try:
-    let kind = parseVersionBumpKind(opts.args[0])
-    let bumped = bumpPackageVersion(projectDir, kind, opts.dryRun)
-    let change = bumped.oldVersion & " -> " & bumped.newVersion
+    var opOpts = opts.toOperationOptions()
+    opOpts.bumpKind = opts.args[0]
+    let op = bumpOperation(projectDir, opOpts)
+    if not op.ok:
+      error(op.json{"error"}.getStr(op.output))
+      quit(1)
+    let change = op.json["oldVersion"].getStr() & " -> " &
+      op.json["newVersion"].getStr()
     if opts.dryRun:
       echo change
-      if bumped.nimblePath.len > 0:
-        echo "would update " & relativePath(bumped.nimblePath, projectDir)
+      if op.json["nimblePath"].getStr().len > 0:
+        echo "would update " & relativePath(op.json["nimblePath"].getStr(),
+          projectDir)
     else:
       success("version " & change)
-      if bumped.nimbleChanged:
-        success("updated " & relativePath(bumped.nimblePath, projectDir))
+      if op.json["nimbleChanged"].getBool():
+        success("updated " & relativePath(op.json["nimblePath"].getStr(),
+          projectDir))
   except CatchableError as e:
     error(e.msg)
     quit(1)
@@ -1539,16 +1467,6 @@ proc shellCommand*(opts: CliOptions) =
     shell = findExe("sh")
   runCmdLive(shell, [])
 
-proc shellInitResultNode(item: ShellInitResult): JsonNode =
-  %*{
-    "shell": item.shell,
-    "configPath": item.configPath,
-    "binDir": item.binDir,
-    "changed": item.changed,
-    "alreadyInPath": item.alreadyInPath,
-    "alreadyConfigured": item.alreadyConfigured
-  }
-
 proc shellInitCommand*(opts: CliOptions) =
   ## Add Bau's binary directory to the selected shell startup file.
   if opts.args.len > 1:
@@ -1556,29 +1474,32 @@ proc shellInitCommand*(opts: CliOptions) =
     quit(1)
 
   let selectedShell = if opts.args.len == 1: opts.args[0] else: ""
-  try:
-    let result = initShellPath(selectedShell)
-    if opts.json or opts.format == "json":
-      echo pretty(shellInitResultNode(result))
-    elif result.changed:
-      success("added " & result.binDir & " to " & result.configPath)
-      info("restart your shell or source " & result.configPath)
-    elif result.alreadyConfigured:
-      success(result.binDir & " is already configured in " &
-        result.configPath)
-    else:
-      success(result.binDir & " is already on PATH")
-  except ValueError as e:
-    error(e.msg)
+  var opOpts = opts.toOperationOptions()
+  opOpts.shellName = selectedShell
+  let op = shellInitOperation(getCurrentDir(), opOpts)
+  if opts.json or opts.format == "json":
+    echo pretty(op.json)
+  elif not op.ok:
+    error(op.json{"error"}.getStr(op.output))
+  elif op.json["changed"].getBool():
+    success("added " & op.json["binDir"].getStr() & " to " &
+      op.json["configPath"].getStr())
+    info("restart your shell or source " & op.json["configPath"].getStr())
+  elif op.json["alreadyConfigured"].getBool():
+    success(op.json["binDir"].getStr() & " is already configured in " &
+      op.json["configPath"].getStr())
+  else:
+    success(op.json["binDir"].getStr() & " is already on PATH")
+  if not op.ok:
     quit(1)
 
 proc pluginCommand*(opts: CliOptions) =
-  ## Execute an external `bau-*` plugin command.
+  ## Execute an external `bau-*` command.
   let external = findExe("bau-" & opts.taskName)
   if external.len == 0:
     error("unknown command: " & opts.taskName)
     quit(1)
-  info("invoking plugin: bau-" & opts.taskName)
+  info("invoking external command: bau-" & opts.taskName)
   runCmdLive(external, opts.args)
 
 proc printConvertDiagnostics(diagnostics: openArray[ConvertDiagnostic];
@@ -2107,7 +2028,14 @@ proc dispatchCommand*(opts: CliOptions) =
   of cmdCiTemplate:
     let projectDir = try: findProjectRoot() except: getCurrentDir()
     let kind = if opts.args.len > 0: opts.args[0] else: "github"
-    generateCiTemplate(kind, projectDir)
+    var opOpts = opts.toOperationOptions()
+    opOpts.ciKind = kind
+    let op = ciTemplateOperation(projectDir, opOpts)
+    if not op.ok:
+      error(op.json{"error"}.getStr(op.output))
+      quit(1)
+    if opts.json or opts.format == "json":
+      echo pretty(op.json)
 
   of cmdMetadata:
     metadataCommand(opts)

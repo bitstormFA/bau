@@ -1,0 +1,11 @@
+# Classify operations by primary purpose and side effect
+
+Bau operations are classified as introspection, validation, execution, or mutation so command surfaces can make side effects explicit and CI-safe behavior can be reasoned about. We decided to classify an operation by its primary purpose, while documenting important secondary side effects; this keeps build, run, docs, and ordinary shell task execution as execution even when they create outputs, while commands such as formatting, dependency sync, compile-command generation, clean, install, and publish are mutation because changing state is their purpose.
+
+A Task is a workflow concept, not its own side-effect category. A shell task is ordinary execution by default, while a task that delegates to a built-in operation inherits that operation category: a task with `command = "test"` is validation, `command = "build"` is execution, and a future task command that wraps mutation would be mutation.
+
+Remote task cache reads are part of Task Cache Entry restoration. Remote task cache writes are secondary external-service side effects of task execution when cache writes are enabled; they do not make the task a mutation unless changing remote cache state is the operation's primary purpose.
+
+Package listing and publish dry-runs are validation because they check package contents or a possible publication without changing state. Plain package generation is execution because it writes a Bau Output, while real publication is mutation because it changes external registry state. Version bumping, shell initialization, CI template generation, cache cleaning, and source formatting are mutation because changing state is their primary purpose. Dependency tree, outdated status, version, help, environment, metadata, graph, query, explain, cache list, and cache explain are introspection unless their selected action delegates to validation, execution, or mutation.
+
+Watch mode is not its own operation; it repeats the selected operation and inherits that operation's category. External `bau-*` command delegation is a command-surface extension point. Unless Bau models an extension as a Bau operation, its side effects are defined by the delegated command rather than by Bau's core operation taxonomy.

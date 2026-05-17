@@ -5,19 +5,19 @@ import bau/[config, util]
 
 type
   WorkspaceScope* = enum ## Selection mode for workspace member loading.
-    wsDefaultMembers ## Load default members when configured.
-    wsAllMembers ## Load every configured workspace member.
+    wsDefaultMembers     ## Load default members when configured.
+    wsAllMembers         ## Load every configured workspace member.
 
   WorkspaceMember* = object ## Resolved workspace member path and display name.
-    path*: string ## Member path relative to the workspace root.
-    projectDir*: string ## Absolute project directory for the member.
-    name*: string ## Package name or directory-derived fallback.
+    path*: string           ## Member path relative to the workspace root.
+    projectDir*: string     ## Absolute project directory for the member.
+    name*: string           ## Package name or directory-derived fallback.
 
   WorkspaceProject* = object ## Workspace member plus its effective config.
-    path*: string ## Member path relative to the workspace root.
-    projectDir*: string ## Absolute project directory for the member.
-    name*: string ## Package name or directory-derived fallback.
-    cfg*: BauConfig ## Effective Bau configuration for this member.
+    path*: string            ## Member path relative to the workspace root.
+    projectDir*: string      ## Absolute project directory for the member.
+    name*: string            ## Package name or directory-derived fallback.
+    cfg*: BauConfig          ## Effective Bau configuration for this member.
 
 proc normalizeRel(path: string): string =
   path.replace("\\", "/").strip(chars = {'/'})

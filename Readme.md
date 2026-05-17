@@ -1,45 +1,101 @@
 # Bau
 
-Bau, short for Baumeister, is an experimental build system for Nim projects.
-It uses a `bau.toml` file to describe package metadata, build targets,
-profiles, dependencies, scripts, and custom tasks.
+Bau is a modern build tool for Nim projects: one declarative project manifest,
+explicit build targets, reproducible dependencies, cached workflows, and the
+same operations available from the CLI or AI tools through MCP.
 
-## Documentation
+It is short for Baumeister, and its job is to make a Nim project easier to
+understand, repeat, automate, and publish.
 
-- [Workflow guide](docs/workflow-guide.md): task-oriented examples for starting
-  or converting projects, daily CLI and MCP work, dependency updates,
-  documentation, CI, deployment, and publication.
-- [User guide](docs/user-guide.md): reference-style documentation for commands,
-  configuration fields, and Bau internals.
+## Why Bau Instead Of Nimble?
 
-## Why Use It
+Nimble is primarily a package manager with build behavior embedded in NimScript.
+Bau keeps the build model explicit:
 
-- One project file for common Nim workflows: build, run, test, check, docs,
-  formatting, linting, dependency sync, and CI checks.
-- Named profiles keep development and release compiler settings explicit.
-- Build fingerprints track source files, compiler flags, platform, toolchain,
-  and profile so unchanged targets can be skipped.
-- Multiple targets and workspaces allow a repository to build more than one
-  executable or member project from the same command style.
-- Atlas integration provides dependency syncing for Git, local path, and package
-  dependencies declared in `bau.toml`.
-- TOML lockfiles, dependency patching, trusted/blocked dependency policy, and
-  workspace defaults help make multi-package repositories more reproducible.
-- Feature flags, optional dependencies, cached build-script directives, and
-  dependency catalogs make variant builds explicit.
-- Task inputs/outputs, local or shared output caching, dry runs, metadata,
-  affected-change analysis, and graph/query commands make project automation
-  easier to inspect.
-- Dependency verification, toolchain checks, and structured metadata help keep
-  CI and editor integrations reproducible.
-- Project scaffolding creates a basic binary or library layout with tests and
-  default profiles.
-- Nimble conversion turns existing `.nimble` package metadata, targets,
-  dependencies, features, literal tasks, and hooks into a reviewable `bau.toml`.
-- An MCP mode exposes real Bau build, test, docs, conversion, dependency,
-  metadata, graph, affected, cache, and status operations to compatible tools.
+- **Declarative project manifest**: `bau.toml` describes package metadata,
+  targets, profiles, features, dependencies, tasks, docs, cache, toolchain, and
+  policy without executing project code to discover intent.
+- **Reproducible dependency state**: Bau delegates fetching to Atlas, then
+  records the resolved graph, source identity, exact revisions, and checksums in
+  `bau.lock`.
+- **Explicit build shape**: build a named **Target**, under a named **Profile**,
+  with selected **Features**. No more hidden conditionals deciding what a build
+  means.
+- **Incremental work that is inspectable**: target fingerprints explain whether
+  compilation is fresh, while task cache entries can restore declared workflow
+  outputs locally or from a shared cache.
+- **Build scripts without manifest magic**: pre-compilation scripts can generate
+  files and emit `bau::` directives, but the project manifest stays static and
+  reviewable.
+- **Workspace support**: a workspace root coordinates member projects, shared
+  defaults, catalogs, governance, and one dependency lock.
+- **Tool-friendly operations**: the CLI and MCP server are command surfaces over
+  the same Bau operations, so humans and coding agents can run the same build,
+  dependency, metadata, graph, affected, and cache workflows.
+- **Reviewable Nimble conversion**: `bau convert` statically translates
+  deterministic Nimble metadata and literal automation; `bau tailor` separately
+  discovers missing executable targets from source.
 
-## Example Configuration
+## Install From Source
+
+Prerequisites:
+
+- Nim `>= 2.2`
+- `parsetoml`
+- Atlas when syncing dependencies
+
+Build Bau from this repository:
+
+```sh
+nimble install parsetoml
+nim c --path:src -o:build/dev/bau src/bau.nim
+```
+
+Then call `build/dev/bau`, move it onto your `PATH`, or install it with your
+usual local tool setup.
+
+## Quick Start
+
+Create a new binary project:
+
+```sh
+bau new myapp
+cd myapp
+bau deps sync
+bau check
+bau test
+bau run
+```
+
+Create a library:
+
+```sh
+bau new mylib --lib
+cd mylib
+bau deps sync
+bau test
+bau doc --open
+```
+
+Convert an existing Nimble project:
+
+```sh
+bau convert --dry-run
+bau convert
+bau deps sync
+bau tailor --check
+bau check --all-targets
+bau test
+```
+
+If `bau tailor --check` reports missing executable targets:
+
+```sh
+bau tailor --write
+bau check --all-targets
+```
+
+## A Small `bau.toml`
 
 ```toml
 [package]
@@ -63,290 +119,237 @@ gc = "orc"
 flags = ["--opt:speed", "--passC:-O3"]
 gc = "orc"
 
-[docs]
-outDir = "docs"
-entrypoints = ["src/myapp.nim"]
-include = ["src/**/*.nim"]
-exclude = ["src/**/private/**"]
-runExamples = true
-
-[install]
-dir = "~/.bau/bin"
-
 [dependencies]
 parsetoml = ">=0.6.0"
-sqlite = { version = ">=3.0", optional = true }
-
-[features]
-default = ["docs"]
-docs = []
-db = ["dep:sqlite"]
-
-[catalog]
-parsetoml = ">=0.6.0"
-
-[patch]
-parsetoml = { path = "../parsetoml" }
-
-[toolchain]
-nim = ">=2.2"
-atlas = ">=0.8"
-
-[cache]
-dir = "build/.bau/cache"
-read = true
-write = true
-remote = "file:///shared/bau-cache"
-
-[governance]
-blocked = ["badpkg"]
-trusted = ["parsetoml"]
-minimumReleaseAgeHours = 24
-
-[[buildScripts]]
-name = "version"
-cmd = "nim r scripts/version.nims"
-inputs = ["scripts/version.nims", ".git/HEAD"]
-outputs = ["src/generated/version.nim"]
-
 ```
 
-## Common Commands
+The manifest is the project intent. `bau.lock` records resolved dependency
+state. `build/` contains generated outputs such as binaries, fingerprints, task
+cache entries, docs, and package manifest outputs.
+
+## Everyday Commands
 
 ```sh
 bau build
 bau build --profile release
 bau build --features db
-bau run -- arg1 arg2
+bau run -- --help
 bau test
-bau check
-bau doc
+bau test --full
+bau check --all-targets
 bau doc --open
-bau doc --out-dir site/api --skip-examples
-bau install --profile release
-bau install --update
-bau uninstall
-bau shell-init
-bau convert --dry-run
-bau convert --force
 bau fmt
 bau lint
 bau ci
-bau deps
+```
+
+Dependency work:
+
+```sh
+bau add jsony --version ">=1.1.0"
+bau deps sync
 bau deps lock
 bau deps sync --locked
 bau deps sync --frozen
-bau deps update parsetoml --precise abc123
 bau deps verify
-bau deps patch parsetoml --path ../parsetoml
+bau deps update
+bau query why jsony
+```
+
+Introspection and automation:
+
+```sh
 bau metadata --json
-bau metadata --json --format-version 1
-bau graph --format dot
 bau graph --format json
-bau query why parsetoml
 bau affected list --since origin/main --json
 bau affected test --since origin/main
-bau cache list
+bau explain
 bau cache explain docs --json
+bau compile-commands --profile release --features db
+```
+
+Publication:
+
+```sh
 bau bump --patch
 bau package --list --dry-run
 bau publish --dry-run
-bau tailor --check --json
-bau compile-commands --profile release --features db --jobs 8
-bau doctor
-bau clean
 ```
 
-Common global options:
+## Features And Optional Dependencies
+
+Features activate optional capabilities and optional dependencies:
+
+```toml
+[dependencies]
+sqlite = { version = ">=3.0", optional = true }
+
+[features]
+default = ["cli"]
+cli = []
+db = ["dep:sqlite"]
+```
+
+Use them from the CLI:
 
 ```sh
-bau build --jobs 8 --color never --quiet
-bau deps sync --locked
-bau deps sync --offline
-bau deps sync --frozen
+bau build --features db
+bau test --features db
+bau build --no-default-features --features db
+bau build --all-features
 ```
 
-`--jobs` defaults to the detected CPU count and is forwarded to Nim as
-`--parallelBuild:<n>`. `--color` accepts `auto`, `always`, or `never` and is
-applied to Bau output and Nim color flags. `--quiet` suppresses nonessential Bau
-progress logs while keeping warnings and errors. `--frozen` is shorthand for
-`--locked --offline`.
+Enabled features become Nim defines, including a namespaced form such as
+`-d:bauFeature_db`.
 
-Project creation:
+## Cached Tasks
+
+Tasks are named workflow steps. When a task declares inputs and outputs, Bau can
+cache and restore the outputs:
+
+```toml
+[[tasks]]
+name = "site"
+cmd = "nim r tools/site.nim"
+inputs = ["docs/**/*.md", "tools/site.nim"]
+outputs = ["build/site"]
+cache = true
+```
 
 ```sh
-bau init
-bau init myapp --lib --version 0.1.0 --description "A Nim library"
-bau new path/to/project
-bau new path/to/library --lib
+bau task site
+bau cache explain site
+bau cache explain site --json
 ```
 
-`bau init` prompts for any project metadata that is not provided on the
-command line.
+Target compilation uses fingerprints; task output reuse uses task cache
+entries. Bau keeps those mechanisms separate so cache explanations stay honest.
 
-Nimble migration:
+Task cache entries restore outputs only for tasks that run project commands with
+`cmd`; tasks that delegate to built-in operations use those operations' own
+freshness or validation behavior.
+
+Root task arguments are part of the task cache identity, so different argument
+lists restore different cached outputs.
+Execution shape and declared inputs are task cache identity; cache transport
+policy is not.
+Cache location and read/write settings do not change that identity; they only
+control where and whether Bau may restore or publish cached outputs.
+Remote cache reads participate in task output restoration. Remote cache writes
+are secondary side effects when cache writes are enabled.
+If declared outputs are newer than declared inputs, Bau may skip the task as
+locally fresh without restoring a Task Cache Entry.
+`bau task <name> --force` bypasses restoration and local freshness for that run
+without changing the task cache identity.
+
+Build-script directive caching is internal target-planning state, not a task
+cache entry.
+
+Shell tasks are ordinary execution by default. A task that delegates to a
+built-in operation inherits that operation category, so `command = "test"` is
+validation and `command = "build"` is execution.
+
+Task dependencies name other tasks only; wrap built-in operations in explicit
+tasks before depending on them.
+
+Arguments after `bau task <name> --` are passed only to the invoked root task,
+not to dependency tasks. Prefer `BAU_TASK_ARG_0`, `BAU_TASK_ARG_1`, and
+`BAU_TASK_ARGS` inside scripts; use `{args}` and `{argsWithSep}` only to forward
+arguments to another command.
+
+## Build Scripts
+
+Build scripts are project-scoped workflows that run before target compilation
+and can emit `bau::` directives:
+
+```toml
+[[buildScripts]]
+name = "version"
+cmd = "nim r scripts/version.nims"
+inputs = ["scripts/version.nims", ".git/HEAD"]
+```
+
+Supported directives include:
+
+```text
+bau::rerun-if-changed=path
+bau::rerun-if-env-changed=NAME
+bau::define=name=value
+bau::link-lib=sqlite3
+bau::nim-flag=--passC:-DUSE_X
+bau::generated-file=src/generated/version.nim
+bau::warning=message
+bau::error=message
+```
+
+Prefer narrow directives such as `bau::define` and `bau::link-lib` when they
+match the intent. Use `bau::nim-flag` as an escape hatch for compiler options
+Bau does not model yet.
+
+Write Build Directives to stdout. Use stderr for human diagnostics.
+
+Unknown `bau::` directive names are invalid. Bau should fail loudly rather than
+silently ignore a misspelled build instruction. Supported directive names and
+meanings are part of Bau's public build-script contract.
+Malformed directives and directives with missing required values are invalid.
+
+Generated files are registered with `bau::generated-file`; task-style `outputs`
+belongs to cached Tasks, not Build Scripts.
+Environment freshness is registered with `bau::rerun-if-env-changed`;
+task-style `envInputs` belongs to cached Tasks, not Build Scripts.
+Relative paths in Build Directives are resolved from the Bau Project root, not
+from the script process `cwd`.
+
+Use build scripts for new build-influencing generation. Legacy lifecycle hooks
+exist for Nimble compatibility around actual build or install execution; they do
+not participate in target freshness.
+
+## Workspaces
+
+A workspace is a coordination root for member Bau projects:
+
+```toml
+[workspace]
+members = ["pkg/core", "pkg/utils", "apps/cli"]
+defaultMembers = ["apps/cli"]
+exclude = ["pkg/deprecated"]
+
+[workspace.catalog]
+jsony = ">=1.1.0"
+parsetoml = ">=0.6.0"
+```
+
+The root can provide shared dependency versions, sources, profiles, catalogs,
+and governance. Each member keeps its own project manifest.
+
+## MCP For AI Tools
+
+Bau includes an MCP server:
 
 ```sh
-bau convert              # convert the only .nimble file in the current dir
-bau convert path/to/pkg  # convert a package directory
-bau convert pkg.nimble   # convert one file explicitly
-bau convert --dry-run    # print generated TOML without writing
-bau convert --json       # print diagnostics and summary as JSON
+bau mcp
 ```
 
-The converter is intentionally static: it does not execute NimScript. Dynamic
-control flow is skipped with diagnostics so the generated `bau.toml` stays
-deterministic and reviewable.
+It exposes the non-interactive Bau operations to compatible tools: build, run,
+test, check, lint, CI, docs, dependencies, tasks, cache, metadata, graph, query,
+affected work, package/publication preflights, and project setup. The important
+bit: MCP calls use the same Bau operations as the CLI, so tool automation is not
+a separate build path.
 
-Dependency editing:
+## Documentation
 
-```sh
-bau add parsetoml
-bau add sqlite --optional
-bau add mylib --git https://example.com/mylib.git --tag v1.0.0
-bau add localpkg --path ../localpkg
-bau remove parsetoml
-```
+- [Concept glossary](CONTEXT.md): canonical Bau project language.
+- [Architecture](docs/architecture.md): boundaries between manifest, resolved
+  state, operations, command surfaces, dependencies, automation, and publishing.
+- [User guide](docs/user-guide.md): concepts, Project Manifest reference, command reference,
+  and MCP details.
+- [Workflow guide](docs/workflow-guide.md): task-oriented recipes for starting,
+  converting, developing, caching, workspaces, CI, and publication.
+- [ADRs](docs/adr/): short records for hard-to-reverse architecture decisions.
 
-Feature flags are declared in `[features]`. Enabled features become Nim defines
-named after the feature, with non-identifier characters converted to `_`. Optional
-dependencies are enabled by feature entries such as `dep:sqlite`.
+## Project Status
 
-Build scripts are declared with `[[buildScripts]]`. They run before compilation
-and can print directives such as `bau::rerun-if-changed=path`,
-`bau::nim-flag=--passC:-DUSE_X`, `bau::define=name=value`,
-`bau::link-lib=sqlite3`, `bau::generated-file=src/generated/version.nim`,
-`bau::warning=message`, and `bau::error=message`.
-
-Build-script output is cached separately from target fingerprints. Bau reruns a
-script when its command, profile, features, declared inputs, generated files, or
-declared environment variables change. Scripts can declare those dependencies
-with `bau::rerun-if-changed=path` and `bau::rerun-if-env-changed=NAME`.
-
-Task outputs are cached when a task declares `inputs` and `outputs` or sets
-`cache = true`. `bau cache explain <task>` shows the cache key and whether the
-current inputs have a stored output entry. Cache keys include the task command,
-shell, profile, features, working directory, task environment, platform, Nim
-version, config inputs, declared inputs, declared outputs, and any environment
-variables listed in `envInputs`.
-
-Local cache entries are used first. Local writes are staged under a cache lock
-and moved into place as a complete entry; restores validate the manifest and
-stage outputs before replacing declared files. If `[cache].remote` is configured,
-Bau tries the remote cache after a local miss and populates it after local
-writes. Remote cache v1 supports local/shared paths, `file://` URLs, and
-HTTP(S) endpoints that accept GET and PUT of one versioned JSON plus base64
-payload at `/tasks/<task>/<key>.json`. Restores validate task/key identity,
-output boundaries, relative paths, and file hashes before writing.
-Authentication and remote execution are not part of this first cache protocol.
-
-`bau cache explain <task> --json` reports the key inputs, local hit state,
-remote hit/miss/error state, and restored outputs.
-
-## Dependency Reproducibility
-
-`bau deps lock` writes `bau.lock` as TOML, including URL/path, version, tag,
-branch/revision, source identity, resolved package version, dependency edges,
-checksums, workspace members, and lock-time metadata where available. The lock
-format is versioned; current Bau writes `version = 2` resolved graph locks and
-rejects older lockfiles with a regenerate message. Workspace roots use one root
-`bau.lock` covering the selected member graph instead of one lock per member.
-
-Non-optional registry or Git dependencies must be materialized locally before
-Bau will accept a lock as reproducible. `bau deps sync --locked` fails before
-invoking Atlas if the lockfile is missing or stale. `bau deps sync --offline`
-checks that enabled dependency material is already present locally and that
-checksums match when they are recorded. `bau deps sync --frozen` performs both
-checks. `bau deps update <dep> --precise <rev>` checks out an exact revision for
-a materialized Git dependency before rewriting the lock.
-
-Source configuration is declared with `[source.<name>]` tables. Registry,
-directory/vendor, local-registry mirror, Git, and `replaceWith` entries are
-parsed into the lock source model; source replacement is for identical mirrors,
-while `[patch]` remains the mechanism for changing dependency content.
-
-`bau deps vendor` copies `deps/` to `vendor/` and writes
-`vendor/.bau-vendor-checksums` so vendored material can be checked for accidental
-changes.
-
-`bau deps verify` enforces blocked dependencies, the trusted allowlist when
-configured, lockfile freshness, recorded checksums, and
-`minimumReleaseAgeHours`. Because Atlas does not expose registry release
-timestamps, Bau enforces this policy against the lock entry's first-seen
-`lockedAt` timestamp for materialized non-local dependencies; path dependencies
-are ignored by this release-age gate.
-
-## Build From Source
-
-Install Nim and make sure `parsetoml` is available, then compile the CLI:
-
-```sh
-nimble install parsetoml
-nim c --path:src -o:build/dev/bau src/bau.nim
-```
-
-The resulting binary is `build/dev/bau`.
-
-## Configuration Model
-
-Bau reads `bau.toml` from the project root. Optional local overrides can be
-placed in `bau.local.toml`, and global defaults are read from the user's config
-directory. Profiles may extend other profiles, and environment variables with
-the `BAU_` prefix can add selected development settings.
-
-Workspaces may define dependency catalogs under `[workspace.catalog]` or
-`[workspace.catalogs.<name>]`. Member projects can reference these versions with
-`catalog:` or `catalog:<name>` in dependency versions, keeping multi-package
-version updates in one place.
-
-Workspace roots can set `members`, `defaultMembers`, and `exclude`. Bau resolves
-these entries centrally and reuses the same member set for workspace builds,
-dependency lock/sync/verify, metadata, graph/query output, affected checks,
-compile command generation, and tailor.
-
-Custom tasks are declared with `[[tasks]]` entries and run with:
-
-```sh
-bau task <name>
-```
-
-`bau tailor --check --json` prints a deterministic report of missing target
-declarations discovered from Nim sources. `bau affected` and `bau tailor` share
-the same Nim scanner, including grouped imports, multiline imports, aliases,
-`from ... import`, includes, common stdlib exclusions, and duplicate module-name
-handling. `bau tailor --write` appends only missing targets and avoids duplicate
-target names.
-
-`bau compile-commands` writes a recursive, target-aware `compile_commands.json`
-for `src/` and `tests/`, honoring profile, feature, and job settings.
-
-`bau doc` builds first-class Nim API documentation from project source. It
-discovers public modules under `[build].source`, adds configured entrypoints and
-targets, skips conventional `private/` and `internal/` modules unless they are
-explicitly included, forwards profile/features/dependency search paths, uses
-Nimdoc `--project` and `--docRoot:@path`, and writes an indexed output tree.
-The `[docs]` section can set `outDir`, `entrypoints`, `include`, `exclude`,
-extra Nimdoc `flags`, `project`, `index`, `runExamples`, `includePrivate`, and
-`sourceUrl`.
-
-MCP mode exposes the same operation layer for metadata, graph, query, affected,
-conversion, cache explain, dependency verification, and compile command
-generation, so advertised tools no longer return synthetic success for
-unsupported work.
-
-`bau package --dry-run` performs package validation and lists included files.
-`bau publish --dry-run` performs full local validation without network access
-and prints the generated nimble file content. A real publish rejects local path
-dependencies and `[patch]` overrides because those cannot be reproduced by the
-registry.
-
-## Status
-
-Bau is currently version `0.3.2`. The existing implementation compiles, runs its
-test suite, builds itself, and provides the main CLI surface for modern Nim
-project automation.
-
-Recent ergonomics include Nimble project conversion, `bau.lock` generation,
-workspace dependency/profile defaults, task graph execution, package file
-listing, metadata/query output, and `bau env --json` for tools that want the
-resolved build environment.
+Bau is experimental but usable. The repository builds itself, runs its test
+suite, generates documentation, converts Nimble projects, manages dependency
+locks, supports workspaces, exposes MCP tools, and publishes Nimble-compatible
+package metadata.

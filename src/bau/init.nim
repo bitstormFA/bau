@@ -5,12 +5,12 @@ import bau/util
 
 type
   ProjectInitInfo* = object ## User-provided metadata for project scaffolding.
-    name*: string ## Package and main module name.
-    kind*: string ## Project kind, normalized to `bin` or `lib`.
-    version*: string ## Initial package version.
-    description*: string ## Initial package description.
-    license*: string ## Initial package license.
-    edition*: string ## Bau configuration edition to write.
+    name*: string           ## Package and main module name.
+    kind*: string           ## Project kind, normalized to `bin` or `lib`.
+    version*: string        ## Initial package version.
+    description*: string    ## Initial package description.
+    license*: string        ## Initial package license.
+    edition*: string        ## Bau configuration edition to write.
 
 const
   MainNimTemplate = """import std/strformat

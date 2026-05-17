@@ -4,25 +4,25 @@ import std/[algorithm, options, os, json, strutils]
 import bau/util
 
 type
-  FingerprintInputs* = object ## Inputs that determine a target build fingerprint.
-    sourcePaths*: seq[string] ## Source files and dependency files to hash.
+  FingerprintInputs* = object   ## Inputs that determine a target build fingerprint.
+    sourcePaths*: seq[string]   ## Source files and dependency files to hash.
     compilerFlags*: seq[string] ## Compiler flags included in the cache key.
-    profile*: string ## Build profile name.
-    configInputs*: seq[string] ## Config files included in the cache key.
-    envInputs*: seq[string] ## Environment entries included in the cache key.
-    platform*: string ## Platform identifier, usually `os-cpu`.
-    toolchain*: string ## Toolchain identifier, usually `nim-<version>`.
+    profile*: string            ## Build profile name.
+    configInputs*: seq[string]  ## Config files included in the cache key.
+    envInputs*: seq[string]     ## Environment entries included in the cache key.
+    platform*: string           ## Platform identifier, usually `os-cpu`.
+    toolchain*: string          ## Toolchain identifier, usually `nim-<version>`.
 
-  Fingerprint* = object ## Hash record used to decide whether a target is fresh.
-    sourceHash*: string ## Content hash of source inputs.
-    configHash*: string ## Content hash of config inputs.
-    envHash*: string ## Hash of selected environment inputs.
+  Fingerprint* = object   ## Hash record used to decide whether a target is fresh.
+    sourceHash*: string   ## Content hash of source inputs.
+    configHash*: string   ## Content hash of config inputs.
+    envHash*: string      ## Hash of selected environment inputs.
     compilerHash*: string ## Hash of compiler and platform identity.
-    flagsHash*: string ## Hash of compiler flags.
-    profile*: string ## Build profile name.
-    platform*: string ## Platform identifier.
-    toolchain*: string ## Toolchain identifier.
-    mtimeHash*: string ## Hash of source modification times.
+    flagsHash*: string    ## Hash of compiler flags.
+    profile*: string      ## Build profile name.
+    platform*: string     ## Platform identifier.
+    toolchain*: string    ## Toolchain identifier.
+    mtimeHash*: string    ## Hash of source modification times.
 
 proc initFingerprintInputs*(sourcePaths: openArray[string];
                             compilerFlags: openArray[string];

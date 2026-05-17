@@ -6,45 +6,45 @@ import bau/[config, features, util]
 const DocManifestName* = ".bau-docs-manifest" ## Manifest listing files produced by `bau doc`.
 
 type
-  DocBuildOptions* = object ## Runtime options for API documentation generation.
-    profile*: string ## Profile whose flags are applied to Nim doc.
+  DocBuildOptions* = object     ## Runtime options for API documentation generation.
+    profile*: string            ## Profile whose flags are applied to Nim doc.
     features*: FeatureSelection ## Enabled features applied to Nim doc.
-    verbose*: bool ## Whether Nim doc commands are printed.
-    outDir*: string ## Output directory override.
-    entrypoints*: seq[string] ## Additional documentation entrypoint files.
-    skipExamples*: bool ## Skip compiling runnable examples.
-    includePrivate*: bool ## Include private symbols in generated API docs.
-    noIndex*: bool ## Suppress Bau's documentation index generation.
+    verbose*: bool              ## Whether Nim doc commands are printed.
+    outDir*: string             ## Output directory override.
+    entrypoints*: seq[string]   ## Additional documentation entrypoint files.
+    skipExamples*: bool         ## Skip compiling runnable examples.
+    includePrivate*: bool       ## Include private symbols in generated API docs.
+    noIndex*: bool              ## Suppress Bau's documentation index generation.
 
-  DocModule* = object ## One Nim source file selected for documentation.
-    file*: string ## Absolute source file path.
-    relPath*: string ## Project-relative source file path.
+  DocModule* = object      ## One Nim source file selected for documentation.
+    file*: string          ## Absolute source file path.
+    relPath*: string       ## Project-relative source file path.
     sourceRelPath*: string ## Source-root-relative path used for output naming.
-    moduleName*: string ## Dotted module name shown in reports.
-    outputPath*: string ## Expected generated HTML path.
-    entrypoint*: bool ## True when selected as an explicit entrypoint.
+    moduleName*: string    ## Dotted module name shown in reports.
+    outputPath*: string    ## Expected generated HTML path.
+    entrypoint*: bool      ## True when selected as an explicit entrypoint.
 
   DocDiagnostic* = object ## Documentation-quality diagnostic.
-    kind*: string ## Stable diagnostic kind.
-    file*: string ## Project-relative file path.
-    message*: string ## Human-readable diagnostic message.
+    kind*: string         ## Stable diagnostic kind.
+    file*: string         ## Project-relative file path.
+    message*: string      ## Human-readable diagnostic message.
 
   DocCommandResult* = object ## Result of one Nim doc invocation.
-    moduleName*: string ## Module documented by the command.
-    file*: string ## Project-relative source path.
-    outputPath*: string ## Expected generated HTML path.
-    command*: seq[string] ## Full command argv.
-    exitCode*: int ## Process exit code.
-    output*: string ## Combined compiler output.
+    moduleName*: string      ## Module documented by the command.
+    file*: string            ## Project-relative source path.
+    outputPath*: string      ## Expected generated HTML path.
+    command*: seq[string]    ## Full command argv.
+    exitCode*: int           ## Process exit code.
+    output*: string          ## Combined compiler output.
 
-  DocBuildReport* = object ## Complete result of a documentation build.
-    ok*: bool ## True when every Nim doc invocation succeeded.
-    outDir*: string ## Absolute output directory.
-    indexPath*: string ## Expected generated index path.
-    modules*: seq[DocModule] ## Modules selected for documentation.
+  DocBuildReport* = object           ## Complete result of a documentation build.
+    ok*: bool                        ## True when every Nim doc invocation succeeded.
+    outDir*: string                  ## Absolute output directory.
+    indexPath*: string               ## Expected generated index path.
+    modules*: seq[DocModule]         ## Modules selected for documentation.
     diagnostics*: seq[DocDiagnostic] ## Non-fatal documentation diagnostics.
     commands*: seq[DocCommandResult] ## Nim doc command results.
-    generatedFiles*: seq[string] ## Generated files relative to `outDir`.
+    generatedFiles*: seq[string]     ## Generated files relative to `outDir`.
 
 proc cleanRel(path: string): string =
   path.replace("\\", "/").strip(chars = {'/'})

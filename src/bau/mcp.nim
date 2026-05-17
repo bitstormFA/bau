@@ -40,6 +40,11 @@ proc toolsList(): JsonNode =
       "properties": {
         "profile": {"type": "string", "description": "Build profile: dev, release, test",
             "default": "dev"},
+        "target": {"type": "string", "description": "Target name"},
+        "allTargets": {"type": "boolean", "default": false},
+        "features": {"type": "array", "items": {"type": "string"}},
+        "allFeatures": {"type": "boolean", "default": false},
+        "noDefaultFeatures": {"type": "boolean", "default": false},
         "verbose": {"type": "boolean", "default": false}
     }
   }
@@ -51,6 +56,7 @@ proc toolsList(): JsonNode =
       "type": "object",
       "properties": {
         "profile": {"type": "string", "default": "dev"},
+        "target": {"type": "string", "description": "Target name"},
         "args": {"type": "array", "items": {"type": "string"},
             "description": "Arguments to pass to the binary"}
     }
@@ -58,18 +64,34 @@ proc toolsList(): JsonNode =
   })
   tools.add(%*{
     "name": "bau_test",
-    "description": "Build and run tests",
+    "description": "Validate the project against the Test Plan",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "filter": {"type": "string", "description": "Filter test files by name"}
+        "profile": {"type": "string", "default": "dev"},
+        "filter": {"type": "string", "description": "Filter test files by name"},
+        "changed": {"type": "boolean", "default": false},
+        "full": {"type": "boolean", "default": false},
+        "fast": {"type": "boolean", "default": false},
+        "noMatrix": {"type": "boolean", "default": false},
+        "noRunner": {"type": "boolean", "default": false},
+        "showOutput": {"type": "string", "enum": ["auto", "always", "never"]},
+        "dryRun": {"type": "boolean", "default": false},
+        "jobs": {"type": "integer"}
     }
   }
   })
   tools.add(%*{
     "name": "bau_check",
     "description": "Type-check without producing binary",
-    "inputSchema": {"type": "object", "properties": {}}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "profile": {"type": "string", "default": "dev"},
+        "target": {"type": "string", "description": "Target name"},
+        "allTargets": {"type": "boolean", "default": false}
+    }
+  }
   })
   tools.add(%*{
     "name": "bau_doc",
@@ -88,7 +110,7 @@ proc toolsList(): JsonNode =
   })
   tools.add(%*{
     "name": "bau_clean",
-    "description": "Remove build artifacts",
+    "description": "Remove Bau Outputs",
     "inputSchema": {"type": "object", "properties": {}}
   })
   tools.add(%*{
@@ -111,10 +133,18 @@ proc toolsList(): JsonNode =
   })
   tools.add(%*{
     "name": "bau_deps",
-    "description": "Sync or update dependencies",
+    "description": "Run dependency sync, lock, update, verify, vendor, or patch",
     "inputSchema": {
       "type": "object",
       "properties": {
+        "action": {"type": "string",
+            "enum": ["sync", "lock", "update", "verify", "vendor", "patch"],
+            "default": "sync"},
+        "name": {"type": "string", "description": "Dependency name for update or patch"},
+        "path": {"type": "string", "description": "Patch path for action=patch"},
+        "precise": {"type": "string", "description": "Exact revision for update"},
+        "offline": {"type": "boolean", "default": false},
+        "locked": {"type": "boolean", "default": false},
         "update": {"type": "boolean", "default": false}
     }
   }
@@ -180,6 +210,37 @@ proc toolsList(): JsonNode =
     "inputSchema": {"type": "object", "properties": {}}
   })
   tools.add(%*{
+    "name": "bau_lint",
+    "description": "Validate Nim source style without rewriting files",
+    "inputSchema": {"type": "object", "properties": {
+      "verbose": {"type": "boolean", "default": false}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_ci",
+    "description": "Run validation-oriented CI checks",
+    "inputSchema": {"type": "object", "properties": {
+      "profile": {"type": "string", "default": "dev"},
+      "verbose": {"type": "boolean", "default": false}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_task",
+    "description": "List or run a declared Bau task",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "list": {"type": "boolean", "default": false},
+        "name": {"type": "string", "description": "Task name"},
+        "args": {"type": "array", "items": {"type": "string"}},
+        "profile": {"type": "string", "default": "dev"},
+        "dryRun": {"type": "boolean", "default": false},
+        "force": {"type": "boolean", "default": false},
+        "keepGoing": {"type": "boolean", "default": false}
+    }
+  }
+  })
+  tools.add(%*{
     "name": "bau_explain",
     "description": "Show what changed since last build",
     "inputSchema": {
@@ -227,10 +288,12 @@ proc toolsList(): JsonNode =
   })
   tools.add(%*{
     "name": "bau_affected",
-    "description": "Return changed files and affected work",
+    "description": "List or run work affected by Git changes",
     "inputSchema": {
       "type": "object",
       "properties": {
+        "action": {"type": "string", "enum": ["list", "check", "test", "build"],
+            "default": "list"},
         "since": {"type": "string", "default": "HEAD"}
     }
   }
@@ -252,6 +315,99 @@ proc toolsList(): JsonNode =
     "description": "Verify dependency policy and lock freshness",
     "inputSchema": {"type": "object", "properties": {}}
   })
+  tools.add(%*{
+    "name": "bau_cache",
+    "description": "List, clean, or explain task cache entries",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {"type": "string", "enum": ["list", "clean", "explain"],
+            "default": "list"},
+        "task": {"type": "string"},
+        "profile": {"type": "string", "default": "dev"}
+    }
+  }
+  })
+  tools.add(%*{
+    "name": "bau_tree",
+    "description": "Return dependency tree data",
+    "inputSchema": {"type": "object", "properties": {}}
+  })
+  tools.add(%*{
+    "name": "bau_outdated",
+    "description": "Return dependency status data",
+    "inputSchema": {"type": "object", "properties": {}}
+  })
+  tools.add(%*{
+    "name": "bau_tailor",
+    "description": "Discover or write missing target declarations",
+    "inputSchema": {"type": "object", "properties": {
+      "write": {"type": "boolean", "default": false}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_package",
+    "description": "Validate Package Contents and optionally write package manifest output",
+    "inputSchema": {"type": "object", "properties": {
+      "list": {"type": "boolean", "default": false},
+      "dryRun": {"type": "boolean", "default": true}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_publish",
+    "description": "Validate or submit a Package Publication",
+    "inputSchema": {"type": "object", "properties": {
+      "dryRun": {"type": "boolean", "default": true}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_bump",
+    "description": "Increment Package version intent",
+    "inputSchema": {"type": "object", "required": ["kind"], "properties": {
+      "kind": {"type": "string", "enum": ["major", "minor", "patch"]},
+      "dryRun": {"type": "boolean", "default": true}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_ci_template",
+    "description": "Write CI template files",
+    "inputSchema": {"type": "object", "properties": {
+      "kind": {"type": "string", "enum": ["github", "gitlab"],
+          "default": "github"}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_env",
+    "description": "Return resolved Build Environment details",
+    "inputSchema": {"type": "object", "properties": {
+      "profile": {"type": "string", "default": "dev"},
+      "features": {"type": "array", "items": {"type": "string"}},
+      "allFeatures": {"type": "boolean", "default": false},
+      "noDefaultFeatures": {"type": "boolean", "default": false}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_doctor",
+    "description": "Check configured toolchain requirements",
+    "inputSchema": {"type": "object", "properties": {}}
+  })
+  tools.add(%*{
+    "name": "bau_shell_init",
+    "description": "Add Bau's binary directory to shell startup state",
+    "inputSchema": {"type": "object", "properties": {
+      "shell": {"type": "string", "description": "bash, zsh, fish, or sh"}
+    }}
+  })
+  tools.add(%*{
+    "name": "bau_new",
+    "description": "Create a new Bau project directory",
+    "inputSchema": {"type": "object", "required": ["path"], "properties": {
+      "path": {"type": "string"},
+      "name": {"type": "string"},
+      "kind": {"type": "string", "enum": ["bin", "lib"], "default": "bin"},
+      "force": {"type": "boolean", "default": false}
+    }}
+  })
   result = %*{"tools": tools}
 
 proc operationOptions(args: JsonNode): OperationOptions =
@@ -260,11 +416,15 @@ proc operationOptions(args: JsonNode): OperationOptions =
   result.since = args{"since"}.getStr("HEAD")
   result.allFeatures = args{"allFeatures"}.getBool(false)
   result.noDefaultFeatures = args{"noDefaultFeatures"}.getBool(false)
+  result.jobs = args{"jobs"}.getInt(0)
+  result.jobsExplicit = args.hasKey("jobs")
   if args.hasKey("features") and args["features"].kind == JArray:
     for item in args["features"].getElems():
       result.features.add(item.getStr())
   if args.hasKey("task"):
     result.taskName = args["task"].getStr()
+  if result.taskName.len == 0 and args.hasKey("name"):
+    result.taskName = args["name"].getStr()
   if args.hasKey("kind"):
     result.queryKind = args["kind"].getStr()
   if args.hasKey("name"):
@@ -275,6 +435,7 @@ proc operationOptions(args: JsonNode): OperationOptions =
   if args.hasKey("args") and args["args"].kind == JArray:
     for item in args["args"].getElems():
       result.runArgs.add(item.getStr())
+      result.taskArgs.add(item.getStr())
   result.filter = args{"filter"}.getStr("")
   result.precise = args{"precise"}.getStr("")
   result.verbose = args{"verbose"}.getBool(false)
@@ -285,6 +446,23 @@ proc operationOptions(args: JsonNode): OperationOptions =
   result.targetName = args{"target"}.getStr("")
   result.installAction = args{"action"}.getStr("")
   result.installDir = args{"installDir"}.getStr("")
+  result.depsAction = args{"action"}.getStr("")
+  result.cacheAction = args{"action"}.getStr("")
+  result.affectedAction = args{"action"}.getStr("")
+  result.list = args{"list"}.getBool(false)
+  result.write = args{"write"}.getBool(false)
+  result.keepGoing = args{"keepGoing"}.getBool(false)
+  result.offline = args{"offline"}.getBool(false)
+  result.locked = args{"locked"}.getBool(false)
+  result.bumpKind = args{"kind"}.getStr("")
+  result.ciKind = args{"kind"}.getStr("")
+  result.shellName = args{"shell"}.getStr("")
+  result.testChanged = args{"changed"}.getBool(false)
+  result.testFull = args{"full"}.getBool(false)
+  result.testFast = args{"fast"}.getBool(false)
+  result.testNoMatrix = args{"noMatrix"}.getBool(false)
+  result.testNoRunner = args{"noRunner"}.getBool(false)
+  result.testShowOutput = args{"showOutput"}.getStr("")
   result.depGit = args{"git"}.getStr("")
   result.depTag = args{"tag"}.getStr("")
   result.depBranch = args{"branch"}.getStr("")
@@ -307,9 +485,9 @@ proc resourcesList(projectDir: string): JsonNode =
   discard projectDir
   var resources = newJArray()
   resources.add(%*{
-    "uri": "bau://config",
-    "name": "Project configuration",
-    "description": "Merged effective bau.toml configuration",
+    "uri": "bau://manifest",
+    "name": "Project Manifest",
+    "description": "Effective Project Manifest metadata",
     "mimeType": "application/json"
   })
   resources.add(%*{
@@ -414,7 +592,7 @@ proc readResource(uri: string; projectDir: string): OperationResult =
       return OperationResult(ok: false, json: %*{"error": "no bau.toml found"})
     let cfg = loadEffectiveConfig(projectDir)
     case uri
-    of "bau://config":
+    of "bau://manifest":
       resultJson(configMetadataJson(cfg, projectDir))
     of "bau://targets":
       resultJson(targetResources(cfg))
@@ -489,6 +667,15 @@ proc execTool(name: string; args: JsonNode;
   of "bau_init":
     result = initOperation(projectDir, opts)
 
+  of "bau_new":
+    var newOpts = opts
+    newOpts.initDir = args{"path"}.getStr("")
+    if newOpts.initDir.len == 0:
+      return toolError("path is required")
+    if newOpts.initName.len == 0:
+      newOpts.initName = extractFilename(newOpts.initDir)
+    result = initOperation(projectDir, newOpts)
+
   of "bau_convert":
     var convertOpts = opts
     if not args.hasKey("dryRun"):
@@ -497,6 +684,15 @@ proc execTool(name: string; args: JsonNode;
 
   of "bau_fmt":
     result = fmtOperation(projectDir, opts)
+
+  of "bau_lint":
+    result = lintOperation(projectDir, opts)
+
+  of "bau_ci":
+    result = ciOperation(projectDir, opts)
+
+  of "bau_task":
+    result = taskOperation(projectDir, opts)
 
   of "bau_explain":
     result = explainOperation(projectDir, opts)
@@ -521,6 +717,48 @@ proc execTool(name: string; args: JsonNode;
 
   of "bau_deps_verify":
     result = depsVerifyOperation(projectDir, operationOptions(args))
+
+  of "bau_cache":
+    result = cacheOperation(projectDir, operationOptions(args))
+
+  of "bau_tree":
+    result = dependencyTreeOperation(projectDir, operationOptions(args))
+
+  of "bau_outdated":
+    result = dependencyStatusOperation(projectDir, operationOptions(args))
+
+  of "bau_tailor":
+    result = tailorOperation(projectDir, operationOptions(args))
+
+  of "bau_package":
+    var packageOpts = operationOptions(args)
+    if not args.hasKey("dryRun"):
+      packageOpts.dryRun = true
+    result = packageOperation(projectDir, packageOpts)
+
+  of "bau_publish":
+    var publishOpts = operationOptions(args)
+    if not args.hasKey("dryRun"):
+      publishOpts.dryRun = true
+    result = publishOperation(projectDir, publishOpts)
+
+  of "bau_bump":
+    var bumpOpts = operationOptions(args)
+    if not args.hasKey("dryRun"):
+      bumpOpts.dryRun = true
+    result = bumpOperation(projectDir, bumpOpts)
+
+  of "bau_ci_template":
+    result = ciTemplateOperation(projectDir, operationOptions(args))
+
+  of "bau_env":
+    result = envOperation(projectDir, operationOptions(args))
+
+  of "bau_doctor":
+    result = doctorOperation(projectDir, operationOptions(args))
+
+  of "bau_shell_init":
+    result = shellInitOperation(projectDir, operationOptions(args))
 
   else:
     result = toolError("unknown tool: " & name)

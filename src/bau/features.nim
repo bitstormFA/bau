@@ -4,9 +4,9 @@ import std/[algorithm, sets, strutils, tables]
 import bau/config
 
 type
-  FeatureSelection* = object ## Result of resolving requested and default features.
-    requested*: seq[string] ## Feature names explicitly requested by the caller.
-    enabled*: seq[string] ## Non-default feature names enabled after expansion.
+  FeatureSelection* = object  ## Result of resolving requested and default features.
+    requested*: seq[string]   ## Feature names explicitly requested by the caller.
+    enabled*: seq[string]     ## Non-default feature names enabled after expansion.
     enabledDeps*: seq[string] ## Optional dependency names enabled by features.
 
 proc normalizeFeatureDefine*(name: string): string =

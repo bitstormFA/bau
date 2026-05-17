@@ -3,65 +3,85 @@
 import std/[algorithm, json, options, os, sets, strutils, tables, times]
 import bau/[affected, atlas, build, config, depscheck, features, fingerprint,
   init, lock, metadata, nimble, taskcache, util, workspace, configedit, docgen,
-  installer]
+  installer, ci_templates, packaging, tailor, taskgraph, testexec, toolchain]
 
 type
-  OperationOptions* = object ## Shared options accepted by CLI and MCP operations.
-    profile*: string ## Build or documentation profile.
-    features*: seq[string] ## Explicit feature names requested by the caller.
-    allFeatures*: bool ## Enable every non-default feature.
-    noDefaultFeatures*: bool ## Skip the default feature.
-    since*: string ## Git revision or ref for affected analysis.
-    taskName*: string ## Task name for task-oriented operations.
-    queryKind*: string ## Query mode such as `deps` or `why`.
-    queryName*: string ## Target, task, feature, or dependency being queried.
-    runArgs*: seq[string] ## Arguments passed through to `run`.
-    filter*: string ## Optional dependency or test filter.
-    precise*: string ## Exact dependency revision for update operations.
-    verbose*: bool ## Whether nested commands should print details.
-    allTargets*: bool ## Select all eligible targets.
-    update*: bool ## Request dependency update rather than sync.
-    force*: bool ## Allow overwriting or bypass cached state.
-    dryRun*: bool ## Plan the operation without writing when supported.
-    targetName*: string ## Explicit build or install target name.
-    installAction*: string ## Install action text such as `install` or `remove`.
-    installDir*: string ## Installation directory override.
-    depName*: string ## Dependency name for add/remove operations.
-    depVersion*: string ## Dependency version requirement.
-    depGit*: string ## Dependency Git URL.
-    depTag*: string ## Dependency Git tag.
-    depBranch*: string ## Dependency Git branch.
-    depRev*: string ## Dependency exact Git revision.
-    depPath*: string ## Dependency local path.
-    depRegistry*: string ## Dependency registry source.
-    depOptional*: bool ## Whether the dependency is optional.
-    initName*: string ## Package name for project initialization.
-    initKind*: string ## Project kind for initialization.
-    initDir*: string ## Directory for project initialization.
-    convertPath*: string ## Nimble file or directory to convert.
-    formatVersion*: int ## Metadata JSON format version.
-    docOutDir*: string ## Documentation output directory override.
+  OperationOptions* = object     ## Shared options accepted by CLI and MCP operations.
+    profile*: string             ## Build or documentation profile.
+    features*: seq[string]       ## Explicit feature names requested by the caller.
+    allFeatures*: bool           ## Enable every non-default feature.
+    noDefaultFeatures*: bool     ## Skip the default feature.
+    since*: string               ## Git revision or ref for affected analysis.
+    taskName*: string            ## Task name for task-oriented operations.
+    queryKind*: string           ## Query mode such as `deps` or `why`.
+    queryName*: string           ## Target, task, feature, or dependency being queried.
+    runArgs*: seq[string]        ## Arguments passed through to `run`.
+    filter*: string              ## Optional dependency or test filter.
+    precise*: string             ## Exact dependency revision for update operations.
+    verbose*: bool               ## Whether nested commands should print details.
+    allTargets*: bool            ## Select all eligible targets.
+    update*: bool                ## Request dependency update rather than sync.
+    force*: bool                 ## Allow overwriting or bypass cached state.
+    dryRun*: bool                ## Plan the operation without writing when supported.
+    targetName*: string          ## Explicit build or install target name.
+    installAction*: string       ## Install action text such as `install` or `remove`.
+    installDir*: string          ## Installation directory override.
+    depName*: string             ## Dependency name for add/remove operations.
+    depVersion*: string          ## Dependency version requirement.
+    depGit*: string              ## Dependency Git URL.
+    depTag*: string              ## Dependency Git tag.
+    depBranch*: string           ## Dependency Git branch.
+    depRev*: string              ## Dependency exact Git revision.
+    depPath*: string             ## Dependency local path.
+    depRegistry*: string         ## Dependency registry source.
+    depOptional*: bool           ## Whether the dependency is optional.
+    initName*: string            ## Package name for project initialization.
+    initKind*: string            ## Project kind for initialization.
+    initDir*: string             ## Directory for project initialization.
+    convertPath*: string         ## Nimble file or directory to convert.
+    formatVersion*: int          ## Metadata JSON format version.
+    docOutDir*: string           ## Documentation output directory override.
     docEntrypoints*: seq[string] ## Additional documentation entrypoints.
-    docSkipExamples*: bool ## Skip compiling runnable examples during docs.
-    docIncludePrivate*: bool ## Include private symbols in docs.
-    docNoIndex*: bool ## Suppress generated docs index.
+    docSkipExamples*: bool       ## Skip compiling runnable examples during docs.
+    docIncludePrivate*: bool     ## Include private symbols in docs.
+    docNoIndex*: bool            ## Suppress generated docs index.
+    depsAction*: string          ## Dependency action such as `sync`, `lock`, or `vendor`.
+    cacheAction*: string         ## Task cache action such as `list`, `clean`, or `explain`.
+    affectedAction*: string ## Affected action such as `list`, `check`, `test`, or `build`.
+    list*: bool                  ## Request list output for operations that support it.
+    write*: bool                 ## Write discovered changes when supported.
+    keepGoing*: bool             ## Continue independent task dependencies after failures.
+    taskArgs*: seq[string]       ## Arguments passed to the root task.
+    offline*: bool               ## Avoid network dependency operations.
+    locked*: bool                ## Require an up-to-date lockfile before dependency work.
+    bumpKind*: string            ## Version component to bump.
+    ciKind*: string              ## CI template kind such as `github` or `gitlab`.
+    shellName*: string           ## Shell name for shell initialization.
+    testChanged*: bool           ## Limit tests to changed files.
+    testFull*: bool              ## Run the full configured test matrix.
+    testFast*: bool              ## Run the fast local test mode.
+    testNoMatrix*: bool          ## Run one test profile instead of the matrix.
+    testNoRunner*: bool          ## Discover test files instead of using a runner.
+    testShowOutput*: string      ## Test output mode override.
+    jobs*: int                   ## Maximum parallel jobs for operations that support it.
+    jobsExplicit*: bool          ## True when jobs was provided explicitly.
 
   CompileCommandsMemberResult* = object ## Per-member compile commands summary.
-    path*: string ## Workspace member path.
-    name*: string ## Workspace member package name.
-    entries*: int ## Number of compile command entries written.
+    path*: string                       ## Workspace member path.
+    name*: string                       ## Workspace member package name.
+    entries*: int                       ## Number of compile command entries written.
 
-  CompileCommandsResult* = object ## Result of generating compile commands.
+  CompileCommandsResult* = object              ## Result of generating compile commands.
     workspace*: bool ## True when multiple workspace members were processed.
-    root*: string ## Workspace or project root.
-    path*: string ## Single-project compile commands path.
-    entries*: int ## Single-project entry count.
+    root*: string                              ## Workspace or project root.
+    path*: string                              ## Single-project compile commands path.
+    entries*: int                              ## Single-project entry count.
     members*: seq[CompileCommandsMemberResult] ## Workspace member summaries.
 
   OperationResult* = object ## Standard result returned by operation APIs.
-    ok*: bool ## True when the operation succeeded.
-    json*: JsonNode ## Machine-readable result payload.
-    output*: string ## Human-readable or compiler output.
+    ok*: bool               ## True when the operation succeeded.
+    json*: JsonNode         ## Machine-readable result payload.
+    output*: string         ## Human-readable or compiler output.
 
 proc defaultOperationOptions*(): OperationOptions =
   ## Return default operation options shared by CLI and MCP callers.
@@ -84,68 +104,81 @@ proc loadProject(projectDir: string): WorkspaceProject =
     name: cfg.package.name,
     cfg: cfg)
 
+proc workspaceNode(root: string; kind: string; members: JsonNode): JsonNode
+proc singleProject(projects: openArray[WorkspaceProject]): bool
+proc depsVerifyOperation*(projectDir: string;
+    opts: OperationOptions): OperationResult
+
 proc buildOperation*(projectDir: string;
     opts: OperationOptions = defaultOperationOptions()): OperationResult =
-  ## Build the default project target.
-  let project = loadProject(projectDir)
-  let selection = featureSelection(opts, project.cfg)
-  let binary = buildSingleTarget(project.cfg, opts.profile, project.projectDir,
-    opts.verbose, selection)
-  resultJson(%*{"binary": binary, "profile": opts.profile})
+  ## Build project targets.
+  let projects = loadWorkspaceProjects(projectDir)
+  var targets = newJArray()
+  for project in projects:
+    let selection = featureSelection(opts, project.cfg)
+    if opts.targetName.len > 0:
+      let binary = buildTargetByName(project.cfg, opts.targetName, opts.profile,
+        project.projectDir, opts.verbose, selection)
+      targets.add(%*{"path": project.path, "name": project.name,
+        "target": opts.targetName, "binary": binary})
+    elif opts.allTargets:
+      buildAllTargets(project.cfg, opts.profile, project.projectDir,
+        opts.verbose, selection)
+      targets.add(%*{"path": project.path, "name": project.name,
+        "allTargets": true})
+    else:
+      let binary = buildSingleTarget(project.cfg, opts.profile,
+        project.projectDir, opts.verbose, selection)
+      targets.add(%*{"path": project.path, "name": project.name,
+        "target": defaultTargetName(project.cfg), "binary": binary})
+  if singleProject(projects):
+    return resultJson(targets[0])
+  resultJson(workspaceNode(projectDir, "build", targets))
 
 proc runOperation*(projectDir: string;
     opts: OperationOptions = defaultOperationOptions()): OperationResult =
-  ## Build and run the default project target.
+  ## Build and run a project target.
   let project = loadProject(projectDir)
   let selection = featureSelection(opts, project.cfg)
-  runTarget(project.cfg, -1, opts.profile, project.projectDir, opts.runArgs,
-    opts.verbose, selection)
-  resultJson(%*{"status": "completed", "profile": opts.profile})
+  if opts.targetName.len > 0:
+    runTargetByName(project.cfg, opts.targetName, opts.profile,
+      project.projectDir, opts.runArgs, opts.verbose, selection)
+  else:
+    runTarget(project.cfg, -1, opts.profile, project.projectDir, opts.runArgs,
+      opts.verbose, selection)
+  resultJson(%*{"status": "completed", "profile": opts.profile,
+    "target": if opts.targetName.len > 0: opts.targetName else:
+      defaultTargetName(project.cfg)})
 
 proc testOperation*(projectDir: string;
     opts: OperationOptions = defaultOperationOptions()): OperationResult =
-  ## Compile and run project tests, returning counts and failures.
+  ## Compile and run project tests, returning aggregate counts.
   let project = loadProject(projectDir)
   let cfg = project.cfg
   let selection = featureSelection(opts, cfg)
-  let profName = if cfg.profiles.hasKey("test"): "test" else: opts.profile
-  let prof = if cfg.profiles.hasKey(profName):
-               resolveProfile(cfg.profiles, profName)
-             else:
-               initProfileInfo()
-  let testDir = project.projectDir / "tests"
-  if not dirExists(testDir):
-    return resultJson(%*{"passed": 0, "failed": 0, "total": 0,
-      "failures": [], "message": "no tests directory"})
-  var testFiles: seq[string]
-  let runner = testDir / "tester.nim"
-  if fileExists(runner) and opts.filter.len == 0:
-    testFiles.add(runner)
-  else:
-    for file in walkFiles(testDir / "t*.nim"):
-      let name = file.extractFilename
-      if "thelper" notin name and (opts.filter.len == 0 or opts.filter in name):
-        testFiles.add(file)
-  testFiles.sort()
-  let outDir = absolutePath(project.projectDir) / BuildDirName / profName
-  let flags = collectCompilerFlags(prof, bkTest, outDir, cfg.build.source,
-    project.projectDir, cfg, selection)
-  var passed = 0
-  var failed = 0
-  var failures = newJArray()
-  for file in testFiles:
-    var args = @["c", "-r"]
-    args.add(flags)
-    args.add(file)
-    let (exitCode, output) = runCmd(detectNimCompiler(), args,
-      project.projectDir)
-    if exitCode == 0:
-      inc passed
-    else:
-      inc failed
-      failures.add(%*{"file": file.extractFilename, "output": output})
-  OperationResult(ok: failed == 0, json: %*{"passed": passed,
-    "failed": failed, "total": testFiles.len, "failures": failures})
+  if not dirExists(project.projectDir / "tests") and cfg.test.runner.len == 0:
+    return resultJson(%*{"planned": 0, "passed": 0, "failed": 0,
+      "message": "no tests directory"})
+  let testResult = runTests(cfg, project.projectDir, TestRunOptions(
+    profile: opts.profile,
+    profileExplicit: false,
+    filter: opts.filter,
+    changed: opts.testChanged,
+    since: opts.since,
+    passthroughArgs: opts.runArgs,
+    showOutput: effectiveTestOutputMode(cfg, opts.testShowOutput),
+    verbose: opts.verbose,
+    dryRun: opts.dryRun,
+    jobs: opts.jobs,
+    jobsExplicit: opts.jobsExplicit,
+    noMatrix: opts.testNoMatrix,
+    full: opts.testFull,
+    fast: opts.testFast,
+    noRunner: opts.testNoRunner,
+    featureSelection: selection))
+  OperationResult(ok: opts.dryRun or testResult.failed == 0,
+    json: %*{"planned": testResult.planned, "passed": testResult.passed,
+      "failed": testResult.failed})
 
 proc checkOperation*(projectDir: string;
     opts: OperationOptions = defaultOperationOptions()): OperationResult =
@@ -162,11 +195,22 @@ proc checkOperation*(projectDir: string;
   let flags = collectCompilerFlags(prof, cfg.build.kind, outDir, sourceDir,
     project.projectDir, cfg, selection)
   var mains: seq[string]
-  if cfg.build.main.len > 0:
+  if opts.allTargets:
+    if cfg.build.main.len > 0:
+      mains.add(cfg.build.main)
+    for target in cfg.targets:
+      if target.main.len > 0 and target.main notin mains:
+        mains.add(target.main)
+  elif opts.targetName.len > 0:
+    let idx = findTargetIndex(cfg, opts.targetName)
+    if idx >= 0:
+      mains.add(cfg.targets[idx].main)
+    elif opts.targetName == defaultTargetName(cfg):
+      mains.add(cfg.build.main)
+    else:
+      return errorJson("target not found: " & opts.targetName)
+  elif cfg.build.main.len > 0:
     mains.add(cfg.build.main)
-  for target in cfg.targets:
-    if target.main.len > 0 and target.main notin mains:
-      mains.add(target.main)
   if mains.len == 0:
     return errorJson("no main files configured")
   var results = newJArray()
@@ -287,6 +331,52 @@ proc installOperation*(projectDir: string;
   except CatchableError as e:
     errorJson(e.msg)
 
+proc toLockProjects(projects: openArray[WorkspaceProject]): seq[LockProject] =
+  for project in projects:
+    result.add(LockProject(path: project.path, projectDir: project.projectDir,
+      cfg: project.cfg))
+
+proc unresolvedForProjects(projects: openArray[WorkspaceProject];
+    lockFile: LockFile): seq[string] =
+  for project in projects:
+    for name in unresolvedLockEntries(project.cfg, lockFile,
+        project.projectDir):
+      result.add(project.path & ":" & name)
+  result.sort()
+
+proc dependencyCheckNode(check: DependencyCheck): JsonNode =
+  %*{"ok": check.ok, "messages": check.messages}
+
+proc dependencyCheckNode(report: LockValidationReport): JsonNode =
+  var diagnostics = newJArray()
+  for item in report.diagnostics:
+    diagnostics.add(%*{"kind": $item.kind, "packageName": item.packageName,
+      "path": item.path, "message": item.message})
+  %*{"ok": report.ok, "messages": report.messages,
+    "diagnostics": diagnostics}
+
+proc dependencyCheckNode(check: ToolchainCheck): JsonNode =
+  %*{"ok": check.ok, "messages": check.messages}
+
+proc vendorDependencies(projectDir: string): JsonNode =
+  let depsDir = projectDir / "deps"
+  if not dirExists(depsDir):
+    raise newException(IOError, "no deps/ directory found; run deps sync first")
+  let vendorDir = projectDir / "vendor"
+  if dirExists(vendorDir):
+    removeDir(vendorDir)
+  copyDir(depsDir, vendorDir)
+  var manifest = "# bau vendor checksums\n"
+  var packages = newJArray()
+  for kind, path in walkDir(vendorDir):
+    if kind == pcDir:
+      let name = path.extractFilename
+      let checksum = checksumPath(path)
+      manifest.add(name & " = " & toTomlString(checksum) & "\n")
+      packages.add(%*{"name": name, "checksum": checksum})
+  saveFile(vendorDir / ".bau-vendor-checksums", manifest)
+  %*{"vendorDir": vendorDir, "packages": packages}
+
 proc checkoutPrecise(projectDir, depName, precise: string): OperationResult =
   if precise.len == 0:
     return resultJson(%*{"status": "skipped"})
@@ -303,34 +393,147 @@ proc checkoutPrecise(projectDir, depName, precise: string): OperationResult =
     "precise": precise})
 
 proc depsOperation*(projectDir: string; opts: OperationOptions): OperationResult =
-  ## Sync or update dependencies, then refresh `bau.lock`.
-  let project = loadProject(projectDir)
-  if opts.update:
-    updateDeps(project.projectDir, opts.filter, verbose = opts.verbose)
-    let precise = checkoutPrecise(project.projectDir, opts.filter, opts.precise)
-    if not precise.ok:
-      return precise
-    let refreshed = loadEffectiveConfig(project.projectDir)
-    let lockFile = generateLockFile(refreshed, project.projectDir)
-    let unresolved = unresolvedLockEntries(refreshed, lockFile,
-      project.projectDir)
-    if unresolved.len > 0:
-      return errorJson("dependency material missing after update: " &
-        unresolved.join(", "))
-    writeLockFile(lockFile, project.projectDir / LockFileName)
-    return resultJson(%*{"status": "updated"})
+  ## Run dependency sync, lock, update, verify, vendor, or patch operations.
+  var action = opts.depsAction
+  if action.len == 0:
+    action = if opts.update: "update" else: "sync"
+  let depFilter = if opts.filter.len > 0: opts.filter else: opts.depName
 
-  let selection = featureSelection(opts, project.cfg)
-  syncDeps(project.cfg, project.projectDir, verbose = opts.verbose,
-    featureSelection = selection)
-  let lockFile = generateLockFile(project.cfg, project.projectDir)
-  let unresolved = unresolvedLockEntries(project.cfg, lockFile,
-    project.projectDir)
-  if unresolved.len > 0:
-    return errorJson("dependency material missing after sync: " &
-      unresolved.join(", "))
-  writeLockFile(lockFile, project.projectDir / LockFileName)
-  resultJson(%*{"status": "synced"})
+  try:
+    if isWorkspaceRoot(projectDir) and action in ["lock", "sync", "update",
+        "verify", "vendor"]:
+      let projects = loadWorkspaceProjects(projectDir)
+      let lockProjects = toLockProjects(projects)
+      let lockPath = projectDir / LockFileName
+      if opts.locked:
+        let report = validateLockFile(lockProjects, projectDir, lockPath)
+        if not report.ok:
+          return OperationResult(ok: false, json: dependencyCheckNode(report))
+
+      case action
+      of "lock":
+        let lockFile = generateLockFile(lockProjects, projectDir)
+        let unresolved = unresolvedForProjects(projects, lockFile)
+        if unresolved.len > 0:
+          return errorJson("cannot write reproducible " & LockFileName &
+            "; dependency material is missing for " & unresolved.join(", "))
+        writeLockFile(lockFile, lockPath)
+        return resultJson(%*{"status": "locked", "workspace": true,
+          "path": lockPath})
+      of "sync":
+        var selections: seq[FeatureSelection]
+        for project in projects:
+          selections.add(featureSelection(opts, project.cfg))
+        if opts.offline:
+          let check = checkOfflineDependencies(lockProjects, projectDir,
+            lockPath, selections)
+          return OperationResult(ok: check.ok, json: dependencyCheckNode(check))
+        for i, project in projects:
+          syncDeps(project.cfg, project.projectDir, verbose = opts.verbose,
+            featureSelection = selections[i])
+        let lockFile = generateLockFile(lockProjects, projectDir)
+        let unresolved = unresolvedForProjects(projects, lockFile)
+        if unresolved.len > 0:
+          return errorJson("dependency material missing after sync: " &
+            unresolved.join(", "))
+        writeLockFile(lockFile, lockPath)
+        return resultJson(%*{"status": "synced", "workspace": true,
+          "path": lockPath})
+      of "update":
+        if opts.offline:
+          return errorJson("deps update cannot run with --offline")
+        for project in projects:
+          updateDeps(project.projectDir, depFilter, verbose = opts.verbose)
+          let precise = checkoutPrecise(project.projectDir, depFilter,
+            opts.precise)
+          if not precise.ok:
+            return precise
+        let refreshed = loadWorkspaceProjects(projectDir)
+        let refreshedLockProjects = toLockProjects(refreshed)
+        let lockFile = generateLockFile(refreshedLockProjects, projectDir)
+        let unresolved = unresolvedForProjects(refreshed, lockFile)
+        if unresolved.len > 0:
+          return errorJson("dependency material missing after update: " &
+            unresolved.join(", "))
+        writeLockFile(lockFile, lockPath)
+        return resultJson(%*{"status": "updated", "workspace": true,
+          "path": lockPath})
+      of "verify":
+        return depsVerifyOperation(projectDir, opts)
+      of "vendor":
+        var members = newJArray()
+        for project in projects:
+          members.add(%*{"path": project.path, "name": project.name,
+            "vendor": vendorDependencies(project.projectDir)})
+        return resultJson(workspaceNode(projectDir, "vendor", members))
+      else:
+        discard
+
+    let project = loadProject(projectDir)
+    if opts.locked:
+      let report = validateLockFile(project.cfg, project.projectDir,
+        project.projectDir / LockFileName)
+      if not report.ok:
+        return OperationResult(ok: false, json: dependencyCheckNode(report))
+
+    case action
+    of "lock":
+      let lockFile = generateLockFile(project.cfg, project.projectDir)
+      let unresolved = unresolvedLockEntries(project.cfg, lockFile,
+        project.projectDir)
+      if unresolved.len > 0:
+        return errorJson("cannot write reproducible " & LockFileName &
+          "; dependency material is missing for " & unresolved.join(", "))
+      writeLockFile(lockFile, project.projectDir / LockFileName)
+      resultJson(%*{"status": "locked", "path": project.projectDir / LockFileName})
+    of "sync":
+      let selection = featureSelection(opts, project.cfg)
+      if opts.offline:
+        let check = checkOfflineDependencies(project.cfg, project.projectDir,
+          selection)
+        return OperationResult(ok: check.ok, json: dependencyCheckNode(check))
+      syncDeps(project.cfg, project.projectDir, verbose = opts.verbose,
+        featureSelection = selection)
+      let lockFile = generateLockFile(project.cfg, project.projectDir)
+      let unresolved = unresolvedLockEntries(project.cfg, lockFile,
+        project.projectDir)
+      if unresolved.len > 0:
+        return errorJson("dependency material missing after sync: " &
+          unresolved.join(", "))
+      writeLockFile(lockFile, project.projectDir / LockFileName)
+      resultJson(%*{"status": "synced", "path": project.projectDir / LockFileName})
+    of "update":
+      if opts.offline:
+        return errorJson("deps update cannot run with --offline")
+      updateDeps(project.projectDir, depFilter, verbose = opts.verbose)
+      let precise = checkoutPrecise(project.projectDir, depFilter,
+        opts.precise)
+      if not precise.ok:
+        return precise
+      let refreshed = loadEffectiveConfig(project.projectDir)
+      let lockFile = generateLockFile(refreshed, project.projectDir)
+      let unresolved = unresolvedLockEntries(refreshed, lockFile,
+        project.projectDir)
+      if unresolved.len > 0:
+        return errorJson("dependency material missing after update: " &
+          unresolved.join(", "))
+      writeLockFile(lockFile, project.projectDir / LockFileName)
+      resultJson(%*{"status": "updated", "path": project.projectDir / LockFileName})
+    of "verify":
+      depsVerifyOperation(projectDir, opts)
+    of "vendor":
+      resultJson(%*{"status": "vendored", "vendor": vendorDependencies(
+        project.projectDir)})
+    of "patch":
+      if opts.depName.len == 0 or opts.depPath.len == 0:
+        return errorJson("deps patch requires dependency name and path")
+      writePatchEntry(project.projectDir, opts.depName, opts.depPath)
+      resultJson(%*{"status": "patched", "name": opts.depName,
+        "path": opts.depPath})
+    else:
+      errorJson("unknown deps action: " & action)
+  except CatchableError as e:
+    errorJson(e.msg)
 
 proc dependencyEdit(opts: OperationOptions): DependencyEdit =
   result = initDependencyEdit(opts.depName)
@@ -504,9 +707,6 @@ proc explainBuildNode(project: WorkspaceProject;
     result["wouldSkip"] = %false
     result["message"] = %"no cached fingerprint; build has not run for this target/profile"
 
-proc workspaceNode(root: string; kind: string; members: JsonNode): JsonNode
-proc singleProject(projects: openArray[WorkspaceProject]): bool
-
 proc explainOperation*(projectDir: string;
     opts: OperationOptions = defaultOperationOptions()): OperationResult =
   ## Explain build fingerprint state for a project or workspace.
@@ -659,25 +859,105 @@ proc affectedJson(report: AffectedReport): JsonNode =
     "tasks": report.tasks
   }
 
+proc affectedCheckNode(project: WorkspaceProject; report: AffectedReport;
+    opts: OperationOptions): JsonNode =
+  let selection = featureSelection(opts, project.cfg)
+  let prof = if project.cfg.profiles.hasKey(opts.profile):
+               resolveProfile(project.cfg.profiles, opts.profile)
+             else:
+               initProfileInfo()
+  let sourceDir = if project.cfg.build.source.len > 0:
+                    project.cfg.build.source
+                  else:
+                    "src"
+  let outDir = absolutePath(project.projectDir) / BuildDirName / opts.profile
+  let flags = collectCompilerFlags(prof, project.cfg.build.kind, outDir,
+    sourceDir, project.projectDir, project.cfg, selection)
+  var checks = newJArray()
+  var ok = true
+  for target in report.targets:
+    let idx = findTargetIndex(project.cfg, target)
+    let mainFile = if idx >= 0: project.cfg.targets[idx].main else:
+                     project.cfg.build.main
+    var args = @["check"]
+    args.add(flags)
+    args.add(mainFile)
+    let (exitCode, output) = runCmd(detectNimCompiler(), args,
+      project.projectDir)
+    if exitCode != 0:
+      ok = false
+    checks.add(%*{"target": target, "file": mainFile, "exitCode": exitCode,
+      "output": output})
+  %*{"ok": ok, "checks": checks}
+
 proc affectedOperation*(projectDir: string;
     opts: OperationOptions = defaultOperationOptions()): OperationResult =
-  ## Return affected targets, tests, tasks, and source files.
+  ## Return or run affected targets, tests, tasks, and source files.
+  let action = if opts.affectedAction.len > 0: opts.affectedAction else: "list"
   let projects = loadWorkspaceProjects(projectDir)
   if singleProject(projects):
-    return resultJson(affectedJson(computeAffected(projects[0].cfg,
-      projects[0].projectDir, opts.since)))
+    let report = computeAffected(projects[0].cfg, projects[0].projectDir,
+      opts.since)
+    case action
+    of "list":
+      return resultJson(affectedJson(report))
+    of "build":
+      let selection = featureSelection(opts, projects[0].cfg)
+      var built = newJArray()
+      for target in report.targets:
+        let binary = buildTargetByName(projects[0].cfg, target, opts.profile,
+          projects[0].projectDir, opts.verbose, selection)
+        built.add(%*{"target": target, "binary": binary})
+      return resultJson(%*{"built": built})
+    of "test":
+      var testOpts = opts
+      testOpts.testChanged = true
+      return testOperation(projects[0].projectDir, testOpts)
+    of "check":
+      let node = affectedCheckNode(projects[0], report, opts)
+      return OperationResult(ok: node["ok"].getBool(), json: node)
+    else:
+      return errorJson("unknown affected action: " & action)
 
   let rootChanges = gitChangedFiles(projectDir, opts.since)
   var members = newJArray()
+  var ok = true
   for project in projects:
     let report = computeAffectedFromChanges(project.cfg, project.projectDir,
       relativeMemberChanges(projectDir, project, rootChanges))
-    members.add(%*{"path": project.path, "name": project.name,
-      "affected": affectedJson(report)})
-  resultJson(workspaceNode(projectDir, "affected", members))
+    case action
+    of "list":
+      members.add(%*{"path": project.path, "name": project.name,
+        "affected": affectedJson(report)})
+    of "build":
+      let selection = featureSelection(opts, project.cfg)
+      var built = newJArray()
+      for target in report.targets:
+        let binary = buildTargetByName(project.cfg, target, opts.profile,
+          project.projectDir, opts.verbose, selection)
+        built.add(%*{"target": target, "binary": binary})
+      members.add(%*{"path": project.path, "name": project.name,
+        "built": built})
+    of "test":
+      var testOpts = opts
+      testOpts.testChanged = true
+      let tested = testOperation(project.projectDir, testOpts)
+      if not tested.ok:
+        ok = false
+      members.add(%*{"path": project.path, "name": project.name,
+        "test": tested.json})
+    of "check":
+      let checked = affectedCheckNode(project, report, opts)
+      if not checked["ok"].getBool():
+        ok = false
+      members.add(%*{"path": project.path, "name": project.name,
+        "check": checked})
+    else:
+      return errorJson("unknown affected action: " & action)
+  OperationResult(ok: ok, json: workspaceNode(projectDir, "affected", members))
 
 proc depsVerifyOperation*(projectDir: string;
-    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+    opts: OperationOptions): OperationResult =
   ## Validate dependency policy and lockfile health.
   let projects = loadWorkspaceProjects(projectDir)
   if singleProject(projects):
@@ -825,3 +1105,279 @@ proc compileCommandsOperation*(projectDir: string;
   compiled.entries = allEntries.len
   compiled.path = projects[0].projectDir / "compile_commands.json"
   resultJson(compiled.toJson())
+
+proc lintOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Check Nim source style without rewriting files.
+  let project = loadProject(projectDir)
+  let sourceDir = if project.cfg.build.source.len > 0:
+                    project.cfg.build.source
+                  else:
+                    "src"
+  let absSource = absolutePath(project.projectDir) / sourceDir
+  var files = newJArray()
+  var issues = newJArray()
+  if dirExists(absSource):
+    var lintArgs = @["check", "--styleCheck:error", "--hints:off",
+      "--path:" & absSource]
+    let depsDir = project.projectDir / "deps"
+    if dirExists(depsDir):
+      for kind, path in walkDir(depsDir):
+        if kind == pcDir:
+          lintArgs.add("--path:" & path)
+    for file in walkDirRec(absSource, yieldFilter = {pcFile}):
+      if not file.endsWith(".nim"):
+        continue
+      var fileArgs = lintArgs
+      fileArgs.add(file)
+      let (exitCode, output) = runCmd(detectNimCompiler(), fileArgs)
+      let rel = relativePath(file, project.projectDir).replace("\\", "/")
+      files.add(%rel)
+      if exitCode != 0:
+        issues.add(%*{"file": rel, "exitCode": exitCode, "output": output})
+  let ok = issues.len == 0
+  OperationResult(ok: ok, json: %*{"ok": ok, "files": files,
+    "issues": issues})
+
+proc ciOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Run validation-oriented CI checks without rewriting source files.
+  var checks = newJObject()
+  let lint = lintOperation(projectDir, opts)
+  checks["lint"] = lint.json
+  if not lint.ok:
+    return OperationResult(ok: false, json: %*{"ok": false, "checks": checks})
+
+  var testOpts = opts
+  testOpts.testFull = true
+  let tests = testOperation(projectDir, testOpts)
+  checks["test"] = tests.json
+  OperationResult(ok: tests.ok, json: %*{"ok": tests.ok, "checks": checks})
+
+proc taskInfoNode(task: TaskInfo): JsonNode =
+  %*{
+    "name": task.name,
+    "cmd": task.cmd,
+    "command": task.command,
+    "description": task.description,
+    "deps": task.deps,
+    "inputs": task.inputs,
+    "outputs": task.outputs,
+    "cwd": if task.cwd.isSome: task.cwd.get() else: "",
+    "shell": task.shell,
+    "profile": task.profile,
+    "envInputs": task.envInputs,
+    "cache": task.cache,
+    "acceptArgs": task.acceptArgs,
+    "requiredFeatures": task.requiredFeatures,
+    "tags": task.tags
+  }
+
+proc taskOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## List or run project tasks.
+  let project = loadProject(projectDir)
+  if opts.list:
+    var tasks = newJArray()
+    for task in project.cfg.tasks:
+      tasks.add(taskInfoNode(task))
+    return resultJson(%*{"tasks": tasks})
+  if opts.taskName.len == 0:
+    return errorJson("task name is required")
+  let selection = featureSelection(opts, project.cfg)
+  try:
+    let ok = runTaskByName(project.cfg, opts.taskName, project.projectDir,
+      TaskRunOptions(profile: opts.profile, verbose: opts.verbose,
+        dryRun: opts.dryRun, force: opts.force, keepGoing: opts.keepGoing,
+        features: selection, taskArgs: opts.taskArgs))
+    OperationResult(ok: ok, json: %*{"ok": ok, "task": opts.taskName})
+  except CatchableError as e:
+    errorJson(e.msg)
+
+proc cacheOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## List, clean, or explain task cache entries.
+  let action = if opts.cacheAction.len > 0: opts.cacheAction else:
+                 (if opts.taskName.len > 0: "explain" else: "list")
+  let project = loadProject(projectDir)
+  case action
+  of "list":
+    resultJson(%*{"entries": listTaskCacheEntries(project.projectDir,
+      project.cfg)})
+  of "clean":
+    cleanTaskCache(project.projectDir, project.cfg)
+    resultJson(%*{"status": "cleaned"})
+  of "explain":
+    cacheExplainOperation(projectDir, opts)
+  else:
+    errorJson("unknown cache action: " & action)
+
+proc dependencyTreeOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Return dependency tree data for a project or workspace.
+  let projects = loadWorkspaceProjects(projectDir)
+  if singleProject(projects):
+    return resultJson(dependencyTreeJson(projects[0].cfg, projects[0].projectDir))
+  var members = newJArray()
+  for project in projects:
+    members.add(%*{"path": project.path, "name": project.name,
+      "tree": dependencyTreeJson(project.cfg, project.projectDir)})
+  resultJson(workspaceNode(projectDir, "dependencyTree", members))
+
+proc dependencyStatusOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Return dependency status data for a project or workspace.
+  let projects = loadWorkspaceProjects(projectDir)
+  if singleProject(projects):
+    return resultJson(dependencyStatusJson(projects[0].cfg,
+      projects[0].projectDir))
+  var members = newJArray()
+  for project in projects:
+    members.add(%*{"path": project.path, "name": project.name,
+      "status": dependencyStatusJson(project.cfg, project.projectDir)})
+  resultJson(workspaceNode(projectDir, "dependencyStatus", members))
+
+proc tailorOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Discover or write missing target declarations.
+  let projects = loadWorkspaceProjects(projectDir)
+  if singleProject(projects):
+    let tailored = discoverTargets(projects[0].cfg, projects[0].projectDir)
+    if opts.write:
+      appendTailoredTargets(projects[0].projectDir, tailored)
+    return OperationResult(ok: tailored.missingTargets.len == 0 or opts.write,
+      json: tailorJson(tailored))
+
+  var members = newJArray()
+  var missing = 0
+  for project in projects:
+    let tailored = discoverTargets(project.cfg, project.projectDir)
+    missing += tailored.missingTargets.len
+    if opts.write:
+      appendTailoredTargets(project.projectDir, tailored)
+    members.add(%*{"path": project.path, "name": project.name,
+      "tailor": tailorJson(tailored)})
+  OperationResult(ok: missing == 0 or opts.write,
+    json: %*{"workspace": true, "root": projectDir, "members": members,
+      "ok": missing == 0})
+
+proc packageOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Validate Package Contents and optionally write a package manifest output.
+  try:
+    let cfg = loadEffectiveConfig(projectDir)
+    verifyPackage(projectDir, cfg)
+    let files = collectPackageFiles(projectDir, cfg)
+    var node = %*{"ok": true, "files": files}
+    if opts.dryRun:
+      node["status"] = %"validated"
+      return resultJson(node)
+    if opts.list:
+      node["status"] = %"listed"
+      return resultJson(node)
+    let outDir = projectDir / BuildDirName / "package"
+    let manifestPath = outDir / (cfg.package.name & "-" & cfg.package.version &
+      ".manifest")
+    saveFile(manifestPath, packageManifest(projectDir, cfg))
+    node["status"] = %"generated"
+    node["manifestPath"] = %manifestPath
+    resultJson(node)
+  except CatchableError as e:
+    errorJson(e.msg)
+
+proc publishOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Validate or submit a Package Publication.
+  try:
+    if not fileExists(projectDir / ConfigFileName):
+      return errorJson("no bau.toml found")
+    let cfg = parseBauConfigFile(projectDir / ConfigFileName)
+    verifyPackage(projectDir, cfg)
+    let files = collectPackageFiles(projectDir, cfg)
+    let nimble = nimbleContent(cfg)
+    if opts.dryRun:
+      return resultJson(%*{"status": "validated", "dryRun": true,
+        "files": files, "nimble": nimble})
+    if hasLocalPublishOverrides(cfg):
+      return errorJson("publish cannot use local path dependencies or [patch]")
+    let nimbleCmd = findExe("nimble")
+    if nimbleCmd.len == 0:
+      return errorJson("nimble not found; install it to publish")
+    let nimblePath = projectDir / (cfg.package.name & ".nimble")
+    if not fileExists(nimblePath):
+      saveFile(nimblePath, nimble)
+    let (exitCode, output) = runCmd(nimbleCmd, ["publish"], projectDir)
+    OperationResult(ok: exitCode == 0, json: %*{"status": "published",
+      "exitCode": exitCode, "output": output}, output: output)
+  except CatchableError as e:
+    errorJson(e.msg)
+
+proc bumpOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Increment Package version intent.
+  if opts.bumpKind.len == 0:
+    return errorJson("bump kind is required")
+  try:
+    let kind = parseVersionBumpKind(opts.bumpKind)
+    let bumped = bumpPackageVersion(projectDir, kind, opts.dryRun)
+    resultJson(%*{"oldVersion": bumped.oldVersion,
+      "newVersion": bumped.newVersion, "nimblePath": bumped.nimblePath,
+      "configChanged": bumped.configChanged,
+      "nimbleChanged": bumped.nimbleChanged, "dryRun": opts.dryRun})
+  except CatchableError as e:
+    errorJson(e.msg)
+
+proc ciTemplateOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Write a CI template file.
+  let kind = if opts.ciKind.len > 0: opts.ciKind else: "github"
+  if kind notin ["github", "gitlab"]:
+    return errorJson("unknown CI kind: " & kind)
+  generateCiTemplate(kind, projectDir)
+  let path = if kind == "github":
+               projectDir / ".github" / "workflows" / "ci.yml"
+             else:
+               projectDir / ".gitlab-ci.yml"
+  resultJson(%*{"status": "generated", "kind": kind, "path": path})
+
+proc envOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Return the resolved Build Environment summary.
+  let root = try: findProjectRoot(projectDir) except CatchableError: projectDir
+  let cfg = try: loadEffectiveConfig(root) except CatchableError: initBauConfig()
+  let selection = featureSelection(opts, cfg)
+  resultJson(%*{
+    "projectDir": root,
+    "profile": opts.profile,
+    "features": selection.enabled,
+    "nim": detectNimCompiler(),
+    "atlas": (try: detectAtlas() except CatchableError: ""),
+    "declared": {"nim": cfg.toolchain.nim, "atlas": cfg.toolchain.atlas}
+  })
+
+proc doctorOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Check configured toolchain requirements.
+  let cfg = try: loadEffectiveConfig(projectDir) except CatchableError:
+              initBauConfig()
+  let check = checkToolchain(cfg)
+  OperationResult(ok: check.ok, json: dependencyCheckNode(check))
+
+proc shellInitResultNode(item: ShellInitResult): JsonNode =
+  %*{
+    "shell": item.shell,
+    "configPath": item.configPath,
+    "binDir": item.binDir,
+    "changed": item.changed,
+    "alreadyInPath": item.alreadyInPath,
+    "alreadyConfigured": item.alreadyConfigured
+  }
+
+proc shellInitOperation*(projectDir: string;
+    opts: OperationOptions = defaultOperationOptions()): OperationResult =
+  ## Add Bau's binary directory to the selected shell startup file.
+  discard projectDir
+  try:
+    resultJson(shellInitResultNode(initShellPath(opts.shellName)))
+  except CatchableError as e:
+    errorJson(e.msg)

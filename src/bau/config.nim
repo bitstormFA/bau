@@ -91,15 +91,15 @@ type
     sourceUrl*: string         ## Template URL for generated source links.
     configured*: bool          ## True when `[docs]` was present in config input.
 
-  TestInfo* = object       ## Test discovery and runner settings from `[test]`.
-    runner*: string        ## Explicit test runner file relative to the project root.
-    profiles*: seq[string] ## Profiles used as the test matrix.
+  TestInfo* = object        ## Test discovery and runner settings from `[test]`.
+    runner*: string         ## Explicit test runner file relative to the project root.
+    profiles*: seq[string]  ## Profiles used as the test matrix.
     defaultProfile*: string ## Single profile used for fast local test runs.
     fullProfiles*: seq[string] ## Full profile matrix used by `bau test --full` and CI.
-    recursive*: bool       ## Whether test file discovery descends into subdirectories.
-    exclude*: seq[string]  ## Test filenames or relative paths to skip.
-    showOutput*: string    ## Default test output mode: auto, always, or never.
-    configured*: bool      ## True when `[test]` was present in config input.
+    recursive*: bool        ## Whether test file discovery descends into subdirectories.
+    exclude*: seq[string]   ## Test filenames or relative paths to skip.
+    showOutput*: string     ## Default test output mode: auto, always, or never.
+    configured*: bool       ## True when `[test]` was present in config input.
 
   TargetInfo* = object             ## Explicit build target declaration.
     name*: string                  ## Target name used by CLI commands.
