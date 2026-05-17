@@ -109,7 +109,27 @@
   docEntrypoints*: seq[string] ## Additional documentation entrypoints.
   docSkipExamples*: bool     ## Skip compiling runnable examples during docs.
   docIncludePrivate*: bool   ## Include private symbols in docs.
-  docNoIndex*: bool          ## Suppress generated docs index.">OperationOptions</a></li>
+  docNoIndex*: bool          ## Suppress generated docs index.
+  depsAction*: string        ## Dependency action such as `sync`, `lock`, or `vendor`.
+  cacheAction*: string       ## Task cache action such as `list`, `clean`, or `explain`.
+  affectedAction*: string    ## Affected action such as `list`, `check`, `test`, or `build`.
+  list*: bool                ## Request list output for operations that support it.
+  write*: bool               ## Write discovered changes when supported.
+  keepGoing*: bool           ## Continue independent task dependencies after failures.
+  taskArgs*: seq[string]     ## Arguments passed to the root task.
+  offline*: bool             ## Avoid network dependency operations.
+  locked*: bool              ## Require an up-to-date lockfile before dependency work.
+  bumpKind*: string          ## Version component to bump.
+  ciKind*: string            ## CI template kind such as `github` or `gitlab`.
+  shellName*: string         ## Shell name for shell initialization.
+  testChanged*: bool         ## Limit tests to changed files.
+  testFull*: bool            ## Run the full configured test matrix.
+  testFast*: bool            ## Run the fast local test mode.
+  testNoMatrix*: bool        ## Run one test profile instead of the matrix.
+  testNoRunner*: bool        ## Discover test files instead of using a runner.
+  testShowOutput*: string    ## Test output mode override.
+  jobs*: int                 ## Maximum parallel jobs for operations that support it.
+  jobsExplicit*: bool        ## True when jobs was provided explicitly.">OperationOptions</a></li>
 <li><a class="reference" href="#OperationResult" title="OperationResult = object
   ok*: bool                  ## True when the operation succeeded.
   json*: JsonNode            ## Machine-readable result payload.
@@ -138,14 +158,38 @@
                opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">bumpOperation
+  <li><a class="reference" href="#bumpOperation%2Cstring%2COperationOptions" title="bumpOperation(projectDir: string;
+              opts: OperationOptions = defaultOperationOptions()): OperationResult">bumpOperation(projectDir: string;
+              opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">cacheExplainOperation
   <li><a class="reference" href="#cacheExplainOperation%2Cstring%2COperationOptions" title="cacheExplainOperation(projectDir: string; opts: OperationOptions): OperationResult">cacheExplainOperation(projectDir: string; opts: OperationOptions): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">cacheOperation
+  <li><a class="reference" href="#cacheOperation%2Cstring%2COperationOptions" title="cacheOperation(projectDir: string;
+               opts: OperationOptions = defaultOperationOptions()): OperationResult">cacheOperation(projectDir: string;
+               opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">checkOperation
   <li><a class="reference" href="#checkOperation%2Cstring%2COperationOptions" title="checkOperation(projectDir: string;
                opts: OperationOptions = defaultOperationOptions()): OperationResult">checkOperation(projectDir: string;
                opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">ciOperation
+  <li><a class="reference" href="#ciOperation%2Cstring%2COperationOptions" title="ciOperation(projectDir: string;
+            opts: OperationOptions = defaultOperationOptions()): OperationResult">ciOperation(projectDir: string;
+            opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">ciTemplateOperation
+  <li><a class="reference" href="#ciTemplateOperation%2Cstring%2COperationOptions" title="ciTemplateOperation(projectDir: string;
+                    opts: OperationOptions = defaultOperationOptions()): OperationResult">ciTemplateOperation(projectDir: string;
+                    opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">cleanOperation
@@ -174,19 +218,41 @@
   <li><a class="reference" href="#defaultOperationOptions" title="defaultOperationOptions(): OperationOptions">defaultOperationOptions(): OperationOptions</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">dependencyStatusOperation
+  <li><a class="reference" href="#dependencyStatusOperation%2Cstring%2COperationOptions" title="dependencyStatusOperation(projectDir: string;
+                          opts: OperationOptions = defaultOperationOptions()): OperationResult">dependencyStatusOperation(projectDir: string;
+                          opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">dependencyTreeOperation
+  <li><a class="reference" href="#dependencyTreeOperation%2Cstring%2COperationOptions" title="dependencyTreeOperation(projectDir: string;
+                        opts: OperationOptions = defaultOperationOptions()): OperationResult">dependencyTreeOperation(projectDir: string;
+                        opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">depsOperation
   <li><a class="reference" href="#depsOperation%2Cstring%2COperationOptions" title="depsOperation(projectDir: string; opts: OperationOptions): OperationResult">depsOperation(projectDir: string; opts: OperationOptions): OperationResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">depsVerifyOperation
-  <li><a class="reference" href="#depsVerifyOperation%2Cstring%2COperationOptions" title="depsVerifyOperation(projectDir: string;
-                    opts: OperationOptions = defaultOperationOptions()): OperationResult">depsVerifyOperation(projectDir: string;
-                    opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+  <li><a class="reference" href="#depsVerifyOperation%2Cstring%2COperationOptions" title="depsVerifyOperation(projectDir: string; opts: OperationOptions): OperationResult">depsVerifyOperation(projectDir: string; opts: OperationOptions): OperationResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">docOperation
   <li><a class="reference" href="#docOperation%2Cstring%2COperationOptions" title="docOperation(projectDir: string;
              opts: OperationOptions = defaultOperationOptions()): OperationResult">docOperation(projectDir: string;
+             opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">doctorOperation
+  <li><a class="reference" href="#doctorOperation%2Cstring%2COperationOptions" title="doctorOperation(projectDir: string;
+                opts: OperationOptions = defaultOperationOptions()): OperationResult">doctorOperation(projectDir: string;
+                opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">envOperation
+  <li><a class="reference" href="#envOperation%2Cstring%2COperationOptions" title="envOperation(projectDir: string;
+             opts: OperationOptions = defaultOperationOptions()): OperationResult">envOperation(projectDir: string;
              opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
@@ -218,10 +284,28 @@
                  opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
+<ul class="simple nested-toc-section">lintOperation
+  <li><a class="reference" href="#lintOperation%2Cstring%2COperationOptions" title="lintOperation(projectDir: string;
+              opts: OperationOptions = defaultOperationOptions()): OperationResult">lintOperation(projectDir: string;
+              opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
 <ul class="simple nested-toc-section">metadataOperation
   <li><a class="reference" href="#metadataOperation%2Cstring%2COperationOptions" title="metadataOperation(projectDir: string;
                   opts: OperationOptions = defaultOperationOptions()): OperationResult">metadataOperation(projectDir: string;
                   opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">packageOperation
+  <li><a class="reference" href="#packageOperation%2Cstring%2COperationOptions" title="packageOperation(projectDir: string;
+                 opts: OperationOptions = defaultOperationOptions()): OperationResult">packageOperation(projectDir: string;
+                 opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">publishOperation
+  <li><a class="reference" href="#publishOperation%2Cstring%2COperationOptions" title="publishOperation(projectDir: string;
+                 opts: OperationOptions = defaultOperationOptions()): OperationResult">publishOperation(projectDir: string;
+                 opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">queryOperation
@@ -240,6 +324,24 @@
   <li><a class="reference" href="#runOperation%2Cstring%2COperationOptions" title="runOperation(projectDir: string;
              opts: OperationOptions = defaultOperationOptions()): OperationResult">runOperation(projectDir: string;
              opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">shellInitOperation
+  <li><a class="reference" href="#shellInitOperation%2Cstring%2COperationOptions" title="shellInitOperation(projectDir: string;
+                   opts: OperationOptions = defaultOperationOptions()): OperationResult">shellInitOperation(projectDir: string;
+                   opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">tailorOperation
+  <li><a class="reference" href="#tailorOperation%2Cstring%2COperationOptions" title="tailorOperation(projectDir: string;
+                opts: OperationOptions = defaultOperationOptions()): OperationResult">tailorOperation(projectDir: string;
+                opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
+
+</ul>
+<ul class="simple nested-toc-section">taskOperation
+  <li><a class="reference" href="#taskOperation%2Cstring%2COperationOptions" title="taskOperation(projectDir: string;
+              opts: OperationOptions = defaultOperationOptions()): OperationResult">taskOperation(projectDir: string;
+              opts: OperationOptions = defaultOperationOptions()): OperationResult</a></li>
 
 </ul>
 <ul class="simple nested-toc-section">testOperation
@@ -264,7 +366,7 @@
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
-    <a class="reference external" href="affected.html">affected</a>, <a class="reference external" href="atlas.html">atlas</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="depscheck.html">depscheck</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="fingerprint.html">fingerprint</a>, <a class="reference external" href="init.html">init</a>, <a class="reference external" href="lock.html">lock</a>, <a class="reference external" href="metadata.html">metadata</a>, <a class="reference external" href="nimble.html">nimble</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="util.html">util</a>, <a class="reference external" href="workspace.html">workspace</a>, <a class="reference external" href="configedit.html">configedit</a>, <a class="reference external" href="docgen.html">docgen</a>, <a class="reference external" href="installer.html">installer</a>
+    <a class="reference external" href="affected.html">affected</a>, <a class="reference external" href="atlas.html">atlas</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="depscheck.html">depscheck</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="fingerprint.html">fingerprint</a>, <a class="reference external" href="init.html">init</a>, <a class="reference external" href="lock.html">lock</a>, <a class="reference external" href="metadata.html">metadata</a>, <a class="reference external" href="nimble.html">nimble</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="util.html">util</a>, <a class="reference external" href="workspace.html">workspace</a>, <a class="reference external" href="configedit.html">configedit</a>, <a class="reference external" href="docgen.html">docgen</a>, <a class="reference external" href="installer.html">installer</a>, <a class="reference external" href="ci_templates.html">ci_templates</a>, <a class="reference external" href="packaging.html">packaging</a>, <a class="reference external" href="tailor.html">tailor</a>, <a class="reference external" href="taskgraph.html">taskgraph</a>, <a class="reference external" href="testexec.html">testexec</a>, <a class="reference external" href="toolchain.html">toolchain</a>
   </dl>
 </div>
 <div class="section" id="7">
@@ -333,7 +435,27 @@
   <span class="Identifier">docEntrypoints</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Comment">## Additional documentation entrypoints.</span>
   <span class="Identifier">docSkipExamples</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>     <span class="Comment">## Skip compiling runnable examples during docs.</span>
   <span class="Identifier">docIncludePrivate</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>   <span class="Comment">## Include private symbols in docs.</span>
-  <span class="Identifier">docNoIndex</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>          <span class="Comment">## Suppress generated docs index.</span></pre></dt>
+  <span class="Identifier">docNoIndex</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>          <span class="Comment">## Suppress generated docs index.</span>
+  <span class="Identifier">depsAction</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>        <span class="Comment">## Dependency action such as `sync`, `lock`, or `vendor`.</span>
+  <span class="Identifier">cacheAction</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>       <span class="Comment">## Task cache action such as `list`, `clean`, or `explain`.</span>
+  <span class="Identifier">affectedAction</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>    <span class="Comment">## Affected action such as `list`, `check`, `test`, or `build`.</span>
+  <span class="Identifier">list</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## Request list output for operations that support it.</span>
+  <span class="Identifier">write</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>               <span class="Comment">## Write discovered changes when supported.</span>
+  <span class="Identifier">keepGoing</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>           <span class="Comment">## Continue independent task dependencies after failures.</span>
+  <span class="Identifier">taskArgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>     <span class="Comment">## Arguments passed to the root task.</span>
+  <span class="Identifier">offline</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Avoid network dependency operations.</span>
+  <span class="Identifier">locked</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>              <span class="Comment">## Require an up-to-date lockfile before dependency work.</span>
+  <span class="Identifier">bumpKind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>          <span class="Comment">## Version component to bump.</span>
+  <span class="Identifier">ciKind</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>            <span class="Comment">## CI template kind such as `github` or `gitlab`.</span>
+  <span class="Identifier">shellName</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>         <span class="Comment">## Shell name for shell initialization.</span>
+  <span class="Identifier">testChanged</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>         <span class="Comment">## Limit tests to changed files.</span>
+  <span class="Identifier">testFull</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Run the full configured test matrix.</span>
+  <span class="Identifier">testFast</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Run the fast local test mode.</span>
+  <span class="Identifier">testNoMatrix</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## Run one test profile instead of the matrix.</span>
+  <span class="Identifier">testNoRunner</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## Discover test files instead of using a runner.</span>
+  <span class="Identifier">testShowOutput</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>    <span class="Comment">## Test output mode override.</span>
+  <span class="Identifier">jobs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>                 <span class="Comment">## Maximum parallel jobs for operations that support it.</span>
+  <span class="Identifier">jobsExplicit</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>        <span class="Comment">## True when jobs was provided explicitly.</span></pre></dt>
   <dd>
     
     Shared options accepted by CLI and MCP operations.
@@ -377,10 +499,10 @@
                        <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
-    <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Return affected targets, tests, tasks, and source files.
+    Return or run affected targets, tests, tasks, and source files.
     
   </dd>
 </div>
@@ -395,7 +517,21 @@
     <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Build the default project target.
+    Build project targets.
+    
+  </dd>
+</div>
+
+</div>
+<div id="bumpOperation-procs-all">
+  <div id="bumpOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#bumpOperation%2Cstring%2COperationOptions"><span class="Identifier">bumpOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                   <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
+                                <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Increment Package version intent.
     
   </dd>
 </div>
@@ -415,6 +551,21 @@
 </div>
 
 </div>
+<div id="cacheOperation-procs-all">
+  <div id="cacheOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#cacheOperation%2Cstring%2COperationOptions"><span class="Identifier">cacheOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                    <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">LibraryError</span><span class="Other">,</span>
+    <span class="Identifier">SslError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
+                      <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    List, clean, or explain task cache entries.
+    
+  </dd>
+</div>
+
+</div>
 <div id="checkOperation-procs-all">
   <div id="checkOperation,string,OperationOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#checkOperation%2Cstring%2COperationOptions"><span class="Identifier">checkOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
@@ -425,6 +576,35 @@
   <dd>
     
     Run <tt class="docutils literal"><span class="pre"><span class="Identifier">nim</span> <span class="Identifier">check</span></span></tt> against configured main files.
+    
+  </dd>
+</div>
+
+</div>
+<div id="ciOperation-procs-all">
+  <div id="ciOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#ciOperation%2Cstring%2COperationOptions"><span class="Identifier">ciOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                 <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Run validation-oriented CI checks without rewriting source files.
+    
+  </dd>
+</div>
+
+</div>
+<div id="ciTemplateOperation-procs-all">
+  <div id="ciTemplateOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#ciTemplateOperation%2Cstring%2COperationOptions"><span class="Identifier">ciTemplateOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                         <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Write a CI template file.
     
   </dd>
 </div>
@@ -497,15 +677,44 @@
 </div>
 
 </div>
+<div id="dependencyStatusOperation-procs-all">
+  <div id="dependencyStatusOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#dependencyStatusOperation%2Cstring%2COperationOptions"><span class="Identifier">dependencyStatusOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Return dependency status data for a project or workspace.
+    
+  </dd>
+</div>
+
+</div>
+<div id="dependencyTreeOperation-procs-all">
+  <div id="dependencyTreeOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#dependencyTreeOperation%2Cstring%2COperationOptions"><span class="Identifier">dependencyTreeOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                             <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Return dependency tree data for a project or workspace.
+    
+  </dd>
+</div>
+
+</div>
 <div id="depsOperation-procs-all">
   <div id="depsOperation,string,OperationOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#depsOperation%2Cstring%2COperationOptions"><span class="Identifier">depsOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
-    <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                                <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
+                                <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Sync or update dependencies, then refresh <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span><span class="Operator">.</span><span class="Identifier">lock</span></span></tt>.
+    Run dependency sync, lock, update, verify, vendor, or patch operations.
     
   </dd>
 </div>
@@ -513,14 +722,13 @@
 </div>
 <div id="depsVerifyOperation-procs-all">
   <div id="depsVerifyOperation,string,OperationOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#depsVerifyOperation%2Cstring%2COperationOptions"><span class="Identifier">depsVerifyOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
-                         <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+  <dt><pre><span class="Keyword">proc</span> <a href="#depsVerifyOperation%2Cstring%2COperationOptions"><span class="Identifier">depsVerifyOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
     <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Validate dependency policy and lockfile health.
+    
     
   </dd>
 </div>
@@ -536,6 +744,36 @@
   <dd>
     
     Build API documentation for a project or workspace.
+    
+  </dd>
+</div>
+
+</div>
+<div id="doctorOperation-procs-all">
+  <div id="doctorOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#doctorOperation%2Cstring%2COperationOptions"><span class="Identifier">doctorOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                     <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                                <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
+                                <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Check configured toolchain requirements.
+    
+  </dd>
+</div>
+
+</div>
+<div id="envOperation-procs-all">
+  <div id="envOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#envOperation%2Cstring%2COperationOptions"><span class="Identifier">envOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                  <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Return the resolved Build Environment summary.
     
   </dd>
 </div>
@@ -614,6 +852,21 @@
 </div>
 
 </div>
+<div id="lintOperation-procs-all">
+  <div id="lintOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#lintOperation%2Cstring%2COperationOptions"><span class="Identifier">lintOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                   <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Check Nim source style without rewriting files.
+    
+  </dd>
+</div>
+
+</div>
 <div id="metadataOperation-procs-all">
   <div id="metadataOperation,string,OperationOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#metadataOperation%2Cstring%2COperationOptions"><span class="Identifier">metadataOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
@@ -624,6 +877,36 @@
   <dd>
     
     Return effective configuration metadata for a project or workspace.
+    
+  </dd>
+</div>
+
+</div>
+<div id="packageOperation-procs-all">
+  <div id="packageOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#packageOperation%2Cstring%2COperationOptions"><span class="Identifier">packageOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                      <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                                <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Validate Package Contents and optionally write a package manifest output.
+    
+  </dd>
+</div>
+
+</div>
+<div id="publishOperation-procs-all">
+  <div id="publishOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#publishOperation%2Cstring%2COperationOptions"><span class="Identifier">publishOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                      <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                                <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
+                                <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Validate or submit a Package Publication.
     
   </dd>
 </div>
@@ -678,7 +961,51 @@
     <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Build and run the default project target.
+    Build and run a project target.
+    
+  </dd>
+</div>
+
+</div>
+<div id="shellInitOperation-procs-all">
+  <div id="shellInitOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#shellInitOperation%2Cstring%2COperationOptions"><span class="Identifier">shellInitOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                        <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
+                       <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Add Bau's binary directory to the selected shell startup file.
+    
+  </dd>
+</div>
+
+</div>
+<div id="tailorOperation-procs-all">
+  <div id="tailorOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#tailorOperation%2Cstring%2COperationOptions"><span class="Identifier">tailorOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                     <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    Discover or write missing target declarations.
+    
+  </dd>
+</div>
+
+</div>
+<div id="taskOperation-procs-all">
+  <div id="taskOperation,string,OperationOptions">
+  <dt><pre><span class="Keyword">proc</span> <a href="#taskOperation%2Cstring%2COperationOptions"><span class="Identifier">taskOperation</span></a><span class="Other">(</span><span class="Identifier">projectDir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
+                   <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+    <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dd>
+    
+    List or run project tasks.
     
   </dd>
 </div>
@@ -690,10 +1017,10 @@
                    <span class="Identifier">opts</span><span class="Other">:</span> <a href="#OperationOptions"><span class="Identifier">OperationOptions</span></a> <span class="Other">=</span> <span class="Identifier">defaultOperationOptions</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="#OperationResult"><span class="Identifier">OperationResult</span></a> {.
     <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
-    <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Compile and run project tests, returning counts and failures.
+    Compile and run project tests, returning aggregate counts.
     
   </dd>
 </div>
@@ -709,7 +1036,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:47:08 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 12:53:32 UTC</small>
       </div>
     </div>
   </div>

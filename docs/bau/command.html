@@ -121,7 +121,7 @@
   cmdInstall,               ## Install a built binary.
   cmdUpdate,                ## Update an installed binary.
   cmdUninstall,             ## Remove an installed binary.
-  cmdClean,                 ## Remove build artifacts.
+  cmdClean,                 ## Remove Bau Outputs.
   cmdDeps,                  ## Manage dependencies.
   cmdAdd,                   ## Add a dependency.
   cmdRemove,                ## Remove a dependency.
@@ -136,12 +136,12 @@
   cmdCi,                    ## Run the local CI sequence.
   cmdOutdated,              ## Report dependency status.
   cmdTree,                  ## Print dependency tree output.
-  cmdExplain,               ## Explain build cache state.
-  cmdPublish,               ## Publish package metadata.
+  cmdExplain,               ## Explain target freshness state.
+  cmdPublish,               ## Submit a package publication.
   cmdBump,                  ## Increment the project package version.
   cmdShell,                 ## Open a shell with Bau environment.
   cmdShellInit,             ## Add Bau's binary directory to the selected shell.
-  cmdPlugin,                ## Delegate to an external `bau-*` plugin.
+  cmdPlugin,                ## Delegate to an external `bau-*` command.
   cmdCompileCommands,       ## Generate compile command databases.
   cmdCiTemplate,            ## Generate CI templates.
   cmdMetadata,              ## Print project metadata.
@@ -319,7 +319,7 @@
     <div class="section" id="6">
   <h1><a class="toc-backref" href="#6">Imports</a></h1>
   <dl class="item">
-    <a class="reference external" href="argv.html">argv</a>, <a class="reference external" href="util.html">util</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="init.html">init</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="atlas.html">atlas</a>, <a class="reference external" href="nimble.html">nimble</a>, <a class="reference external" href="ci_templates.html">ci_templates</a>, <a class="reference external" href="lock.html">lock</a>, <a class="reference external" href="metadata.html">metadata</a>, <a class="reference external" href="packaging.html">packaging</a>, <a class="reference external" href="tailor.html">tailor</a>, <a class="reference external" href="taskgraph.html">taskgraph</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="affected.html">affected</a>, <a class="reference external" href="depscheck.html">depscheck</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="testexec.html">testexec</a>, <a class="reference external" href="toolchain.html">toolchain</a>, <a class="reference external" href="workspace.html">workspace</a>, <a class="reference external" href="ops.html">ops</a>, <a class="reference external" href="configedit.html">configedit</a>, <a class="reference external" href="installer.html">installer</a>
+    <a class="reference external" href="argv.html">argv</a>, <a class="reference external" href="util.html">util</a>, <a class="reference external" href="config.html">config</a>, <a class="reference external" href="init.html">init</a>, <a class="reference external" href="build.html">build</a>, <a class="reference external" href="atlas.html">atlas</a>, <a class="reference external" href="nimble.html">nimble</a>, <a class="reference external" href="lock.html">lock</a>, <a class="reference external" href="metadata.html">metadata</a>, <a class="reference external" href="tailor.html">tailor</a>, <a class="reference external" href="taskgraph.html">taskgraph</a>, <a class="reference external" href="features.html">features</a>, <a class="reference external" href="affected.html">affected</a>, <a class="reference external" href="depscheck.html">depscheck</a>, <a class="reference external" href="taskcache.html">taskcache</a>, <a class="reference external" href="testexec.html">testexec</a>, <a class="reference external" href="workspace.html">workspace</a>, <a class="reference external" href="ops.html">ops</a>, <a class="reference external" href="configedit.html">configedit</a>
   </dl>
 </div>
 <div class="section" id="7">
@@ -393,7 +393,7 @@
   <span class="Identifier">cmdInstall</span><span class="Other">,</span>               <span class="Comment">## Install a built binary.</span>
   <span class="Identifier">cmdUpdate</span><span class="Other">,</span>                <span class="Comment">## Update an installed binary.</span>
   <span class="Identifier">cmdUninstall</span><span class="Other">,</span>             <span class="Comment">## Remove an installed binary.</span>
-  <span class="Identifier">cmdClean</span><span class="Other">,</span>                 <span class="Comment">## Remove build artifacts.</span>
+  <span class="Identifier">cmdClean</span><span class="Other">,</span>                 <span class="Comment">## Remove Bau Outputs.</span>
   <span class="Identifier">cmdDeps</span><span class="Other">,</span>                  <span class="Comment">## Manage dependencies.</span>
   <span class="Identifier">cmdAdd</span><span class="Other">,</span>                   <span class="Comment">## Add a dependency.</span>
   <span class="Identifier">cmdRemove</span><span class="Other">,</span>                <span class="Comment">## Remove a dependency.</span>
@@ -408,12 +408,12 @@
   <span class="Identifier">cmdCi</span><span class="Other">,</span>                    <span class="Comment">## Run the local CI sequence.</span>
   <span class="Identifier">cmdOutdated</span><span class="Other">,</span>              <span class="Comment">## Report dependency status.</span>
   <span class="Identifier">cmdTree</span><span class="Other">,</span>                  <span class="Comment">## Print dependency tree output.</span>
-  <span class="Identifier">cmdExplain</span><span class="Other">,</span>               <span class="Comment">## Explain build cache state.</span>
-  <span class="Identifier">cmdPublish</span><span class="Other">,</span>               <span class="Comment">## Publish package metadata.</span>
+  <span class="Identifier">cmdExplain</span><span class="Other">,</span>               <span class="Comment">## Explain target freshness state.</span>
+  <span class="Identifier">cmdPublish</span><span class="Other">,</span>               <span class="Comment">## Submit a package publication.</span>
   <span class="Identifier">cmdBump</span><span class="Other">,</span>                  <span class="Comment">## Increment the project package version.</span>
   <span class="Identifier">cmdShell</span><span class="Other">,</span>                 <span class="Comment">## Open a shell with Bau environment.</span>
   <span class="Identifier">cmdShellInit</span><span class="Other">,</span>             <span class="Comment">## Add Bau's binary directory to the selected shell.</span>
-  <span class="Identifier">cmdPlugin</span><span class="Other">,</span>                <span class="Comment">## Delegate to an external `bau-*` plugin.</span>
+  <span class="Identifier">cmdPlugin</span><span class="Other">,</span>                <span class="Comment">## Delegate to an external `bau-*` command.</span>
   <span class="Identifier">cmdCompileCommands</span><span class="Other">,</span>       <span class="Comment">## Generate compile command databases.</span>
   <span class="Identifier">cmdCiTemplate</span><span class="Other">,</span>            <span class="Comment">## Generate CI templates.</span>
   <span class="Identifier">cmdMetadata</span><span class="Other">,</span>              <span class="Comment">## Print project metadata.</span>
@@ -492,9 +492,9 @@
 </div>
 <div id="ciCommand-procs-all">
   <div id="ciCommand,CliOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#ciCommand%2CCliOptions"><span class="Identifier">ciCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
-    <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#ciCommand%2CCliOptions"><span class="Identifier">ciCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span>
+    <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span>
     <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -549,7 +549,7 @@
     <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">CatchableError</span><span class="Other">,</span>
     <span class="Identifier">JsonParsingError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">LibraryError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span>
-    <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Dispatch parsed CLI options to the selected command implementation.
@@ -560,9 +560,9 @@
 </div>
 <div id="doctorCommand-procs-all">
   <div id="doctorCommand,CliOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#doctorCommand%2CCliOptions"><span class="Identifier">doctorCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
-    <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#doctorCommand%2CCliOptions"><span class="Identifier">doctorCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span>
+    <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
+                     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Execute toolchain and project health checks.
@@ -573,9 +573,9 @@
 </div>
 <div id="envCommand-procs-all">
   <div id="envCommand,CliOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#envCommand%2CCliOptions"><span class="Identifier">envCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span>
-    <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
-                     <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#envCommand%2CCliOptions"><span class="Identifier">envCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
+    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                               <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Execute the environment-reporting command.
@@ -670,7 +670,7 @@
   <div id="lintCommand,CliOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#lintCommand%2CCliOptions"><span class="Identifier">lintCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span>
     <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span>
                                      <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
@@ -711,8 +711,9 @@
 <div id="packageCommand-procs-all">
   <div id="packageCommand,CliOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#packageCommand%2CCliOptions"><span class="Identifier">packageCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span>
-    <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                                 <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span>
+                                        <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Execute package inspection and manifest generation.
@@ -741,7 +742,7 @@
     <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Execute an external <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span><span class="Operator">-*</span></span></tt> plugin command.
+    Execute an external <tt class="docutils literal"><span class="pre"><span class="Identifier">bau</span><span class="Operator">-*</span></span></tt> command.
     
   </dd>
 </div>
@@ -807,9 +808,9 @@
 <div id="publishCommand-procs-all">
   <div id="publishCommand,CliOptions">
   <dt><pre><span class="Keyword">proc</span> <a href="#publishCommand%2CCliOptions"><span class="Identifier">publishCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span>
-    <span class="Identifier">TomlError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
+                                 <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
+                                 <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Execute package publishing or publish dry-run inspection.
@@ -847,7 +848,7 @@
 </div>
 <div id="shellInitCommand-procs-all">
   <div id="shellInitCommand,CliOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#shellInitCommand%2CCliOptions"><span class="Identifier">shellInitCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+  <dt><pre><span class="Keyword">proc</span> <a href="#shellInitCommand%2CCliOptions"><span class="Identifier">shellInitCommand</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
@@ -886,10 +887,10 @@
 </div>
 <div id="watchLoop-procs-all">
   <div id="watchLoop,CliOptions">
-  <dt><pre><span class="Keyword">proc</span> <a href="#watchLoop%2CCliOptions"><span class="Identifier">watchLoop</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span>
-    <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span>
-                       <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
-                       <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+  <dt><pre><span class="Keyword">proc</span> <a href="#watchLoop%2CCliOptions"><span class="Identifier">watchLoop</span></a><span class="Other">(</span><span class="Identifier">opts</span><span class="Other">:</span> <a href="#CliOptions"><span class="Identifier">CliOptions</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span>
+    <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+                      <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
+                      <span class="Identifier">ExecIOEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     Watch project files and rerun the selected build-like command.
@@ -908,7 +909,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-15 13:46:59 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 12:53:17 UTC</small>
       </div>
     </div>
   </div>

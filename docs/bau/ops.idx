@@ -1,29 +1,43 @@
 nimTitle	ops	bau/ops.html	module bau/ops		0
 nim	OperationOptions	bau/ops.html#OperationOptions	object OperationOptions		9
-nim	CompileCommandsMemberResult	bau/ops.html#CompileCommandsMemberResult	object CompileCommandsMemberResult		49
-nim	CompileCommandsResult	bau/ops.html#CompileCommandsResult	object CompileCommandsResult		54
-nim	OperationResult	bau/ops.html#OperationResult	object OperationResult		61
-nim	defaultOperationOptions	bau/ops.html#defaultOperationOptions	proc defaultOperationOptions(): OperationOptions		66
-nim	resultJson	bau/ops.html#resultJson,JsonNode	proc resultJson(node: JsonNode): OperationResult		74
-nim	buildOperation	bau/ops.html#buildOperation,string,OperationOptions	proc buildOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		87
-nim	runOperation	bau/ops.html#runOperation,string,OperationOptions	proc runOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		96
-nim	testOperation	bau/ops.html#testOperation,string,OperationOptions	proc testOperation(projectDir: string;\n              opts: OperationOptions = defaultOperationOptions()): OperationResult		105
-nim	checkOperation	bau/ops.html#checkOperation,string,OperationOptions	proc checkOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		150
-nim	docOperation	bau/ops.html#docOperation,string,OperationOptions	proc docOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		185
-nim	cleanOperation	bau/ops.html#cleanOperation,string,OperationOptions	proc cleanOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		225
-nim	installOperation	bau/ops.html#installOperation,string,OperationOptions	proc installOperation(projectDir: string;\n                 opts: OperationOptions = defaultOperationOptions()): OperationResult		267
-nim	depsOperation	bau/ops.html#depsOperation,string,OperationOptions	proc depsOperation(projectDir: string; opts: OperationOptions): OperationResult		305
-nim	addDependencyOperation	bau/ops.html#addDependencyOperation,string,OperationOptions	proc addDependencyOperation(projectDir: string; opts: OperationOptions): OperationResult		346
-nim	removeDependencyOperation	bau/ops.html#removeDependencyOperation,string,OperationOptions	proc removeDependencyOperation(projectDir: string; opts: OperationOptions): OperationResult		365
-nim	initOperation	bau/ops.html#initOperation,string,OperationOptions	proc initOperation(projectDir: string; opts: OperationOptions): OperationResult		378
-nim	convertOperation	bau/ops.html#convertOperation,string,OperationOptions	proc convertOperation(projectDir: string; opts: OperationOptions): OperationResult		387
-nim	fmtOperation	bau/ops.html#fmtOperation,string,OperationOptions	proc fmtOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		409
-nim	explainOperation	bau/ops.html#explainOperation,string,OperationOptions	proc explainOperation(projectDir: string;\n                 opts: OperationOptions = defaultOperationOptions()): OperationResult		510
-nim	metadataOperation	bau/ops.html#metadataOperation,string,OperationOptions	proc metadataOperation(projectDir: string;\n                  opts: OperationOptions = defaultOperationOptions()): OperationResult		558
-nim	graphOperation	bau/ops.html#graphOperation,string,OperationOptions	proc graphOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		579
-nim	queryOperation	bau/ops.html#queryOperation,string,OperationOptions	proc queryOperation(projectDir: string; opts: OperationOptions): OperationResult		597
-nim	affectedOperation	bau/ops.html#affectedOperation,string,OperationOptions	proc affectedOperation(projectDir: string;\n                  opts: OperationOptions = defaultOperationOptions()): OperationResult		662
-nim	depsVerifyOperation	bau/ops.html#depsVerifyOperation,string,OperationOptions	proc depsVerifyOperation(projectDir: string;\n                    opts: OperationOptions = defaultOperationOptions()): OperationResult		679
-nim	cacheExplainOperation	bau/ops.html#cacheExplainOperation,string,OperationOptions	proc cacheExplainOperation(projectDir: string; opts: OperationOptions): OperationResult		721
-nim	compileCommandEntries	bau/ops.html#compileCommandEntries,string,BauConfig,string,FeatureSelection	proc compileCommandEntries(projectDir: string; cfg: BauConfig; profile: string;\n                      selection: FeatureSelection): seq[JsonNode]		760
-nim	compileCommandsOperation	bau/ops.html#compileCommandsOperation,string,OperationOptions	proc compileCommandsOperation(projectDir: string;\n                         opts: OperationOptions = defaultOperationOptions()): OperationResult		805
+nim	CompileCommandsMemberResult	bau/ops.html#CompileCommandsMemberResult	object CompileCommandsMemberResult		69
+nim	CompileCommandsResult	bau/ops.html#CompileCommandsResult	object CompileCommandsResult		74
+nim	OperationResult	bau/ops.html#OperationResult	object OperationResult		81
+nim	defaultOperationOptions	bau/ops.html#defaultOperationOptions	proc defaultOperationOptions(): OperationOptions		86
+nim	resultJson	bau/ops.html#resultJson,JsonNode	proc resultJson(node: JsonNode): OperationResult		94
+nim	depsVerifyOperation	bau/ops.html#depsVerifyOperation,string,OperationOptions	proc depsVerifyOperation(projectDir: string; opts: OperationOptions): OperationResult		109
+nim	buildOperation	bau/ops.html#buildOperation,string,OperationOptions	proc buildOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		112
+nim	runOperation	bau/ops.html#runOperation,string,OperationOptions	proc runOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		138
+nim	testOperation	bau/ops.html#testOperation,string,OperationOptions	proc testOperation(projectDir: string;\n              opts: OperationOptions = defaultOperationOptions()): OperationResult		153
+nim	checkOperation	bau/ops.html#checkOperation,string,OperationOptions	proc checkOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		183
+nim	docOperation	bau/ops.html#docOperation,string,OperationOptions	proc docOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		229
+nim	cleanOperation	bau/ops.html#cleanOperation,string,OperationOptions	proc cleanOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		269
+nim	installOperation	bau/ops.html#installOperation,string,OperationOptions	proc installOperation(projectDir: string;\n                 opts: OperationOptions = defaultOperationOptions()): OperationResult		311
+nim	depsOperation	bau/ops.html#depsOperation,string,OperationOptions	proc depsOperation(projectDir: string; opts: OperationOptions): OperationResult		395
+nim	addDependencyOperation	bau/ops.html#addDependencyOperation,string,OperationOptions	proc addDependencyOperation(projectDir: string; opts: OperationOptions): OperationResult		549
+nim	removeDependencyOperation	bau/ops.html#removeDependencyOperation,string,OperationOptions	proc removeDependencyOperation(projectDir: string; opts: OperationOptions): OperationResult		568
+nim	initOperation	bau/ops.html#initOperation,string,OperationOptions	proc initOperation(projectDir: string; opts: OperationOptions): OperationResult		581
+nim	convertOperation	bau/ops.html#convertOperation,string,OperationOptions	proc convertOperation(projectDir: string; opts: OperationOptions): OperationResult		590
+nim	fmtOperation	bau/ops.html#fmtOperation,string,OperationOptions	proc fmtOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		612
+nim	explainOperation	bau/ops.html#explainOperation,string,OperationOptions	proc explainOperation(projectDir: string;\n                 opts: OperationOptions = defaultOperationOptions()): OperationResult		710
+nim	metadataOperation	bau/ops.html#metadataOperation,string,OperationOptions	proc metadataOperation(projectDir: string;\n                  opts: OperationOptions = defaultOperationOptions()): OperationResult		758
+nim	graphOperation	bau/ops.html#graphOperation,string,OperationOptions	proc graphOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		779
+nim	queryOperation	bau/ops.html#queryOperation,string,OperationOptions	proc queryOperation(projectDir: string; opts: OperationOptions): OperationResult		797
+nim	affectedOperation	bau/ops.html#affectedOperation,string,OperationOptions	proc affectedOperation(projectDir: string;\n                  opts: OperationOptions = defaultOperationOptions()): OperationResult		893
+nim	cacheExplainOperation	bau/ops.html#cacheExplainOperation,string,OperationOptions	proc cacheExplainOperation(projectDir: string; opts: OperationOptions): OperationResult		1001
+nim	compileCommandEntries	bau/ops.html#compileCommandEntries,string,BauConfig,string,FeatureSelection	proc compileCommandEntries(projectDir: string; cfg: BauConfig; profile: string;\n                      selection: FeatureSelection): seq[JsonNode]		1040
+nim	compileCommandsOperation	bau/ops.html#compileCommandsOperation,string,OperationOptions	proc compileCommandsOperation(projectDir: string;\n                         opts: OperationOptions = defaultOperationOptions()): OperationResult		1085
+nim	lintOperation	bau/ops.html#lintOperation,string,OperationOptions	proc lintOperation(projectDir: string;\n              opts: OperationOptions = defaultOperationOptions()): OperationResult		1109
+nim	ciOperation	bau/ops.html#ciOperation,string,OperationOptions	proc ciOperation(projectDir: string;\n            opts: OperationOptions = defaultOperationOptions()): OperationResult		1142
+nim	taskOperation	bau/ops.html#taskOperation,string,OperationOptions	proc taskOperation(projectDir: string;\n              opts: OperationOptions = defaultOperationOptions()): OperationResult		1176
+nim	cacheOperation	bau/ops.html#cacheOperation,string,OperationOptions	proc cacheOperation(projectDir: string;\n               opts: OperationOptions = defaultOperationOptions()): OperationResult		1197
+nim	dependencyTreeOperation	bau/ops.html#dependencyTreeOperation,string,OperationOptions	proc dependencyTreeOperation(projectDir: string;\n                        opts: OperationOptions = defaultOperationOptions()): OperationResult		1215
+nim	dependencyStatusOperation	bau/ops.html#dependencyStatusOperation,string,OperationOptions	proc dependencyStatusOperation(projectDir: string;\n                          opts: OperationOptions = defaultOperationOptions()): OperationResult		1227
+nim	tailorOperation	bau/ops.html#tailorOperation,string,OperationOptions	proc tailorOperation(projectDir: string;\n                opts: OperationOptions = defaultOperationOptions()): OperationResult		1240
+nim	packageOperation	bau/ops.html#packageOperation,string,OperationOptions	proc packageOperation(projectDir: string;\n                 opts: OperationOptions = defaultOperationOptions()): OperationResult		1264
+nim	publishOperation	bau/ops.html#publishOperation,string,OperationOptions	proc publishOperation(projectDir: string;\n                 opts: OperationOptions = defaultOperationOptions()): OperationResult		1288
+nim	bumpOperation	bau/ops.html#bumpOperation,string,OperationOptions	proc bumpOperation(projectDir: string;\n              opts: OperationOptions = defaultOperationOptions()): OperationResult		1315
+nim	ciTemplateOperation	bau/ops.html#ciTemplateOperation,string,OperationOptions	proc ciTemplateOperation(projectDir: string;\n                    opts: OperationOptions = defaultOperationOptions()): OperationResult		1330
+nim	envOperation	bau/ops.html#envOperation,string,OperationOptions	proc envOperation(projectDir: string;\n             opts: OperationOptions = defaultOperationOptions()): OperationResult		1343
+nim	doctorOperation	bau/ops.html#doctorOperation,string,OperationOptions	proc doctorOperation(projectDir: string;\n                opts: OperationOptions = defaultOperationOptions()): OperationResult		1358
+nim	shellInitOperation	bau/ops.html#shellInitOperation,string,OperationOptions	proc shellInitOperation(projectDir: string;\n                   opts: OperationOptions = defaultOperationOptions()): OperationResult		1376
