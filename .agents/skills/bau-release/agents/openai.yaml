@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bau Release"
+  short_description: "Release Bau with scripts/release.sh."
+  default_prompt: "Help me release Bau using scripts/release.sh."
