@@ -210,7 +210,7 @@ bin = @["mcpdemo"]
   let cleaned = callTool(tmp, "bau_clean", newJObject())
   doAssert cleaned["status"].getStr() == "cleaned"
 
-block mcp_framing_preserves_jsonrpc_ids:
+block mcp_content_length_input_preserves_jsonrpc_ids:
   let request = $ %*{
     "jsonrpc": "2.0",
     "id": "init-1",
@@ -227,9 +227,26 @@ block mcp_framing_preserves_jsonrpc_ids:
   doAssert response["id"].getStr() == "init-1"
 
   let output = formatMcpResponse(responseText)
-  doAssert output.startsWith("Content-Length: " & $responseText.len & "\r\n\r\n")
+  doAssert output == responseText & "\n"
+  doAssert parseJson(output.strip())["id"].getStr() == "init-1"
 
-block mcp_framing_accepts_content_length_after_other_headers:
+block mcp_newline_input_preserves_jsonrpc_ids:
+  let request = $ %*{
+    "jsonrpc": "2.0",
+    "id": "init-line",
+    "method": "initialize",
+    "params": {}
+  }
+  var input = newStringStream(request & "\n")
+  let message = readMcpMessage(input)
+  doAssert message == request
+
+  let responseText = handleRequest(message, getCurrentDir())
+  let output = formatMcpResponse(responseText)
+  doAssert output == responseText & "\n"
+  doAssert parseJson(output.strip())["id"].getStr() == "init-line"
+
+block mcp_content_length_input_accepts_other_headers:
   let request = $ %*{
     "jsonrpc": "2.0",
     "id": "init-header-order",

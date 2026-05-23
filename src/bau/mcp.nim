@@ -855,7 +855,8 @@ proc parseContentLength(line: string): int =
 proc readMcpMessage*(input: Stream): string =
   ## Read one MCP message from a stream.
   ##
-  ## Supports both standard `Content-Length` framing and bare JSON lines.
+  ## Supports MCP's newline-delimited JSON messages and legacy
+  ## `Content-Length` framed messages.
   while not input.atEnd:
     var line = ""
     if not input.readLine(line):
@@ -884,10 +885,10 @@ proc readMcpMessage*(input: Stream): string =
       return
 
 proc formatMcpResponse*(response: string): string =
-  ## Wrap a JSON-RPC response body in MCP `Content-Length` framing.
+  ## Format a JSON-RPC response body as one MCP stdio message.
   if response.len == 0:
     return ""
-  "Content-Length: " & $response.len & "\r\n\r\n" & response
+  response & "\n"
 
 proc mcpServerLoop*(projectDir: string) =
   ## Run the stdio MCP server loop for a project directory.
