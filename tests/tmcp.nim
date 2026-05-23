@@ -229,6 +229,22 @@ block mcp_framing_preserves_jsonrpc_ids:
   let output = formatMcpResponse(responseText)
   doAssert output.startsWith("Content-Length: " & $responseText.len & "\r\n\r\n")
 
+block mcp_framing_accepts_content_length_after_other_headers:
+  let request = $ %*{
+    "jsonrpc": "2.0",
+    "id": "init-header-order",
+    "method": "initialize",
+    "params": {}
+  }
+  let framed = "Content-Type: application/json\r\n" &
+    "Content-Length: " & $request.len & "\r\n\r\n" & request
+  var input = newStringStream(framed)
+  let message = readMcpMessage(input)
+  doAssert message == request
+
+  let response = parseJson(handleRequest(message, getCurrentDir()))
+  doAssert response["id"].getStr() == "init-header-order"
+
 block mcp_notifications_are_silent:
   let response = handleRequest($(%*{
     "jsonrpc": "2.0",

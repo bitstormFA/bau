@@ -865,15 +865,19 @@ proc readMcpMessage*(input: Stream): string =
       if first.startsWith("{") or first.startsWith("["):
         return first
 
-      let bodyLen = parseContentLength(first)
-      if bodyLen < 0:
-        raise newException(ValueError, "expected MCP Content-Length header")
+      var bodyLen = parseContentLength(first)
       while true:
         var header = ""
         if not input.readLine(header):
           raise newException(IOError, "truncated MCP headers")
-        if header.strip().len == 0:
+        let cleaned = header.strip()
+        if cleaned.len == 0:
           break
+        let headerBodyLen = parseContentLength(cleaned)
+        if headerBodyLen >= 0:
+          bodyLen = headerBodyLen
+      if bodyLen < 0:
+        raise newException(ValueError, "expected MCP Content-Length header")
       result = input.readStr(bodyLen)
       if result.len != bodyLen:
         raise newException(IOError, "truncated MCP message body")
