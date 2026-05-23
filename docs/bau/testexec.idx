@@ -11,4 +11,4 @@ nim	parseTestOutputMode	bau/testexec.html#parseTestOutputMode,string	proc parseT
 nim	effectiveTestOutputMode	bau/testexec.html#effectiveTestOutputMode,BauConfig,string	proc effectiveTestOutputMode(cfg: BauConfig; override: string): TestOutputMode		97
 nim	effectiveTestProfiles	bau/testexec.html#effectiveTestProfiles,BauConfig,string	proc effectiveTestProfiles(cfg: BauConfig; requestedProfile: string;\n                      useConfiguredProfiles = true; profileExplicit = false;\n                      noMatrix = false; full = false; fast = false): seq[string]		114
 nim	collectTestCases	bau/testexec.html#collectTestCases,BauConfig,string,TestRunOptions	proc collectTestCases(cfg: BauConfig; projectDir: string; opts: TestRunOptions): seq[\n    TestCase]		187
-nim	runTests	bau/testexec.html#runTests,BauConfig,string,TestRunOptions	proc runTests(cfg: BauConfig; projectDir: string; opts: TestRunOptions;\n         useConfiguredProfiles = true): TestRunResult		594
+nim	runTests	bau/testexec.html#runTests,BauConfig,string,TestRunOptions	proc runTests(cfg: BauConfig; projectDir: string; opts: TestRunOptions;\n         useConfiguredProfiles = true): TestRunResult		596

@@ -1,5 +1,5 @@
 nimTitle	mcp	bau/mcp.html	module bau/mcp		0
-nim	handleRequest	bau/mcp.html#handleRequest,string,string	proc handleRequest(line: string; projectDir: string): string		806
-nim	readMcpMessage	bau/mcp.html#readMcpMessage,Stream	proc readMcpMessage(input: Stream): string		855
-nim	formatMcpResponse	bau/mcp.html#formatMcpResponse,string	proc formatMcpResponse(response: string): string		887
-nim	mcpServerLoop	bau/mcp.html#mcpServerLoop,string	proc mcpServerLoop(projectDir: string)		893
+nim	handleRequest	bau/mcp.html#handleRequest,string,string	proc handleRequest(line: string; projectDir: string): string		816
+nim	readMcpMessage	bau/mcp.html#readMcpMessage,Stream	proc readMcpMessage(input: Stream): string		865
+nim	formatMcpResponse	bau/mcp.html#formatMcpResponse,string	proc formatMcpResponse(response: string): string		897
+nim	mcpServerLoop	bau/mcp.html#mcpServerLoop,string	proc mcpServerLoop(projectDir: string)		903
