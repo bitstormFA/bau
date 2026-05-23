@@ -376,6 +376,8 @@ proc collectInvocations(cfg: BauConfig; projectDir: string;
       result.add(prepareInvocation(cfg, projectDir, profile, test, opts))
 
 proc printTestPlan(invocations: openArray[TestInvocation]) =
+  if outputIsQuiet():
+    return
   info("planned " & $invocations.len & " test invocation(s)")
   for invocation in invocations:
     echo "test " & invocation.rel & " (" & invocation.displayProfile & ")"

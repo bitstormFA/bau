@@ -65,9 +65,11 @@ Bau exposes the same operations through CLI and MCP. Start the MCP server with:
 bau mcp
 ```
 
-Use MCP tools for build, run, test, check, lint, CI, docs, dependency, task,
-cache, metadata, graph, query, affected-work, package, publish dry-run, and
-setup operations when they are available.
+Use MCP tools for metadata, graph, query, affected-work, dependency status, and
+other short operations when they are available. Prefer the `bau` CLI for
+long-running `check`, `test`, `ci`, `build`, and `run` workflows in Codex or
+VS Code so progress can stream and client-side MCP tool timeouts do not interrupt
+the work.
 """
 
 proc parseAgentTarget*(value: string): AgentTarget =
@@ -126,7 +128,10 @@ proc mcpServerJson(): JsonNode =
   %*{"type": "stdio", "command": "bau", "args": ["mcp"]}
 
 proc codexMcpToml(): string =
-  "[mcp_servers.bau]\ncommand = \"bau\"\nargs = [\"mcp\"]\n"
+  "[mcp_servers.bau]\n" &
+    "command = \"bau\"\n" &
+    "args = [\"mcp\"]\n" &
+    "tool_timeout_sec = 1800\n"
 
 proc withTrailingNewline(content: string): string =
   if content.len == 0 or content[^1] == '\n':

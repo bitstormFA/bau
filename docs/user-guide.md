@@ -687,6 +687,11 @@ Setup writes project-local files:
 Existing divergent `bau` entries or skill files are skipped unless `--force` is
 provided. Use `--dry-run` to preview file changes.
 
+Codex setup writes `tool_timeout_sec = 1800` because Codex defaults MCP tool
+calls to 60 seconds. For very long `check`, `test`, `ci`, `build`, or `run`
+workflows in Codex or VS Code, prefer the `bau` CLI so progress streams through
+the terminal and a client-side MCP timeout cannot interrupt the run.
+
 Common MCP tools:
 
 | Area | Tools |

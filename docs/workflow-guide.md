@@ -643,6 +643,10 @@ Example configuration shape for an MCP-capable tool:
 }
 ```
 
+For Codex, `bau mcp setup --codex` writes a longer `tool_timeout_sec` for Bau.
+Use MCP for short operations and introspection; use the `bau` CLI when `check`,
+`test`, `ci`, `build`, or `run` may take several minutes.
+
 Useful prompts for a connected coding tool:
 
 ```text

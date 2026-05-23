@@ -645,7 +645,10 @@ proc toolError(message: string): OperationResult =
 
 proc execTool(name: string; args: JsonNode;
     projectDir: string): OperationResult =
-  let opts = operationOptions(args)
+  var opts = operationOptions(args)
+  if name in ["bau_test", "bau_ci"]:
+    opts.verbose = false
+    opts.testShowOutput = "never"
 
   case name
   of "bau_build":
@@ -792,7 +795,14 @@ proc handleToolsCall(id: JsonNode; params: JsonNode;
     return respondErr(id, -32602, "arguments must be an object")
 
   try:
-    let op = execTool(name, args, projectDir)
+    let previousQuiet = outputIsQuiet()
+    let previousColor = currentColorMode()
+    setOutputOptions(true, "never")
+    var op: OperationResult
+    try:
+      op = execTool(name, args, projectDir)
+    finally:
+      setOutputOptions(previousQuiet, previousColor)
     var content = newJArray()
     content.add(%*{"type": "text", "text": $op.json})
     var response = newJObject()

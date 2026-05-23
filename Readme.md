@@ -347,6 +347,10 @@ bau mcp setup --claude
 bau mcp setup --copilot
 ```
 
+For Codex, setup writes a longer MCP tool timeout. Use MCP for short operations
+and project introspection; use the `bau` CLI for long `check`, `test`, `ci`,
+`build`, or `run` workflows that need terminal progress.
+
 ## Documentation
 
 - [Concept glossary](CONTEXT.md): canonical Bau project language.

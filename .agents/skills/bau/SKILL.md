@@ -251,6 +251,11 @@ Setup writes MCP registration and a Bau skill for the selected agent host. Use
 `--dry-run` to preview and `--force` to replace an existing divergent Bau entry
 or skill file.
 
+In Codex or VS Code, prefer the `bau` CLI for long-running `check`, `test`,
+`ci`, `build`, and `run` workflows so progress can stream and client-side MCP
+tool timeouts do not interrupt the work. Use MCP for metadata, graph, query,
+affected-work, dependency status, and other short operations.
+
 Claude Code project setup:
 
 ```sh

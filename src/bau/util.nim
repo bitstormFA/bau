@@ -40,6 +40,10 @@ proc setOutputOptions*(quiet: bool; color: string) =
   if color in ["auto", "always", "never"]:
     colorMode = color
 
+proc outputIsQuiet*(): bool =
+  ## Return whether normal progress output is currently suppressed.
+  quietOutput
+
 proc outputUsesColor(): bool =
   colorMode == "always" or (colorMode == "auto" and isatty(stdout))
 
@@ -173,16 +177,16 @@ proc info*(msg: string) =
 proc warn*(msg: string) =
   ## Print a warning message.
   if outputUsesColor():
-    stdout.styledWrite(fgYellow, "WARN ", resetStyle, msg, "\n")
+    stderr.styledWrite(fgYellow, "WARN ", resetStyle, msg, "\n")
   else:
-    echo "WARN ", msg
+    stderr.writeLine("WARN " & msg)
 
 proc error*(msg: string) =
   ## Print an error message.
   if outputUsesColor():
-    stdout.styledWrite(fgRed, "ERROR ", resetStyle, msg, "\n")
+    stderr.styledWrite(fgRed, "ERROR ", resetStyle, msg, "\n")
   else:
-    echo "ERROR ", msg
+    stderr.writeLine("ERROR " & msg)
 
 proc success*(msg: string) =
   ## Print a success message unless quiet output is enabled.

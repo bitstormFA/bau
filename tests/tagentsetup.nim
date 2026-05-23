@@ -40,7 +40,10 @@ block agent_setup_writes_project_local_mcp_and_skills:
   doAssert codex.contains("[mcp_servers.bau]")
   doAssert codex.contains("command = \"bau\"")
   doAssert codex.contains("args = [\"mcp\"]")
+  doAssert codex.contains("tool_timeout_sec = 1800")
   doAssert fileExists(tmp / ".agents" / "skills" / "bau" / "SKILL.md")
+  doAssert readFile(tmp / ".agents" / "skills" / "bau" / "SKILL.md").
+    contains("client-side MCP tool timeouts")
 
   let claude = parseJson(readFile(tmp / ".mcp.json"))
   doAssert claude["mcpServers"]["bau"]["command"].getStr() == "bau"
