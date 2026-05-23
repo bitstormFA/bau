@@ -15,10 +15,10 @@ workspaceMember = "."
 name = ".cache"
 version = ""
 source = "registry+nimble://default"
-checksum = "sha256:fed3a12c8588a96732bb53cf5114571810b0faeaa23655b7b325d0058bf834ea"
+checksum = "sha256:0fb733dc3c2c4fee31c1f1da58641f8f658f775dc3f864b6d55a1587f867eafc"
 path = "deps/.cache"
 materialized = true
-lockedAt = 1779024471
+lockedAt = 1779544389
 enabledBy = []
 dependencies = []
 

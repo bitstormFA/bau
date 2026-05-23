@@ -105,7 +105,7 @@
     <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
-    Wrap a JSON-RPC response body in MCP <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Identifier">Length</span></span></tt> framing.
+    Format a JSON-RPC response body as one MCP stdio message.
     
   </dd>
 </div>
@@ -149,7 +149,7 @@
   <dd>
     
     <p>Read one MCP message from a stream.</p>
-<p>Supports both standard <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Identifier">Length</span></span></tt> framing and bare JSON lines.</p>
+<p>Supports MCP's newline-delimited JSON messages and legacy <tt class="docutils literal"><span class="pre"><span class="Identifier">Content</span><span class="Operator">-</span><span class="Identifier">Length</span></span></tt> framed messages.</p>
 
     
   </dd>
@@ -166,7 +166,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-17 13:28:51 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-05-23 13:54:08 UTC</small>
       </div>
     </div>
   </div>
